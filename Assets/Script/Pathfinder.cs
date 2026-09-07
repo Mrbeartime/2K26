@@ -3,16 +3,29 @@ using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    public static Pathfinder Instance;
+    private static Pathfinder instance;
+    public static Pathfinder Instance
+    {
+        get
+        {
+            if (instance == null) instance = FindAnyObjectByType<Pathfinder>();
+            return instance;
+        }
+    }
 
     private void Awake()
     {
-        Instance = this;
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     public List<Tile> FindPath(
         Tile startTile,
-        Tile targetTile)
+        Tile targetTile, Character character = null)
     {
         if (startTile == null ||
             targetTile == null)
@@ -67,7 +80,7 @@ public class Pathfinder : MonoBehaviour
 
             List<Tile> neighbours =
                 GridManager.Instance
-                    .GetNeighbours(current);
+                    .GetNeighbours(current, character);
 
             foreach (Tile neighbour in neighbours)
             {
@@ -172,7 +185,7 @@ public class Pathfinder : MonoBehaviour
     }
 
     //hightlight
-    public List<Tile> GetAllReachableTiles(Tile startTile)
+    public List<Tile> GetAllReachableTiles(Tile startTile, Character character = null)
     {
         List<Tile> reachable = new List<Tile>();
         if (startTile == null) return reachable;
@@ -189,7 +202,7 @@ public class Pathfinder : MonoBehaviour
             Tile current = queue.Dequeue();
 
             // ใช้ GetNeighbours จาก GridManager ของคุณ (ซึ่งเช็กกำแพงให้อยู่แล้ว!)
-            List<Tile> neighbours = GridManager.Instance.GetNeighbours(current);
+            List<Tile> neighbours = GridManager.Instance.GetNeighbours(current, character);
 
             foreach (Tile neighbour in neighbours)
             {
@@ -205,3 +218,4 @@ public class Pathfinder : MonoBehaviour
         return reachable;
     }
 }
+

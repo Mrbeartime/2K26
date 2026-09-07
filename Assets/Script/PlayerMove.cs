@@ -13,6 +13,7 @@ public class PlayerMove : MonoBehaviour
 
     private bool isMoving;
 
+    private void Awake() => CharacterSetup.Ensure(this);
     private void Start()
     {
         FindStartingTile();
@@ -66,8 +67,13 @@ public class PlayerMove : MonoBehaviour
 
     public void MoveToTile(Tile targetTile)
     {
-        if (isMoving)
+        if (Time.timeScale == 0 || isMoving)
             return;
+        if (GridManager.Instance == null || Pathfinder.Instance == null)
+        {
+            Debug.LogWarning("เดินไม่ได้: ต้องมี GridManager และ Pathfinder ในฉาก", this);
+            return;
+        }
 
         if (currentTile == null)
         {
@@ -102,7 +108,8 @@ public class PlayerMove : MonoBehaviour
         currentPath =
             Pathfinder.Instance.FindPath(
                 currentTile,
-                targetTile
+                targetTile,
+                GetComponent<Character>()
             );
 
         if (currentPath == null)
@@ -148,7 +155,7 @@ public class PlayerMove : MonoBehaviour
 
     private void MoveAlongPath()
     {
-        if (!isMoving)
+        if (Time.timeScale == 0 || !isMoving)
             return;
 
         if (currentPath == null)
@@ -163,6 +170,7 @@ public class PlayerMove : MonoBehaviour
         Tile nextTile =
             currentPath[pathIndex];
 
+        if (nextTile.IsOccupied || !RogueDoor.CanEnter(nextTile, GetComponent<Character>(), true)) { isMoving = false; return; }
         Vector3 targetPosition =
             nextTile.transform.position;
 
@@ -199,6 +207,7 @@ public class PlayerMove : MonoBehaviour
                 gameObject
             );
 
+            GetComponent<Character>()?.Interact(currentTile);
             pathIndex++;
 
             // เดินถึงปลายทางแล้ว
