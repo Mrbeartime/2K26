@@ -122,6 +122,14 @@ public class PlayerMove : MonoBehaviour
             return;
         }
 
+        // The path includes the starting tile; only transitions cost movement.
+        Character character = GetComponent<Character>();
+        if (character == null || currentPath.Count - 1 > character.MovementRange)
+        {
+            currentPath = null;
+            return;
+        }
+
         pathIndex = 0;
 
         // Path ตัวแรกคือ Tile ที่เรายืนอยู่

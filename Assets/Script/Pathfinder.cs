@@ -192,14 +192,17 @@ public class Pathfinder : MonoBehaviour
 
         Queue<Tile> queue = new Queue<Tile>();
         HashSet<Tile> visited = new HashSet<Tile>();
+        Dictionary<Tile, int> distances = new Dictionary<Tile, int>();
+        int range = character != null ? character.MovementRange : int.MaxValue;
 
         queue.Enqueue(startTile);
         visited.Add(startTile);
-        reachable.Add(startTile); // นับช่องที่ตัวเองยืนอยู่ด้วย
+        distances[startTile] = 0;
 
         while (queue.Count > 0)
         {
             Tile current = queue.Dequeue();
+            if (distances[current] >= range) continue;
 
             // ใช้ GetNeighbours จาก GridManager ของคุณ (ซึ่งเช็กกำแพงให้อยู่แล้ว!)
             List<Tile> neighbours = GridManager.Instance.GetNeighbours(current, character);
@@ -209,6 +212,7 @@ public class Pathfinder : MonoBehaviour
                 if (!visited.Contains(neighbour))
                 {
                     visited.Add(neighbour);
+                    distances[neighbour] = distances[current] + 1;
                     queue.Enqueue(neighbour);
                     reachable.Add(neighbour);
                 }

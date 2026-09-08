@@ -63,7 +63,7 @@ public class PlayerController : MonoBehaviour
                 {
                     // สั่งเดิน และปิดสีไฮไลต์ทั้งหมด
                     selectedPlayer.MoveToTile(clickedTile);
-                    ClearHighlights();
+                    if (selectedPlayer.IsMoving()) ClearHighlights();
                 }
                 return;
             }
@@ -83,6 +83,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
         selectedPlayer = player;
+        if (player.IsMoving()) return;
         Debug.Log("Selected: " + player.name);
 
         // เปลี่ยนมาใช้ GridManager แปลงพิกัดตัวละครหาแผ่นพื้นแทนการยิง Raycast

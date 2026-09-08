@@ -2,6 +2,11 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMove))]
 public class Character : Entity
 {
+    [Header("Movement Range")]
+    [Tooltip("Maximum number of tiles per move command, including detours around walls.")]
+    [SerializeField, Min(0)] private int movementRange = 3;
+    public int MovementRange => Mathf.Max(0, movementRange);
+
     public virtual void Interact(Tile tile)
     {
         if (tile == null) return;
