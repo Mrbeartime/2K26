@@ -15,6 +15,7 @@ public class GridManager : MonoBehaviour
 
     [Header("Grid Settings")]
     [SerializeField] private float tileSize = 1f;
+    public float TileSize => tileSize;
 
     [Header("Path Blocking")]
     [SerializeField] private LayerMask wallLayer;
@@ -144,6 +145,14 @@ public class GridManager : MonoBehaviour
 
         return neighbours;
     }
+    public bool IsArrowWall(Collider collider)
+    {
+        RogueDoor door = collider.GetComponentInParent<RogueDoor>();
+        if (door != null) return !door.IsOpen;
+        return !collider.isTrigger && collider.GetComponentInParent<Entity>() == null &&
+            (wallLayer.value & (1 << collider.gameObject.layer)) != 0;
+    }
+
     public bool IsBlockedByWall(
     Tile from,
     Tile to, Character character = null, bool forArrow = false)

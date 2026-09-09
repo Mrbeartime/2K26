@@ -15,6 +15,22 @@ public class ArcherMan : Character
             return;
         }
         Vector2Int direction = new Vector2Int(System.Math.Sign(delta.x), System.Math.Sign(delta.y));
+        Fire(direction);
+    }
+
+    public void BowShotAt(Vector3 targetPosition)
+    {
+        if (Time.timeScale == 0 || GetComponent<PlayerMove>().IsMoving()) return;
+        Vector3 delta = targetPosition - transform.position;
+        if (Mathf.Abs(delta.x) + Mathf.Abs(delta.z) < 0.01f) return;
+        Vector2Int direction = Mathf.Abs(delta.x) >= Mathf.Abs(delta.z)
+            ? new Vector2Int(System.Math.Sign(delta.x), 0)
+            : new Vector2Int(0, System.Math.Sign(delta.z));
+        Fire(direction);
+    }
+
+    private void Fire(Vector2Int direction)
+    {
         Tile origin = GridManager.Instance.GetTile(CurrentLocation);
         if (origin == null) return;
         GameObject arrow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
