@@ -69,10 +69,10 @@ public class ArrowTutorial : Entity
     }
 
     // Sword hits must not complete an arrow lesson.
-    public override void TakeDamage(int damage) { }
-    public override void TakeArrowDamage(int damage)
+    public override void ReceiveHit() { }
+    public override void ReceiveArrowHit()
     {
-        if (damage <= 0 || IsCompleted || Time.timeScale == 0) return;
+        if (IsCompleted || Time.timeScale == 0) return;
         HitCount++;
         IsCompleted = HitCount >= Mathf.Max(1, requiredHits);
         RefreshLabel();

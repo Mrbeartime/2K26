@@ -2283,6 +2283,7 @@ GameObject:
   - component: {fileID: 983075741}
   - component: {fileID: 983075740}
   - component: {fileID: 983075745}
+  - component: {fileID: 800000000000000000}
   m_Layer: 0
   m_Name: Player1
   m_TagString: Player
@@ -3164,6 +3165,7 @@ GameObject:
   - component: {fileID: 1664854269}
   - component: {fileID: 1664854267}
   - component: {fileID: 1664854272}
+  - component: {fileID: 800000000000000001}
   m_Layer: 0
   m_Name: Player2
   m_TagString: Player
@@ -4011,3 +4013,34 @@ SceneRoots:
   - {fileID: 1182780445}
   - {fileID: 566181155}
   - {fileID: 579688268}
+
+--- !u!114 &800000000000000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983075739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3aa6dd33ce49749a4adf8d940117a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CanKill: 1
+  health: 1
+  movementRange: 3
+--- !u!114 &800000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664854265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75458ca5cc3b4a9b935bad2e349ca446, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CanKill: 1
+  health: 1
+  movementRange: 3

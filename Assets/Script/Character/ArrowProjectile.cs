@@ -5,7 +5,6 @@ public class ArrowProjectile : MonoBehaviour
     private Character owner;
     private Tile current, next;
     private Vector2Int direction;
-    private int damage;
     private float speed;
     private bool finished;
     private void Finish()
@@ -16,9 +15,9 @@ public class ArrowProjectile : MonoBehaviour
         Enemy.AfterPlayerSkill(owner);
         Destroy(gameObject);
     }
-    public void Initialize(Character source, Tile origin, Vector2Int heading, int amount, float velocity)
+    public void Initialize(Character source, Tile origin, Vector2Int heading, float velocity)
     {
-        owner = source; current = origin; direction = heading; damage = amount; speed = velocity;
+        owner = source; current = origin; direction = heading; speed = velocity;
         Advance();
     }
     private void Advance()
@@ -43,7 +42,7 @@ public class ArrowProjectile : MonoBehaviour
         foreach (Entity entity in FindObjectsByType<Entity>())
         {
             if (entity == owner || entity.CurrentLocation != next.gridPosition) continue;
-            entity.TakeArrowDamage(damage);
+            entity.ReceiveArrowHit();
             hit = true;
         }
         if (hit) { Finish(); return; }
