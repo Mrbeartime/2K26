@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePosition);
-        RaycastHit[] hits = Physics.RaycastAll(ray);
+        RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
 
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -112,13 +112,18 @@ public class PlayerController : MonoBehaviour
             !Mouse.current.rightButton.wasPressedThisFrame) return;
         if (GridManager.Instance == null) return;
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-        RaycastHit[] hits = Physics.RaycastAll(ray);
+        RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
         foreach (RaycastHit hit in hits)
         {
             Entity targetEntity = hit.collider.GetComponentInParent<Entity>();
             if (targetEntity != null && targetEntity.gameObject != selectedPlayer.gameObject)
             {
+                if (targetEntity is ArrowTutorial && selectedPlayer.TryGetComponent(out ArcherMan archer))
+                {
+                    archer.BowShotAt(hit.point);
+                    return;
+                }
                 Tile targetTile = GridManager.Instance.GetTile(targetEntity.CurrentLocation);
                 selectedPlayer.GetComponent<Character>()?.Attack(targetTile);
                 return;
