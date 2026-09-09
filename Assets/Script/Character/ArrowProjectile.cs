@@ -8,10 +8,20 @@ public class ArrowProjectile : MonoBehaviour
     private float remainingDistance;
     private float speed;
     private bool finished;
-    private const float Radius = 0.03f;
+    [SerializeField, Min(0.001f)] private float hitRadius = 0.03f;
+    private bool initialized;
 
     public void Initialize(Character source, Tile origin, Vector2Int direction, float velocity)
     {
+        remainingDistance = 0f;
+        finished = false;
+        // Movement and collision queries are controlled here, not by model physics.
+        foreach (Rigidbody body in GetComponentsInChildren<Rigidbody>(true))
+        {
+            body.useGravity = false;
+            body.isKinematic = true;
+        }
+        foreach (Collider part in GetComponentsInChildren<Collider>(true)) part.enabled = false;
         owner = source;
         heading = new Vector3(direction.x, 0, direction.y);
         speed = Mathf.Max(0.1f, velocity);
@@ -19,6 +29,7 @@ public class ArrowProjectile : MonoBehaviour
             remainingDistance = Mathf.Max(remainingDistance,
                 Vector3.Dot(tile.transform.position - origin.transform.position, heading));
         remainingDistance += GridManager.Instance.TileSize * 0.5f;
+        initialized = true;
     }
 
     private void Finish()
@@ -47,11 +58,11 @@ public class ArrowProjectile : MonoBehaviour
 
     private void Update()
     {
-        if (finished || Time.timeScale == 0) return;
+        if (!initialized || finished || Time.timeScale == 0) return;
         if (GridManager.Instance == null) { Destroy(gameObject); return; }
         Physics.SyncTransforms();
         // Include an initial overlap, which a sphere cast alone can miss.
-        Collider[] overlaps = Physics.OverlapSphere(transform.position, Radius, ~0,
+        Collider[] overlaps = Physics.OverlapSphere(transform.position, Mathf.Max(0.001f, hitRadius), ~0,
             QueryTriggerInteraction.Collide);
         foreach (Collider collider in overlaps)
             if (GridManager.Instance.IsArrowWall(collider) && Hit(collider)) return;
@@ -59,7 +70,7 @@ public class ArrowProjectile : MonoBehaviour
             if (Hit(collider)) return;
 
         float distance = Mathf.Min(speed * Time.deltaTime, remainingDistance);
-        RaycastHit[] contacts = Physics.SphereCastAll(transform.position, Radius,
+        RaycastHit[] contacts = Physics.SphereCastAll(transform.position, Mathf.Max(0.001f, hitRadius),
             heading, distance, ~0, QueryTriggerInteraction.Collide);
         System.Array.Sort(contacts, (a, b) => a.distance.CompareTo(b.distance));
         foreach (RaycastHit contact in contacts)

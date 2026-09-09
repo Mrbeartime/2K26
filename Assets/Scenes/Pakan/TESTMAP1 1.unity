@@ -3842,6 +3842,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArcherMan
   CanKill: 1
   movementRange: 3
+  arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
+  arrowRotationOffset: {x: 0, y: 90, z: 0}
+  arrowHeight: 0.6
   arrowSpeed: 12
 --- !u!1 &1672212157
 GameObject:

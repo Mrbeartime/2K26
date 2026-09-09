@@ -1,6 +1,12 @@
 using UnityEngine;
 public class ArcherMan : Character
 {
+    [Header("Arrow")]
+    [Tooltip("Optional arrow prefab. Point the model along the root's local +Z axis.")]
+    [SerializeField] private GameObject arrowPrefab;
+    [Tooltip("Model rotation relative to the firing direction. For a model pointing along +X, use Y = -90.")]
+    [SerializeField] private Vector3 arrowRotationOffset;
+    [SerializeField] private float arrowHeight = 0.6f;
     [SerializeField, Min(0.1f)] private float arrowSpeed = 12f;
     public override void Attack(Tile target) => BowShot(target);
     public void BowShot(Tile target)
@@ -33,13 +39,28 @@ public class ArcherMan : Character
     {
         Tile origin = GridManager.Instance.GetTile(CurrentLocation);
         if (origin == null) return;
-        GameObject arrow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        arrow.name = "Arrow";
-        arrow.GetComponent<Collider>().enabled = false;
-        arrow.transform.localScale = new Vector3(0.06f, 0.3f, 0.06f);
-        arrow.transform.position = origin.transform.position + Vector3.up * 0.6f;
-        arrow.transform.rotation = Quaternion.FromToRotation(Vector3.up, new Vector3(direction.x, 0, direction.y));
-        arrow.AddComponent<ArrowProjectile>().Initialize(this, origin, direction, arrowSpeed);
+        Vector3 position = origin.transform.position + Vector3.up * arrowHeight;
+        Quaternion rotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.y));
+        GameObject arrow;
+        if (arrowPrefab != null)
+        {
+            arrow = Instantiate(arrowPrefab, position, rotation * Quaternion.Euler(arrowRotationOffset));
+        }
+        else
+        {
+            // Keep existing scenes playable until a model prefab is assigned.
+            arrow = new GameObject("Arrow");
+            arrow.transform.SetPositionAndRotation(position, rotation);
+            GameObject model = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            model.transform.SetParent(arrow.transform, false);
+            model.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            model.transform.localScale = new Vector3(0.06f, 0.3f, 0.06f);
+        }
+        ArrowProjectile projectile = arrow.GetComponent<ArrowProjectile>();
+        if (projectile == null) projectile = arrow.AddComponent<ArrowProjectile>();
+        projectile.enabled = true;
+        projectile.Initialize(this, origin, direction, arrowSpeed);
+        arrow.SetActive(true);
     }
 }
 
