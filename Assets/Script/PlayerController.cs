@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 
     private PlayerMove selectedPlayer;
     private Camera mainCamera;
+    private Tile previewMoveTile;
 
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -27,8 +28,63 @@ public class PlayerController : MonoBehaviour
         if (Time.timeScale == 0) return;
         if (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+        if (TurnGameManager.Instance != null)
+        {
+            HandleTurnInput(TurnGameManager.Instance);
+            return;
+        }
+
         HandleClick();
         HandleAttack();
+    }
+
+    private void HandleTurnInput(TurnGameManager turnManager)
+    {
+        if (Mouse.current == null || mainCamera == null ||
+            !Mouse.current.leftButton.wasPressedThisFrame) return;
+
+        if (turnManager.IsPointerOverTurnUI(Mouse.current.position.ReadValue())) return;
+
+        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
+        {
+            PlayerMove clickedPlayer = hit.collider.GetComponentInParent<PlayerMove>();
+            if (clickedPlayer != null)
+            {
+                if (turnManager.IsSkillTargeting)
+                {
+                    turnManager.UseSkillOn(clickedPlayer.GetCurrentTile());
+                    return;
+                }
+                turnManager.TrySelectPlayer(clickedPlayer);
+                return;
+            }
+
+            RogueDoor door = hit.collider.GetComponentInParent<RogueDoor>();
+            if (door != null && turnManager.IsSkillTargeting)
+            {
+                turnManager.UseSkillOn(door);
+                return;
+            }
+
+            Tile tile = hit.collider.GetComponentInParent<Tile>();
+            if (tile == null) continue;
+
+            if (turnManager.IsMoveTargeting && selectedPlayer == turnManager.CurrentPlayer && tile.isWalkable)
+            {
+                turnManager.PreviewMoveTarget(tile);
+                return;
+            }
+
+            if (turnManager.IsSkillTargeting)
+            {
+                turnManager.UseSkillOn(tile);
+                return;
+            }
+        }
     }
 
     private void HandleClick()
@@ -70,7 +126,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void SelectPlayer(PlayerMove player)
+    public void SelectPlayer(PlayerMove player)
     {
         ClearHighlights(); // ล้างสีเก่าทิ้งก่อน
         selectedPlayer = null;
@@ -135,12 +191,42 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void ClearHighlights()
+    public void ClearHighlights()
     {
+        previewMoveTile = null;
         foreach (Tile tile in currentHighlightedTiles)
         {
             if (tile != null) tile.ToggleHighlight(false);
         }
         currentHighlightedTiles.Clear();
+    }
+
+    public void ShowMovePreview(Tile tile)
+    {
+        if (tile == null) return;
+        if (previewMoveTile != null && previewMoveTile != tile)
+            previewMoveTile.ToggleHighlight(true);
+        previewMoveTile = tile;
+        previewMoveTile.ToggleMovePreview(true);
+    }
+
+    public void ClearMovePreview()
+    {
+        if (previewMoveTile == null) return;
+        previewMoveTile.ToggleHighlight(true);
+        previewMoveTile = null;
+    }
+
+    public void ShowRogueSkillRange(Tile origin, int range)
+    {
+        ClearHighlights();
+        if (origin == null) return;
+        foreach (Tile tile in FindObjectsByType<Tile>())
+        {
+            Vector2Int delta = tile.gridPosition - origin.gridPosition;
+            if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > range) continue;
+            currentHighlightedTiles.Add(tile);
+            tile.ToggleHighlight(true);
+        }
     }
 }

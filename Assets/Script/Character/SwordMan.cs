@@ -18,7 +18,6 @@ public class SwordMan : Character
         effect.transform.localScale = new Vector3(0.7f, 0.08f, 0.7f);
         effect.GetComponent<Collider>().enabled = false;
         Destroy(effect, 0.15f);
-        Enemy.AfterPlayerSkill(this);
     }
 }
 

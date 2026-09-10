@@ -19,6 +19,36 @@ public class Tile : MonoBehaviour
         if (highlightObject != null)
         {
             highlightObject.SetActive(show);
+            if (show) ClearHighlightColorOverride();
+        }
+    }
+
+    // Used while the player is deciding whether to confirm a move destination.
+    public void ToggleMovePreview(bool show)
+    {
+        if (highlightObject == null) return;
+        highlightObject.SetActive(show);
+        if (!show)
+        {
+            ClearHighlightColorOverride();
+            return;
+        }
+
+        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(properties);
+            properties.SetColor("_BaseColor", Color.red);
+            properties.SetColor("_Color", Color.red);
+            renderer.SetPropertyBlock(properties);
+        }
+    }
+
+    private void ClearHighlightColorOverride()
+    {
+        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.SetPropertyBlock(null);
         }
     }
     // =========================

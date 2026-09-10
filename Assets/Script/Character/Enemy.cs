@@ -23,10 +23,18 @@ public class Enemy : Entity
         }
     }
 
-    // Called once after a valid sword swing or after an arrow finishes travelling.
+    // Kept for compatibility with existing scenes. TurnGameManager uses RunEnemyPhase instead.
     public static void AfterPlayerSkill(Character player)
     {
         if (player == null || player.IsDead || Time.timeScale == 0) return;
+        foreach (Enemy enemy in FindObjectsByType<Enemy>())
+        {
+            if (enemy != null) enemy.React();
+        }
+    }
+
+    public static void RunEnemyPhase()
+    {
         foreach (Enemy enemy in FindObjectsByType<Enemy>())
         {
             if (enemy != null) enemy.React();

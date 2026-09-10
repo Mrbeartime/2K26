@@ -36,7 +36,6 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (finished) return;
         finished = true;
-        Enemy.AfterPlayerSkill(owner);
         Destroy(gameObject);
     }
 
