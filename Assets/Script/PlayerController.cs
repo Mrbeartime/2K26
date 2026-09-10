@@ -24,12 +24,16 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0) return;
+        if (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
         HandleClick();
+        HandleAttack();
     }
 
     private void HandleClick()
     {
-        if (Mouse.current == null) return;
+        if (Mouse.current == null || mainCamera == null) return;
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
@@ -41,7 +45,7 @@ public class PlayerController : MonoBehaviour
         foreach (RaycastHit hit in hits)
         {
             // คลิก Player
-            PlayerMove clickedPlayer = hit.collider.GetComponent<PlayerMove>();
+            PlayerMove clickedPlayer = hit.collider.GetComponentInParent<PlayerMove>();
             if (clickedPlayer != null)
             {
                 SelectPlayer(clickedPlayer);
@@ -59,7 +63,7 @@ public class PlayerController : MonoBehaviour
                 {
                     // สั่งเดิน และปิดสีไฮไลต์ทั้งหมด
                     selectedPlayer.MoveToTile(clickedTile);
-                    ClearHighlights();
+                    if (selectedPlayer.IsMoving()) ClearHighlights();
                 }
                 return;
             }
@@ -69,7 +73,17 @@ public class PlayerController : MonoBehaviour
     private void SelectPlayer(PlayerMove player)
     {
         ClearHighlights(); // ล้างสีเก่าทิ้งก่อน
+        selectedPlayer = null;
+        if (player == null) return;
+        if (GridManager.Instance == null || Pathfinder.Instance == null)
+        {
+            string missing = GridManager.Instance == null ? "GridManager" : "Pathfinder";
+            Debug.LogWarning("เลือกตัวละครไม่ได้: เพิ่ม " + missing +
+                " component บน GameObject ที่เปิดใช้งานในฉากก่อน", this);
+            return;
+        }
         selectedPlayer = player;
+        if (player.IsMoving()) return;
         Debug.Log("Selected: " + player.name);
 
         // เปลี่ยนมาใช้ GridManager แปลงพิกัดตัวละครหาแผ่นพื้นแทนการยิง Raycast
@@ -79,7 +93,7 @@ public class PlayerController : MonoBehaviour
         if (playerTile != null)
         {
             // ดึงเฉพาะช่องที่เดินเชื่อมถึงกันได้จริงๆ (ไม่ทะลุกำแพง)
-            currentHighlightedTiles = Pathfinder.Instance.GetAllReachableTiles(playerTile);
+            currentHighlightedTiles = Pathfinder.Instance.GetAllReachableTiles(playerTile, player.GetComponent<Character>());
 
             foreach (Tile tile in currentHighlightedTiles)
             {
@@ -92,11 +106,35 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void HandleAttack()
+    {
+        if (Mouse.current == null || mainCamera == null || selectedPlayer == null ||
+            !Mouse.current.rightButton.wasPressedThisFrame) return;
+        if (GridManager.Instance == null) return;
+        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        RaycastHit[] hits = Physics.RaycastAll(ray);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        foreach (RaycastHit hit in hits)
+        {
+            Entity targetEntity = hit.collider.GetComponentInParent<Entity>();
+            if (targetEntity != null && targetEntity.gameObject != selectedPlayer.gameObject)
+            {
+                Tile targetTile = GridManager.Instance.GetTile(targetEntity.CurrentLocation);
+                selectedPlayer.GetComponent<Character>()?.Attack(targetTile);
+                return;
+            }
+            Tile tile = hit.collider.GetComponentInParent<Tile>();
+            if (tile == null) continue;
+            selectedPlayer.GetComponent<Character>()?.Attack(tile);
+            return;
+        }
+    }
+
     private void ClearHighlights()
     {
         foreach (Tile tile in currentHighlightedTiles)
         {
-            tile.ToggleHighlight(false);
+            if (tile != null) tile.ToggleHighlight(false);
         }
         currentHighlightedTiles.Clear();
     }

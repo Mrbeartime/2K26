@@ -3,7 +3,15 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    public static GridManager Instance;
+    private static GridManager instance;
+    public static GridManager Instance
+    {
+        get
+        {
+            if (instance == null) instance = FindAnyObjectByType<GridManager>();
+            return instance;
+        }
+    }
 
     [Header("Grid Settings")]
     [SerializeField] private float tileSize = 1f;
@@ -16,7 +24,12 @@ public class GridManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     private void Start()
@@ -26,6 +39,7 @@ public class GridManager : MonoBehaviour
 
     private void RegisterAllTiles()
     {
+        tiles.Clear();
         Tile[] allTiles =
             FindObjectsByType<Tile>(
                 FindObjectsSortMode.None
@@ -78,6 +92,8 @@ public class GridManager : MonoBehaviour
     public Tile GetTile(
         Vector2Int position)
     {
+        // PlayerMove.Start may run before this component's Start.
+        if (tiles.Count == 0) RegisterAllTiles();
         if (tiles.TryGetValue(
             position,
             out Tile tile))
@@ -88,7 +104,7 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    public List<Tile> GetNeighbours(Tile tile)
+    public List<Tile> GetNeighbours(Tile tile, Character character = null)
     {
         List<Tile> neighbours =
             new List<Tile>();
@@ -112,6 +128,7 @@ public class GridManager : MonoBehaviour
             if (neighbour == null)
                 continue;
 
+            if (!RogueDoor.CanEnter(neighbour, character)) continue;
             if (!neighbour.isWalkable)
                 continue;
 
@@ -119,7 +136,7 @@ public class GridManager : MonoBehaviour
                 continue;
 
             // ⭐ ตรวจว่ามีกำแพงขวางระหว่างสอง Tile หรือไม่
-            if (IsBlockedByWall(tile, neighbour))
+            if (IsBlockedByWall(tile, neighbour, character))
                 continue;
 
             neighbours.Add(neighbour);
@@ -127,9 +144,9 @@ public class GridManager : MonoBehaviour
 
         return neighbours;
     }
-    private bool IsBlockedByWall(
+    public bool IsBlockedByWall(
     Tile from,
-    Tile to)
+    Tile to, Character character = null, bool forArrow = false)
     {
         Vector3 start =
             from.transform.position;
@@ -146,13 +163,16 @@ public class GridManager : MonoBehaviour
                 to.transform.position
             );
 
-        bool blocked = Physics.Raycast(
-            start,
-            direction,
-            distance,
-            wallLayer
-        );
-
+        bool blocked = false;
+        foreach (RaycastHit hit in Physics.RaycastAll(start, direction, distance, wallLayer, QueryTriggerInteraction.Ignore))
+        {
+            RogueDoor door = hit.collider.GetComponentInParent<RogueDoor>();
+            if (door != null && (door.IsOpen || door.CheckCharacter(character))) continue;
+            // Entity colliders are arrow targets, not walls. Doors still block.
+            if (forArrow && door == null && hit.collider.GetComponentInParent<Entity>() != null) continue;
+            blocked = true;
+            break;
+        }
         Debug.DrawRay(
             start,
             direction * distance,
@@ -163,3 +183,5 @@ public class GridManager : MonoBehaviour
         return blocked;
     }
 }
+
+
