@@ -5,7 +5,6 @@ public class Enemy : Entity
 {
     [Header("Enemy")]
     public bool Aggression = true;
-    [SerializeField, Min(1)] private int attackDamage = 1;
     [SerializeField] private bool patrolEnabled;
     [SerializeField] private Tile[] patrolPoints;
     public UnityEvent onAttack = new UnityEvent();
@@ -48,7 +47,7 @@ public class Enemy : Entity
             Tile to = GridManager.Instance.GetTile(target.CurrentLocation);
             if (to == null || !RogueDoor.CanEnter(from, null) || !RogueDoor.CanEnter(to, null) ||
                 GridManager.Instance.IsBlockedByWall(from, to)) continue;
-            target.TakeDamage(attackDamage);
+            target.ReceiveHit();
             attacked = true;
         }
         // One attack event for the whole surrounding attack, not per victim.

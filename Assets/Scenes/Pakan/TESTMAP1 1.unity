@@ -442,8 +442,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwordMan
   CanKill: 1
-  health: 1
-  SlashDam: 1
+  movementRange: 3
 --- !u!4 &198557787 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9050517457369105933, guid: be41c820db45d634685f4a8df50da3a9, type: 3}
@@ -948,9 +947,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   CanKill: 1
-  health: 1
   Aggression: 1
-  attackDamage: 1
   patrolEnabled: 0
   patrolPoints: []
   onAttack:
@@ -2946,7 +2943,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rogue
   CanKill: 1
-  health: 1
+  movementRange: 3
   LockpickIsAvailable: 1
 --- !u!1001 &1015558421
 PrefabInstance:
@@ -3844,8 +3841,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcherMan
   CanKill: 1
-  health: 1
-  BowShotDam: 1
+  movementRange: 3
+  arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
+  arrowRotationOffset: {x: 0, y: 90, z: 0}
+  arrowHeight: 0.6
   arrowSpeed: 12
 --- !u!1 &1672212157
 GameObject:
@@ -4146,7 +4145,7 @@ Transform:
   m_GameObject: {fileID: 1780173912}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 1.232, y: 0.91499996, z: -1.8280901}
+  m_LocalPosition: {x: 1.217, y: 0.91499996, z: -1.8862741}
   m_LocalScale: {x: 0.026547572, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4165,19 +4164,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArrowTutorial
   CanKill: 1
-  health: 1
   requiredHits: 1
-  targetTile: {fileID: 1843620326}
   onArrowHit:
     m_PersistentCalls:
       m_Calls: []
   onCompleted:
     m_PersistentCalls:
       m_Calls: []
-  textCamera: {fileID: 330585545}
-  textOffset: {x: 0, y: 1.4, z: 0}
-  textRotationOffset: {x: 0, y: 0, z: 0}
-  textSize: 0.06
 --- !u!65 &1780173915
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4193,7 +4186,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -4256,17 +4249,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1780173912}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1843620326 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6434427491577207954, guid: be41c820db45d634685f4a8df50da3a9, type: 3}
-  m_PrefabInstance: {fileID: 808910101}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fae6533672cef1b4c8b645f79631635e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Tile
 --- !u!1 &1855301217
 GameObject:
   m_ObjectHideFlags: 0
