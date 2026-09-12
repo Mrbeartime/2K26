@@ -3,16 +3,29 @@ using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    public static Pathfinder Instance;
+    private static Pathfinder instance;
+    public static Pathfinder Instance
+    {
+        get
+        {
+            if (instance == null) instance = FindAnyObjectByType<Pathfinder>();
+            return instance;
+        }
+    }
 
     private void Awake()
     {
-        Instance = this;
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     public List<Tile> FindPath(
         Tile startTile,
-        Tile targetTile)
+        Tile targetTile, Character character = null)
     {
         if (startTile == null ||
             targetTile == null)
@@ -67,7 +80,7 @@ public class Pathfinder : MonoBehaviour
 
             List<Tile> neighbours =
                 GridManager.Instance
-                    .GetNeighbours(current);
+                    .GetNeighbours(current, character);
 
             foreach (Tile neighbour in neighbours)
             {
@@ -170,4 +183,43 @@ public class Pathfinder : MonoBehaviour
 
         return distanceX + distanceZ;
     }
+
+    //hightlight
+    public List<Tile> GetAllReachableTiles(Tile startTile, Character character = null)
+    {
+        List<Tile> reachable = new List<Tile>();
+        if (startTile == null) return reachable;
+
+        Queue<Tile> queue = new Queue<Tile>();
+        HashSet<Tile> visited = new HashSet<Tile>();
+        Dictionary<Tile, int> distances = new Dictionary<Tile, int>();
+        int range = character != null ? character.MovementRange : int.MaxValue;
+
+        queue.Enqueue(startTile);
+        visited.Add(startTile);
+        distances[startTile] = 0;
+
+        while (queue.Count > 0)
+        {
+            Tile current = queue.Dequeue();
+            if (distances[current] >= range) continue;
+
+            // ใช้ GetNeighbours จาก GridManager ของคุณ (ซึ่งเช็กกำแพงให้อยู่แล้ว!)
+            List<Tile> neighbours = GridManager.Instance.GetNeighbours(current, character);
+
+            foreach (Tile neighbour in neighbours)
+            {
+                if (!visited.Contains(neighbour))
+                {
+                    visited.Add(neighbour);
+                    distances[neighbour] = distances[current] + 1;
+                    queue.Enqueue(neighbour);
+                    reachable.Add(neighbour);
+                }
+            }
+        }
+
+        return reachable;
+    }
 }
+
