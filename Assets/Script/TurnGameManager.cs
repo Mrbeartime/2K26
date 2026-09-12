@@ -28,6 +28,7 @@ public class TurnGameManager : MonoBehaviour
     private bool waitingForMovement;
     private bool enemyPhase;
     private bool gameComplete;
+    private bool playerWon;
     private string gameOverReason;
     private ActionMode actionMode;
     private string status;
@@ -184,6 +185,13 @@ public class TurnGameManager : MonoBehaviour
     {
         if (player != CurrentPlayer || !waitingForMovement) return;
         waitingForMovement = false;
+
+        if (WinBox.IsReachedBy(player))
+        {
+            ShowVictory();
+            return;
+        }
+
         status = "Move complete. Choose Skill, React, or Skip.";
     }
 
@@ -292,8 +300,20 @@ public class TurnGameManager : MonoBehaviour
     private void ShowGameOver(string reason)
     {
         gameComplete = true;
+        playerWon = false;
         gameOverReason = reason;
         status = "GAME OVER: " + reason;
+        PlayerController.Instance?.ClearHighlights();
+    }
+
+    private void ShowVictory()
+    {
+        if (gameComplete) return;
+        gameComplete = true;
+        playerWon = true;
+        gameOverReason = "You reached the exit.";
+        actionMode = ActionMode.None;
+        status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
     }
 
@@ -306,6 +326,14 @@ public class TurnGameManager : MonoBehaviour
     {
         const float width = 570f;
         GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
+        GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
+            "Turns Left: " + Mathf.Max(0, maximumTurns - currentTurn + 1),
+            new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleRight
+            });
         GUI.Label(new Rect(30, 48, 400, 24), "Turn " + currentTurn + " / " + maximumTurns);
         GUI.Label(new Rect(30, 72, 400, 24), enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
         GUI.Label(new Rect(30, 96, 410, 24), status ?? "Preparing...");
@@ -340,7 +368,7 @@ public class TurnGameManager : MonoBehaviour
             alignment = TextAnchor.MiddleCenter,
             fontStyle = FontStyle.Bold
         };
-        GUI.Label(new Rect(x, y + 22f, 360f, 50f), "GAME OVER", titleStyle);
+        GUI.Label(new Rect(x, y + 22f, 360f, 50f), playerWon ? "VICTORY!" : "GAME OVER", titleStyle);
         GUI.Label(new Rect(x + 20f, y + 75f, 320f, 28f), gameOverReason, new GUIStyle(GUI.skin.label)
         {
             alignment = TextAnchor.MiddleCenter

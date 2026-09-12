@@ -1653,7 +1653,6 @@ GameObject:
   - component: {fileID: 566181153}
   - component: {fileID: 566181152}
   - component: {fileID: 566181151}
-  - component: {fileID: 566181156}
   m_Layer: 0
   m_Name: win box
   m_TagString: Untagged
@@ -1668,15 +1667,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 566181150}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 136e625c3bfde924ea9c381f3fbe50d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinBox
-  isOpen: 0
-  onOpened:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!65 &566181152
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1770,22 +1765,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 25.656}
---- !u!114 &566181156
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 566181150}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 722e277dde9c474d8bf5853153d90d8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Chest
-  isOpen: 0
-  onOpened:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &576000137
 GameObject:
   m_ObjectHideFlags: 0
@@ -2945,6 +2924,7 @@ MonoBehaviour:
   CanKill: 1
   movementRange: 3
   LockpickIsAvailable: 1
+  lockpickRange: 1
 --- !u!1 &989973567
 GameObject:
   m_ObjectHideFlags: 0
