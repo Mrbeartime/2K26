@@ -8,8 +8,6 @@ public class PlayerController : MonoBehaviour
 
     private PlayerMove selectedPlayer;
     private Camera mainCamera;
-    private Tile previewMoveTile;
-
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
 
@@ -75,7 +73,7 @@ public class PlayerController : MonoBehaviour
 
             if (turnManager.IsMoveTargeting && selectedPlayer == turnManager.CurrentPlayer && tile.isWalkable)
             {
-                turnManager.PreviewMoveTarget(tile);
+                turnManager.MoveToTarget(tile);
                 return;
             }
 
@@ -193,28 +191,11 @@ public class PlayerController : MonoBehaviour
 
     public void ClearHighlights()
     {
-        previewMoveTile = null;
         foreach (Tile tile in currentHighlightedTiles)
         {
             if (tile != null) tile.ToggleHighlight(false);
         }
         currentHighlightedTiles.Clear();
-    }
-
-    public void ShowMovePreview(Tile tile)
-    {
-        if (tile == null) return;
-        if (previewMoveTile != null && previewMoveTile != tile)
-            previewMoveTile.ToggleHighlight(true);
-        previewMoveTile = tile;
-        previewMoveTile.ToggleMovePreview(true);
-    }
-
-    public void ClearMovePreview()
-    {
-        if (previewMoveTile == null) return;
-        previewMoveTile.ToggleHighlight(true);
-        previewMoveTile = null;
     }
 
     public void ShowRogueSkillRange(Tile origin, int range)

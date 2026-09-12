@@ -12,7 +12,7 @@ public class TurnGameManager : MonoBehaviour
 {
     public static TurnGameManager Instance { get; private set; }
 
-    private enum ActionMode { None, MoveTargeting, MoveConfirmation, SkillTargeting }
+    private enum ActionMode { None, MoveTargeting, SkillTargeting }
 
     [Header("Turn Settings")]
     [SerializeField, Min(1)] private int maximumTurns = 5;
@@ -22,7 +22,6 @@ public class TurnGameManager : MonoBehaviour
     private readonly HashSet<PlayerMove> finishedPlayers = new();
     private readonly HashSet<PlayerMove> movedPlayers = new();
     private PlayerMove currentPlayer;
-    private Tile pendingMoveTile;
     private int currentTurn = 1;
     private bool currentPlayerSelected;
     private bool hasMoved;
@@ -35,7 +34,6 @@ public class TurnGameManager : MonoBehaviour
 
     public PlayerMove CurrentPlayer => currentPlayer;
     public bool IsMoveTargeting => actionMode == ActionMode.MoveTargeting;
-    public bool IsMoveConfirmation => actionMode == ActionMode.MoveConfirmation;
     public bool IsSkillTargeting => actionMode == ActionMode.SkillTargeting;
     private bool CanCurrentPlayerReact => !gameComplete && !enemyPhase && CurrentPlayer != null &&
         currentPlayerSelected && !waitingForMovement &&
@@ -43,8 +41,26 @@ public class TurnGameManager : MonoBehaviour
 
     public bool IsPointerOverTurnUI(Vector2 screenPosition)
     {
-        return new Rect(16f, 16f, 570f, 180f)
-            .Contains(new Vector2(screenPosition.x, Screen.height - screenPosition.y));
+        Vector2 guiPosition = new(screenPosition.x, Screen.height - screenPosition.y);
+
+        if (gameComplete)
+        {
+            float x = (Screen.width - 360f) * 0.5f;
+            float y = (Screen.height - 180f) * 0.5f;
+            return new Rect(x + 105f, y + 120f, 150f, 36f).Contains(guiPosition);
+        }
+
+        // The panel background and labels are intentionally click-through so they
+        // never block map tiles. Only actionable buttons capture a map click.
+        if (IsMoveTargeting || IsSkillTargeting)
+            return new Rect(30f, 126f, 180f, 28f).Contains(guiPosition);
+
+        bool canAct = !enemyPhase && CurrentPlayer != null && currentPlayerSelected &&
+            !waitingForMovement && actionMode == ActionMode.None;
+        if (canAct && !hasMoved && new Rect(30f, 126f, 120f, 28f).Contains(guiPosition)) return true;
+        if (canAct && new Rect(160f, 126f, 120f, 28f).Contains(guiPosition)) return true;
+        if (CanCurrentPlayerReact && new Rect(290f, 126f, 120f, 28f).Contains(guiPosition)) return true;
+        return canAct && new Rect(420f, 126f, 120f, 28f).Contains(guiPosition);
     }
 
     private void Awake()
@@ -97,22 +113,9 @@ public class TurnGameManager : MonoBehaviour
         status = "Move: click a highlighted tile.";
     }
 
-    public void PreviewMoveTarget(Tile target)
+    public void MoveToTarget(Tile target)
     {
         if (!IsMoveTargeting || CurrentPlayer == null || target == null || !target.isWalkable) return;
-        pendingMoveTile = target;
-        actionMode = ActionMode.MoveConfirmation;
-        PlayerController.Instance?.ShowMovePreview(target);
-        status = "Confirm move to " + target.name + ".";
-    }
-
-    public void ConfirmMove()
-    {
-        if (!IsMoveConfirmation || CurrentPlayer == null || pendingMoveTile == null) return;
-        Tile target = pendingMoveTile;
-        pendingMoveTile = null;
-        PlayerController.Instance?.ClearMovePreview();
-        actionMode = ActionMode.MoveTargeting;
         if (!CurrentPlayer.MoveToTile(target))
         {
             status = "Cannot move there. Choose another highlighted tile.";
@@ -124,15 +127,6 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         PlayerController.Instance?.ClearHighlights();
         status = CurrentPlayer.name + " is moving...";
-    }
-
-    public void CancelMove()
-    {
-        if (!IsMoveConfirmation) return;
-        pendingMoveTile = null;
-        PlayerController.Instance?.ClearMovePreview();
-        actionMode = ActionMode.MoveTargeting;
-        status = "Move cancelled. Choose a highlighted tile.";
     }
 
     public void CancelMoveTargeting()
@@ -239,7 +233,6 @@ public class TurnGameManager : MonoBehaviour
     private void EndCurrentPlayerAction(string actionName)
     {
         actionMode = ActionMode.None;
-        pendingMoveTile = null;
         waitingForMovement = false;
         PlayerController.Instance?.ClearHighlights();
         finishedPlayers.Add(CurrentPlayer);
@@ -317,12 +310,7 @@ public class TurnGameManager : MonoBehaviour
         GUI.Label(new Rect(30, 72, 400, 24), enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
         GUI.Label(new Rect(30, 96, 410, 24), status ?? "Preparing...");
 
-        if (IsMoveConfirmation)
-        {
-            if (GUI.Button(new Rect(30, 126, 180, 28), "Confirm Move")) ConfirmMove();
-            if (GUI.Button(new Rect(220, 126, 180, 28), "Cancel")) CancelMove();
-        }
-        else if (IsMoveTargeting)
+        if (IsMoveTargeting)
         {
             if (GUI.Button(new Rect(30, 126, 180, 28), "Cancel Move")) CancelMoveTargeting();
         }
