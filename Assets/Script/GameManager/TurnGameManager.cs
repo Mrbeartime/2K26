@@ -18,6 +18,9 @@ public class TurnGameManager : MonoBehaviour
     [SerializeField, Min(1)] private int maximumTurns = 5;
     [SerializeField, Min(0f)] private float enemyPhaseDelay = 0.35f;
 
+    [Header("Debug UI")]
+    [SerializeField] private bool showTestUI = true;
+
     private readonly List<PlayerMove> players = new();
     private readonly HashSet<PlayerMove> finishedPlayers = new();
     private readonly HashSet<PlayerMove> movedPlayers = new();
@@ -42,6 +45,7 @@ public class TurnGameManager : MonoBehaviour
 
     public bool IsPointerOverTurnUI(Vector2 screenPosition)
     {
+        if (!showTestUI) return false;
         Vector2 guiPosition = new(screenPosition.x, Screen.height - screenPosition.y);
 
         if (gameComplete)
@@ -58,10 +62,12 @@ public class TurnGameManager : MonoBehaviour
 
         bool canAct = !enemyPhase && CurrentPlayer != null && currentPlayerSelected &&
             !waitingForMovement && actionMode == ActionMode.None;
-        if (canAct && !hasMoved && new Rect(30f, 126f, 120f, 28f).Contains(guiPosition)) return true;
-        if (canAct && new Rect(160f, 126f, 120f, 28f).Contains(guiPosition)) return true;
-        if (CanCurrentPlayerReact && new Rect(290f, 126f, 120f, 28f).Contains(guiPosition)) return true;
-        return canAct && new Rect(420f, 126f, 120f, 28f).Contains(guiPosition);
+        if (canAct && !hasMoved && new Rect(30f, 126f, 100f, 28f).Contains(guiPosition)) return true;
+        if (canAct && new Rect(140f, 126f, 100f, 28f).Contains(guiPosition)) return true;
+        if (CanCurrentPlayerReact && new Rect(250f, 126f, 100f, 28f).Contains(guiPosition)) return true;
+        if (canAct && new Rect(360f, 126f, 100f, 28f).Contains(guiPosition)) return true;
+        return !gameComplete && !enemyPhase && !waitingForMovement && actionMode == ActionMode.None &&
+            new Rect(470f, 126f, 100f, 28f).Contains(guiPosition);
     }
 
     private void Awake()
@@ -153,7 +159,7 @@ public class TurnGameManager : MonoBehaviour
         if (!CanCurrentPlayerReact) return;
         Character character = CurrentPlayer.GetComponent<Character>();
         if (!character.React(CurrentPlayer.GetCurrentTile())) return;
-        EndCurrentPlayerAction("React: door switch activated");
+        EndCurrentPlayerAction("React: door switch toggled");
     }
 
     public void ChooseSkip()
@@ -161,6 +167,17 @@ public class TurnGameManager : MonoBehaviour
         if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected ||
             waitingForMovement || actionMode != ActionMode.None) return;
         EndCurrentPlayerAction("Skip");
+    }
+
+    /// <summary>Immediately starts the enemy phase, even if players have not acted.</summary>
+    public void ChooseEndTurn()
+    {
+        if (gameComplete || enemyPhase || waitingForMovement || actionMode != ActionMode.None) return;
+        currentPlayer = null;
+        currentPlayerSelected = false;
+        hasMoved = false;
+        PlayerController.Instance?.ClearHighlights();
+        StartEnemyPhase();
     }
 
     public void CancelSkill()
@@ -193,6 +210,32 @@ public class TurnGameManager : MonoBehaviour
         }
 
         status = "Move complete. Choose Skill, React, or Skip.";
+    }
+
+    public void NotifyPlayerDefeated(PlayerMove player)
+    {
+        if (player == null) return;
+
+        players.Remove(player);
+        finishedPlayers.Remove(player);
+        movedPlayers.Remove(player);
+
+        if (player != CurrentPlayer) return;
+
+        currentPlayer = null;
+        currentPlayerSelected = false;
+        hasMoved = false;
+        waitingForMovement = false;
+        actionMode = ActionMode.None;
+        PlayerController.Instance?.ClearHighlights();
+
+        if (players.Count == 0)
+        {
+            ShowGameOver("All Players were defeated.");
+            return;
+        }
+
+        status = player.name + " was defeated. Select another Player.";
     }
 
     public void UseSkillOn(Tile target)
@@ -258,6 +301,7 @@ public class TurnGameManager : MonoBehaviour
 
     private void StartEnemyPhase()
     {
+        if (gameComplete || enemyPhase) return;
         enemyPhase = true;
         status = "Enemy Phase...";
         StartCoroutine(RunEnemyPhase());
@@ -324,6 +368,7 @@ public class TurnGameManager : MonoBehaviour
 
     private void OnGUI()
     {
+        if (!showTestUI) return;
         const float width = 570f;
         GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
         GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
@@ -349,12 +394,15 @@ public class TurnGameManager : MonoBehaviour
         else
         {
             GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !hasMoved && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(30, 126, 120, 28), "Move")) ChooseMove();
+            if (GUI.Button(new Rect(30, 126, 100, 28), "Move")) ChooseMove();
 
             GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(160, 126, 120, 28), "Skill")) ChooseSkill();
-            if (CanCurrentPlayerReact && GUI.Button(new Rect(290, 126, 120, 28), "React")) ChooseReact();
-            if (GUI.Button(new Rect(420, 126, 120, 28), "Skip")) ChooseSkip();
+            if (GUI.Button(new Rect(140, 126, 100, 28), "Skill")) ChooseSkill();
+            if (CanCurrentPlayerReact && GUI.Button(new Rect(250, 126, 100, 28), "React")) ChooseReact();
+            if (GUI.Button(new Rect(360, 126, 100, 28), "Skip")) ChooseSkip();
+
+            GUI.enabled = !gameComplete && !enemyPhase && !waitingForMovement && actionMode == ActionMode.None;
+            if (GUI.Button(new Rect(470, 126, 100, 28), "End Turn")) ChooseEndTurn();
         }
         GUI.enabled = true;
 

@@ -16,6 +16,8 @@ public class Entity : MonoBehaviour
         IsDead = true;
         if (GridManager.Instance != null)
             GridManager.Instance.GetTile(CurrentLocation)?.ClearOccupant(gameObject);
+        if (TryGetComponent(out PlayerMove player))
+            TurnGameManager.Instance?.NotifyPlayerDefeated(player);
         Destroy(gameObject);
     }
 }
