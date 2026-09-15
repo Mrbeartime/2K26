@@ -147,6 +147,8 @@ public class GridManager : MonoBehaviour
     }
     public bool IsArrowWall(Collider collider)
     {
+        DoorController targetDoor = collider.GetComponentInParent<DoorController>();
+        if (targetDoor != null) return !targetDoor.IsOpen;
         RogueDoor door = collider.GetComponentInParent<RogueDoor>();
         if (door != null) return !door.IsOpen;
         return !collider.isTrigger && collider.GetComponentInParent<Entity>() == null &&

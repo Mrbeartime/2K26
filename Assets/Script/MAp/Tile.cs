@@ -19,6 +19,15 @@ public class Tile : MonoBehaviour
         if (highlightObject != null)
         {
             highlightObject.SetActive(show);
+            if (show) ClearHighlightColorOverride();
+        }
+    }
+
+    private void ClearHighlightColorOverride()
+    {
+        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.SetPropertyBlock(null);
         }
     }
     // =========================

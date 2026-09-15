@@ -26,6 +26,7 @@ public class RogueDoor : MonoBehaviour
     }
     public static bool CanEnter(Tile tile, Character character, bool open = false)
     {
+        if (!DoorController.CanEnter(tile)) return false;
         foreach (RogueDoor door in FindObjectsByType<RogueDoor>())
         {
             if (door.isOpen || GridManager.Instance.WorldToGrid(door.transform.position) != tile.gridPosition) continue;

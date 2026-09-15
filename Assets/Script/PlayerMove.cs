@@ -64,14 +64,14 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    public void MoveToTile(Tile targetTile)
+    public bool MoveToTile(Tile targetTile)
     {
         if (Time.timeScale == 0 || isMoving)
-            return;
+            return false;
         if (GridManager.Instance == null || Pathfinder.Instance == null)
         {
             Debug.LogWarning("เดินไม่ได้: ต้องมี GridManager และ Pathfinder ในฉาก", this);
-            return;
+            return false;
         }
 
         if (currentTile == null)
@@ -80,10 +80,10 @@ public class PlayerMove : MonoBehaviour
         }
 
         if (currentTile == null)
-            return;
+            return false;
 
         if (targetTile == null)
-            return;
+            return false;
 
         // =========================
         // ตรวจว่าปลายทางมีคนอยู่ไหม
@@ -97,7 +97,7 @@ public class PlayerMove : MonoBehaviour
                 " อยู่แล้ว!"
             );
 
-            return;
+            return false;
         }
 
         // =========================
@@ -118,7 +118,7 @@ public class PlayerMove : MonoBehaviour
                 targetTile.name
             );
 
-            return;
+            return false;
         }
 
         // The path includes the starting tile; only transitions cost movement.
@@ -126,7 +126,7 @@ public class PlayerMove : MonoBehaviour
         if (character == null || currentPath.Count - 1 > character.MovementRange)
         {
             currentPath = null;
-            return;
+            return false;
         }
 
         pathIndex = 0;
@@ -153,11 +153,12 @@ public class PlayerMove : MonoBehaviour
                 );
 
                 currentPath = null;
-                return;
+                return false;
             }
         }
 
         isMoving = true;
+        return true;
     }
 
     private void MoveAlongPath()
@@ -170,14 +171,14 @@ public class PlayerMove : MonoBehaviour
 
         if (pathIndex >= currentPath.Count)
         {
-            isMoving = false;
+            FinishMove();
             return;
         }
 
         Tile nextTile =
             currentPath[pathIndex];
 
-        if (nextTile.IsOccupied || !RogueDoor.CanEnter(nextTile, GetComponent<Character>(), true)) { isMoving = false; return; }
+        if (nextTile.IsOccupied || !RogueDoor.CanEnter(nextTile, GetComponent<Character>(), true)) { FinishMove(); return; }
         Vector3 targetPosition =
             nextTile.transform.position;
 
@@ -220,7 +221,7 @@ public class PlayerMove : MonoBehaviour
             // เดินถึงปลายทางแล้ว
             if (pathIndex >= currentPath.Count)
             {
-                isMoving = false;
+                FinishMove();
             }
         }
     }
@@ -233,5 +234,12 @@ public class PlayerMove : MonoBehaviour
     public bool IsMoving()
     {
         return isMoving;
+    }
+
+    private void FinishMove()
+    {
+        isMoving = false;
+        currentPath = null;
+        TurnGameManager.Instance?.NotifyMoveFinished(this);
     }
 }
