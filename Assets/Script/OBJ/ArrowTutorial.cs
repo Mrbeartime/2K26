@@ -8,6 +8,18 @@ public class ArrowTutorial : Entity
     [SerializeField, Min(1)] private int requiredHits = 1;
     public UnityEvent onArrowHit = new UnityEvent();
     public UnityEvent onCompleted = new UnityEvent();
+    [SerializeField] private DoorController door;
+    private string doorRequestId;
+    private bool openedByArcher;
+    private void Awake() => doorRequestId = "ArrowTutorial:" + System.Guid.NewGuid().ToString("N");
+
+    public void ReceiveArrowFrom(Character shooter)
+    {
+        if (!(shooter is ArcherMan) || Time.timeScale == 0) return;
+        ReceiveArrowHit();
+        openedByArcher = true;
+        if (door != null) door.SetOpen(doorRequestId, true);
+    }
     public int HitCount { get; private set; }
     public bool IsCompleted { get; private set; }
 
@@ -66,8 +78,18 @@ public class ArrowTutorial : Entity
     {
         HitCount = 0;
         IsCompleted = false;
+        openedByArcher = false;
+        if (door != null) door.SetOpen(doorRequestId, false);
 
     }
 
+    private void OnEnable()
+    {
+        if (openedByArcher && door != null) door.SetOpen(doorRequestId, true);
+    }
+    private void OnDisable()
+    {
+        if (door != null) door.SetOpen(doorRequestId, false);
+    }
 }
 
