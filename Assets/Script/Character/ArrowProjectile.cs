@@ -50,7 +50,8 @@ public class ArrowProjectile : MonoBehaviour
         }
         Entity entity = collider.GetComponentInParent<Entity>();
         if (entity == null || !entity.isActiveAndEnabled || entity.IsDead) return false;
-        entity.ReceiveArrowHit();
+        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner);
+        else entity.ReceiveArrowHit();
         Finish();
         return true;
     }
