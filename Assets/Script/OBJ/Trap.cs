@@ -48,10 +48,14 @@ public class Trap : MonoBehaviour
             " Game Over"
         );
 
-        // เอา Player ออกจาก Tile ก่อน
-        tile.ClearOccupant(target);
-
-        // ทำลาย Player
-        Destroy(target);
+        // Use the normal death route so the Turn Manager can release a player
+        // who dies while moving and allow another player to be selected.
+        if (target.TryGetComponent(out Character character))
+            character.ReceiveHit();
+        else
+        {
+            tile.ClearOccupant(target);
+            Destroy(target);
+        }
     }
 }
