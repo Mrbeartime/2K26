@@ -13,7 +13,6 @@ public class PlayerMove : MonoBehaviour
 
     private bool isMoving;
 
-    private void Awake() => CharacterSetup.Ensure(this);
     private void Start()
     {
         FindStartingTile();
