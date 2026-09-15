@@ -30,6 +30,7 @@ public class TurnGameManager : MonoBehaviour
     private bool hasMoved;
     private bool waitingForMovement;
     private bool enemyPhase;
+    private bool trapPhase;
     private bool gameComplete;
     private bool playerWon;
     private string gameOverReason;
@@ -37,6 +38,7 @@ public class TurnGameManager : MonoBehaviour
     private string status;
 
     public PlayerMove CurrentPlayer => currentPlayer;
+    public bool IsGameComplete => gameComplete;
     public bool IsMoveTargeting => actionMode == ActionMode.MoveTargeting;
     public bool IsSkillTargeting => actionMode == ActionMode.SkillTargeting;
     private bool CanCurrentPlayerReact => !gameComplete && !enemyPhase && CurrentPlayer != null &&
@@ -220,6 +222,17 @@ public class TurnGameManager : MonoBehaviour
         finishedPlayers.Remove(player);
         movedPlayers.Remove(player);
 
+        // Traps/enemies can kill the last player when no character is selected.
+        if (players.Count == 0)
+        {
+            currentPlayer = null;
+            currentPlayerSelected = false;
+            waitingForMovement = false;
+            actionMode = ActionMode.None;
+            ShowGameOver("All Players were defeated.");
+            return;
+        }
+
         if (player != CurrentPlayer) return;
 
         currentPlayer = null;
@@ -228,12 +241,6 @@ public class TurnGameManager : MonoBehaviour
         waitingForMovement = false;
         actionMode = ActionMode.None;
         PlayerController.Instance?.ClearHighlights();
-
-        if (players.Count == 0)
-        {
-            ShowGameOver("All Players were defeated.");
-            return;
-        }
 
         status = player.name + " was defeated. Select another Player.";
     }
@@ -310,8 +317,23 @@ public class TurnGameManager : MonoBehaviour
     private System.Collections.IEnumerator RunEnemyPhase()
     {
         yield return new WaitForSeconds(enemyPhaseDelay);
+        if (gameComplete) yield break;
         Enemy.RunEnemyPhase();
         yield return null;
+        if (gameComplete) yield break;
+
+        trapPhase = true;
+        status = "Trap Phase: resolving turn " + currentTurn + "...";
+        // Resolve the current round number, not the next one. Waiting on each
+        // trap keeps input locked until spikes retract and arrows finish flying.
+        foreach (TurnTrap trap in FindObjectsByType<TurnTrap>())
+        {
+            if (gameComplete) yield break;
+            if (trap != null && trap.isActiveAndEnabled && trap.gameObject.scene == gameObject.scene)
+                yield return trap.ResolveTurn(currentTurn);
+        }
+        if (gameComplete) yield break;
+        trapPhase = false;
         enemyPhase = false;
         currentTurn++;
         if (currentTurn > maximumTurns)
@@ -343,11 +365,18 @@ public class TurnGameManager : MonoBehaviour
 
     private void ShowGameOver(string reason)
     {
+        if (gameComplete) return;
         gameComplete = true;
+        actionMode = ActionMode.None;
         playerWon = false;
         gameOverReason = reason;
         status = "GAME OVER: " + reason;
         PlayerController.Instance?.ClearHighlights();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void ShowVictory()
@@ -380,7 +409,7 @@ public class TurnGameManager : MonoBehaviour
                 alignment = TextAnchor.MiddleRight
             });
         GUI.Label(new Rect(30, 48, 400, 24), "Turn " + currentTurn + " / " + maximumTurns);
-        GUI.Label(new Rect(30, 72, 400, 24), enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
+        GUI.Label(new Rect(30, 72, 400, 24), trapPhase ? "Active: Traps" : enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
         GUI.Label(new Rect(30, 96, 410, 24), status ?? "Preparing...");
 
         if (IsMoveTargeting)
