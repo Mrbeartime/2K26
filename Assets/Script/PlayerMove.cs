@@ -215,7 +215,16 @@ public class PlayerMove : MonoBehaviour
                 gameObject
             );
 
-            GetComponent<Character>()?.Interact(currentTile);
+            // A raised spike can kill the character as soon as this tile is occupied.
+            // Do not continue the path or trigger an exit/interaction after that hit.
+            Character character = GetComponent<Character>();
+            if (character != null && character.IsDead)
+            {
+                isMoving = false;
+                currentPath = null;
+                return;
+            }
+            character?.Interact(currentTile);
             pathIndex++;
 
             // เดินถึงปลายทางแล้ว

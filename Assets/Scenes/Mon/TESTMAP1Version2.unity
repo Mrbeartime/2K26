@@ -5113,7 +5113,6 @@ MonoBehaviour:
   intervalTurns: 2
   targetTile: {fileID: 0}
   basePlate: {fileID: 7001000113}
-  activeSeconds: 0.45
 --- !u!1 &7001000110
 GameObject:
   m_ObjectHideFlags: 0

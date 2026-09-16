@@ -7,11 +7,12 @@ public class TurnSpikeTrap : TurnTrap
     [Tooltip("Optional. If empty, use the grid tile beneath this object.")]
     [SerializeField] private Tile targetTile;
     [SerializeField] private Renderer basePlate;
-    [SerializeField, Min(0.05f)] private float activeSeconds = 0.45f;
     private Transform spikes;
     private Mesh spikeMesh;
+    private Tile watchedTile;
 
     public override int IntervalTurns => Mathf.Max(1, intervalTurns);
+    public bool IsRaised { get; private set; }
 
     private void Awake()
     {
@@ -36,8 +37,20 @@ public class TurnSpikeTrap : TurnTrap
         SetRaised(false);
     }
 
+    private void OnEnable()
+    {
+        SpikeTrapEvents.LowerRequested += OnLowerRequested;
+        if (watchedTile != null)
+        {
+            watchedTile.OccupantChanged += DamageOccupant;
+            DamageOccupant(watchedTile.Occupant);
+        }
+    }
+
     protected override IEnumerator Activate()
     {
+        // A later turn must not retract spikes that are already raised.
+        if (IsRaised) yield break;
         if (GridManager.Instance == null) yield break;
         Tile tile = targetTile != null ? targetTile :
             GridManager.Instance.GetTile(GridManager.Instance.WorldToGrid(transform.position));
@@ -47,24 +60,43 @@ public class TurnSpikeTrap : TurnTrap
             yield break;
         }
 
-        SetRaised(true);
-        try
+        if (watchedTile != tile)
         {
-            // Grid occupancy is authoritative, even for trigger/child colliders.
-            if (tile.Occupant != null && tile.Occupant.TryGetComponent(out Character player))
-                player.ReceiveHit();
-            yield return new WaitForSeconds(Mathf.Max(0.05f, activeSeconds));
+            if (watchedTile != null) watchedTile.OccupantChanged -= DamageOccupant;
+            watchedTile = tile;
+            watchedTile.OccupantChanged += DamageOccupant;
         }
-        finally { SetRaised(false); }
+
+        SetRaised(true);
+        DamageOccupant(tile.Occupant);
+        // Finish resolving the turn immediately; the raised hazard persists.
+        yield break;
+    }
+
+    private void DamageOccupant(GameObject occupant)
+    {
+        if (!isActiveAndEnabled || !IsRaised || occupant == null) return;
+        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) return;
+        if (occupant.TryGetComponent(out Character player)) player.ReceiveHit();
+    }
+
+    private void OnLowerRequested(TurnSpikeTrap trap)
+    {
+        if (trap == this) SetRaised(false);
     }
 
     private void SetRaised(bool raised)
     {
+        IsRaised = raised;
         if (spikes != null) spikes.localScale = new Vector3(1, raised ? 1 : 0.08f, 1);
         TurnTrapVisuals.Tint(basePlate, raised ? Color.red : new Color(0.75f, 0.28f, 0.06f));
     }
 
-    private void OnDisable() => SetRaised(false);
+    private void OnDisable()
+    {
+        SpikeTrapEvents.LowerRequested -= OnLowerRequested;
+        if (watchedTile != null) watchedTile.OccupantChanged -= DamageOccupant;
+    }
     private void OnDestroy() { if (spikeMesh != null) Destroy(spikeMesh); }
 
     private void OnDrawGizmos()

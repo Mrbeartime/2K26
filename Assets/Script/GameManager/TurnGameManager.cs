@@ -325,7 +325,8 @@ public class TurnGameManager : MonoBehaviour
         trapPhase = true;
         status = "Trap Phase: resolving turn " + currentTurn + "...";
         // Resolve the current round number, not the next one. Waiting on each
-        // trap keeps input locked until spikes retract and arrows finish flying.
+        // trap keeps input locked until activation completes and arrows finish flying.
+        // Raised spikes persist without blocking the next player phase.
         foreach (TurnTrap trap in FindObjectsByType<TurnTrap>())
         {
             if (gameComplete) yield break;
