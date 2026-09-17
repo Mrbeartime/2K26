@@ -107,8 +107,7 @@ public class GridManager : MonoBehaviour
 
     public List<Tile> GetNeighbours(Tile tile, Character character = null)
     {
-        List<Tile> neighbours =
-            new List<Tile>();
+        List<Tile> neighbours = new List<Tile>();
 
         Vector2Int[] directions =
         {
@@ -129,16 +128,58 @@ public class GridManager : MonoBehaviour
             if (neighbour == null)
                 continue;
 
-            if (!RogueDoor.CanEnter(neighbour, character)) continue;
-            if (!neighbour.isWalkable)
+            if (!RogueDoor.CanEnter(neighbour, character))
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : BLOCKED BY ROGUE DOOR"
+                );
+
                 continue;
+            }
+
+            if (!neighbour.isWalkable)
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : NOT WALKABLE"
+                );
+
+                continue;
+            }
 
             if (neighbour.IsOccupied)
-                continue;
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : OCCUPIED BY " +
+                    neighbour.Occupant.name
+                );
 
-            // ⭐ ตรวจว่ามีกำแพงขวางระหว่างสอง Tile หรือไม่
-            if (IsBlockedByWall(tile, neighbour, character))
                 continue;
+            }
+
+            if (IsBlockedByWall(tile, neighbour, character))
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : BLOCKED BY WALL"
+                );
+
+                continue;
+            }
 
             neighbours.Add(neighbour);
         }
