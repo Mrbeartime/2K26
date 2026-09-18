@@ -1988,7 +1988,7 @@ GameObject:
   - component: {fileID: 1188336025}
   - component: {fileID: 1188336024}
   m_Layer: 0
-  m_Name: Sw (1)
+  m_Name: AR
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2003,7 +2003,7 @@ Transform:
   m_GameObject: {fileID: 1188336022}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.60572, y: 0.471, z: -0.52}
+  m_LocalPosition: {x: -1.5, y: 0.471, z: 0.535}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2904,7 +2904,7 @@ Transform:
   m_GameObject: {fileID: 1726576319}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.566, y: 0.471, z: 0.77}
+  m_LocalPosition: {x: -3.565, y: 0.471, z: -0.447}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3167,7 +3167,7 @@ GameObject:
   - component: {fileID: 1920140597}
   - component: {fileID: 1920140596}
   - component: {fileID: 1920140595}
-  - component: {fileID: 1920140594}
+  - component: {fileID: 1920140598}
   m_Layer: 6
   m_Name: Wall (2)
   m_TagString: Untagged
@@ -3183,29 +3183,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920140592}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.8224463, y: -0.21109003, z: -0.48491}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -1.3357202, y: -0.21109, z: 0.028363824}
   m_LocalScale: {x: 0.026547562, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 579688268}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1920140594
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1920140592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acab0549f5de4c94bcf664bdef72e342, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RogueDoor
-  isOpen: 0
-  onOpened:
-    m_PersistentCalls:
-      m_Calls: []
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!65 &1920140595
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3284,6 +3268,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1920140592}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1920140598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920140592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acab0549f5de4c94bcf664bdef72e342, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RogueDoor
+  isOpen: 0
+  onOpened:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1954371926
 PrefabInstance:
   m_ObjectHideFlags: 0

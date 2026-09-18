@@ -1,20 +1,25 @@
 using UnityEngine;
 using UnityEngine.Events;
+
 public class RogueDoor : MonoBehaviour
 {
     [SerializeField] private bool isOpen;
     public bool IsOpen => isOpen;
     public UnityEvent onOpened = new UnityEvent();
+
     private void Awake()
     {
         if (isOpen) HideDoor();
     }
+
     private void HideDoor()
     {
         foreach (Collider part in GetComponentsInChildren<Collider>()) part.enabled = false;
         foreach (Renderer part in GetComponentsInChildren<Renderer>()) part.enabled = false;
     }
+
     public bool CheckCharacter(Character character) => character is Rogue rogue && rogue.LockpickIsAvailable;
+
     public bool UnlockDoor(Rogue rogue)
     {
         if (isOpen) return true;
@@ -24,16 +29,13 @@ public class RogueDoor : MonoBehaviour
         onOpened.Invoke();
         return true;
     }
+
     public static bool CanEnter(Tile tile, Character character)
     {
         if (!DoorController.CanEnter(tile)) return false;
-        foreach (RogueDoor door in FindObjectsByType<RogueDoor>())
-        {
-            if (door.isOpen || GridManager.Instance.WorldToGrid(door.transform.position) != tile.gridPosition) continue;
-            // A closed door blocks every profession. Only the skill unlocks it.
-            return false;
-        }
+
+        // ยกเลิกการบล็อก Tile แบบเหมารวม (เทียบ Grid Position)
+        // ปล่อยให้ Raycast ใน IsBlockedByWall ของ GridManager จัดการเรื่องกำแพง/ประตูแทน
         return true;
     }
 }
-
