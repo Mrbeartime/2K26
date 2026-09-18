@@ -178,7 +178,7 @@ public class GridManager : MonoBehaviour
         foreach (RaycastHit hit in Physics.RaycastAll(start, direction, distance, wallLayer, QueryTriggerInteraction.Ignore))
         {
             RogueDoor door = hit.collider.GetComponentInParent<RogueDoor>();
-            if (door != null && (door.IsOpen || door.CheckCharacter(character))) continue;
+            if (door != null && door.IsOpen) continue;
             // Entity colliders are arrow targets, not walls. Doors still block.
             if (forArrow && door == null && hit.collider.GetComponentInParent<Entity>() != null) continue;
             blocked = true;

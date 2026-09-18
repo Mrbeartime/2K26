@@ -24,14 +24,14 @@ public class RogueDoor : MonoBehaviour
         onOpened.Invoke();
         return true;
     }
-    public static bool CanEnter(Tile tile, Character character, bool open = false)
+    public static bool CanEnter(Tile tile, Character character)
     {
         if (!DoorController.CanEnter(tile)) return false;
         foreach (RogueDoor door in FindObjectsByType<RogueDoor>())
         {
             if (door.isOpen || GridManager.Instance.WorldToGrid(door.transform.position) != tile.gridPosition) continue;
-            if (!door.CheckCharacter(character)) return false;
-            if (open && !door.UnlockDoor(character as Rogue)) return false;
+            // A closed door blocks every profession. Only the skill unlocks it.
+            return false;
         }
         return true;
     }
