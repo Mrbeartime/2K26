@@ -8,8 +8,10 @@ public class DoorController : MonoBehaviour
 
     private Vector3 closedPosition;
     private readonly HashSet<string> openRequests = new();
-    public bool IsOpen => openRequests.Count > 0 &&
-        Vector3.Distance(transform.localPosition, closedPosition + openOffset) < 0.01f;
+
+    // ให้สถานะประตูเป็น "เปิด" ทันทีที่มีการรับคำสั่ง ไม่ต้องรอโมเดลเลื่อนจนจบ
+    public bool IsOpen => openRequests.Count > 0;
+
     public Vector3 ClosedWorldPosition => transform.parent != null
         ? transform.parent.TransformPoint(closedPosition) : closedPosition;
 
@@ -38,9 +40,7 @@ public class DoorController : MonoBehaviour
 
     public static bool CanEnter(Tile tile)
     {
-        foreach (DoorController door in FindObjectsByType<DoorController>())
-            if (!door.IsOpen && GridManager.Instance.WorldToGrid(door.ClosedWorldPosition) == tile.gridPosition)
-                return false;
+        // ยกเลิกการบล็อก Tile แบบเหมารวม เพื่อปล่อยให้ Raycast ใน GridManager เป็นตัวเช็กการชนแทน
         return true;
     }
 }
