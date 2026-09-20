@@ -8,21 +8,37 @@ public class ArrowTutorial : Entity
     [SerializeField, Min(1)] private int requiredHits = 1;
     public UnityEvent onArrowHit = new UnityEvent();
     public UnityEvent onCompleted = new UnityEvent();
-    [SerializeField] private DoorController door;
+
+    // เปลี่ยนจาก door ตัวเดียวเป็น Array เพื่อให้คุมประตูได้หลายบาน
+    [SerializeField] private DoorController[] doors;
+
     private string doorRequestId;
     private bool openedByArcher;
+
     private void Awake() => doorRequestId = "ArrowTutorial:" + System.Guid.NewGuid().ToString("N");
+
+    // ฟังก์ชันเสริมสำหรับสั่งเปิด-ปิดประตูทุกบานในลิสต์
+    private void SetAllDoors(bool isOpen)
+    {
+        if (doors == null) return;
+        foreach (DoorController d in doors)
+        {
+            if (d != null) d.SetOpen(doorRequestId, isOpen);
+        }
+    }
 
     public void ReceiveArrowFrom(Character shooter)
     {
         if (!(shooter is ArcherMan) || Time.timeScale == 0) return;
         ReceiveArrowHit();
         openedByArcher = true;
-        if (door != null) door.SetOpen(doorRequestId, true);
+
+        // สั่งเปิดประตูทุกบาน
+        SetAllDoors(true);
     }
+
     public int HitCount { get; private set; }
     public bool IsCompleted { get; private set; }
-
 
     private void Start()
     {
@@ -62,6 +78,7 @@ public class ArrowTutorial : Entity
     }
 
     public override void ReceiveHit() { }
+
     public override void ReceiveArrowHit()
     {
         if (Time.timeScale == 0) return;
@@ -79,17 +96,18 @@ public class ArrowTutorial : Entity
         HitCount = 0;
         IsCompleted = false;
         openedByArcher = false;
-        if (door != null) door.SetOpen(doorRequestId, false);
 
+        // สั่งปิดประตูทุกบาน
+        SetAllDoors(false);
     }
 
     private void OnEnable()
     {
-        if (openedByArcher && door != null) door.SetOpen(doorRequestId, true);
+        if (openedByArcher) SetAllDoors(true);
     }
+
     private void OnDisable()
     {
-        if (door != null) door.SetOpen(doorRequestId, false);
+        SetAllDoors(false);
     }
 }
-

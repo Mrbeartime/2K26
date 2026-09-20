@@ -4885,7 +4885,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 492040d33eb1bde4a8a2ef8af0a8c9f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorSwitch
-  door: {fileID: 1120113301}
+  doors:
+  - {fileID: 1120113301}
+  - {fileID: 0}
 --- !u!1001 &1694356304
 PrefabInstance:
   m_ObjectHideFlags: 0
