@@ -107,8 +107,7 @@ public class GridManager : MonoBehaviour
 
     public List<Tile> GetNeighbours(Tile tile, Character character = null)
     {
-        List<Tile> neighbours =
-            new List<Tile>();
+        List<Tile> neighbours = new List<Tile>();
 
         Vector2Int[] directions =
         {
@@ -129,16 +128,58 @@ public class GridManager : MonoBehaviour
             if (neighbour == null)
                 continue;
 
-            if (!RogueDoor.CanEnter(neighbour, character)) continue;
-            if (!neighbour.isWalkable)
+            if (!RogueDoor.CanEnter(neighbour, character))
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : BLOCKED BY ROGUE DOOR"
+                );
+
                 continue;
+            }
+
+            if (!neighbour.isWalkable)
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : NOT WALKABLE"
+                );
+
+                continue;
+            }
 
             if (neighbour.IsOccupied)
-                continue;
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : OCCUPIED BY " +
+                    neighbour.Occupant.name
+                );
 
-            // ⭐ ตรวจว่ามีกำแพงขวางระหว่างสอง Tile หรือไม่
-            if (IsBlockedByWall(tile, neighbour, character))
                 continue;
+            }
+
+            if (IsBlockedByWall(tile, neighbour, character))
+            {
+                Debug.Log(
+                    "[Grid] " +
+                    tile.name +
+                    " -> " +
+                    neighbour.name +
+                    " : BLOCKED BY WALL"
+                );
+
+                continue;
+            }
 
             neighbours.Add(neighbour);
         }
@@ -155,41 +196,59 @@ public class GridManager : MonoBehaviour
             (wallLayer.value & (1 << collider.gameObject.layer)) != 0;
     }
 
-    public bool IsBlockedByWall(
-    Tile from,
-    Tile to, Character character = null, bool forArrow = false)
+    public bool IsBlockedByWall(Tile from, Tile to, Character character = null, bool forArrow = false)
     {
-        Vector3 start =
-            from.transform.position;
+        if (from == null || to == null) return false;
 
-        start.y += 0.5f;
+        Vector3 start = from.transform.position + (Vector3.up * 0.5f);
+        Vector3 end = to.transform.position + (Vector3.up * 0.5f);
+        Vector3 direction = (end - start).normalized;
 
-        Vector3 direction =
-            (to.transform.position -
-             from.transform.position).normalized;
+        // หดระยะเลเซอร์ลงนิดนึง ป้องกันการยิงชนศูนย์กลางของช่องถัดไป
+        float distance = Vector3.Distance(start, end) - 0.05f;
 
-        float distance =
-            Vector3.Distance(
-                from.transform.position,
-                to.transform.position
-            );
+        // ⭐ แก้ปัญหา One-Way: ยิงเลเซอร์ทั้ง "ขาไป" และ "ขากลับ"
+        List<RaycastHit> allHits = new List<RaycastHit>();
+        allHits.AddRange(Physics.RaycastAll(start, direction, distance, wallLayer, QueryTriggerInteraction.Ignore));
+        allHits.AddRange(Physics.RaycastAll(end, -direction, distance, wallLayer, QueryTriggerInteraction.Ignore));
 
         bool blocked = false;
-        foreach (RaycastHit hit in Physics.RaycastAll(start, direction, distance, wallLayer, QueryTriggerInteraction.Ignore))
+
+        foreach (RaycastHit hit in allHits)
         {
-            RogueDoor door = hit.collider.GetComponentInParent<RogueDoor>();
-            if (door != null && (door.IsOpen || door.CheckCharacter(character))) continue;
-            // Entity colliders are arrow targets, not walls. Doors still block.
-            if (forArrow && door == null && hit.collider.GetComponentInParent<Entity>() != null) continue;
+            Collider col = hit.collider;
+
+            // 1. ถ้าเลเซอร์ชนแผ่นพื้น Tile ให้มองข้าม
+            if (col.gameObject == from.gameObject || col.gameObject == to.gameObject) continue;
+
+            // 2. ถ้าชนสิ่งมีชีวิต (ผู้เล่น/ศัตรู) ให้ทะลุผ่านไปเลย
+            if (col.GetComponentInParent<Entity>() != null) continue;
+
+            // 3. เช็กประตู RogueDoor
+            RogueDoor rogueDoor = col.GetComponentInParent<RogueDoor>();
+            if (rogueDoor != null)
+            {
+                if (rogueDoor.IsOpen) continue; // ถ้าเปิดแล้ว เดินผ่านได้
+                blocked = true; // ⭐ ถ้าประตูปิด บล็อกทุกคน! (โจรจะเดินทะลุไม่ได้แล้ว ต้องกดสกิลก่อน)
+                break;
+            }
+
+            // 4. เช็กประตูธรรมดา DoorController
+            DoorController normalDoor = col.GetComponentInParent<DoorController>();
+            if (normalDoor != null)
+            {
+                if (normalDoor.IsOpen) continue; // ถ้าเปิดแล้ว เดินผ่านได้
+                blocked = true; // ถ้าประตูปิด บล็อกทันที!
+                break;
+            }
+
+            // 5. ถ้าชนกับกำแพงธรรมดา หรืออะไรก็ตามที่อยู่ใน Layer Wall
             blocked = true;
             break;
         }
-        Debug.DrawRay(
-            start,
-            direction * distance,
-            blocked ? Color.red : Color.green,
-            1f
-        );
+
+        // วาดเส้นให้ดูใน Scene ว่าติดกำแพงหรือไม่ (เขียว = ผ่านได้, แดง = ติดกำแพง)
+        Debug.DrawLine(start, end, blocked ? Color.red : Color.green, 2f);
 
         return blocked;
     }
