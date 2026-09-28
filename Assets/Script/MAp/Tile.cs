@@ -10,6 +10,28 @@ public class Tile : MonoBehaviour
 
     [Header("Occupant")]
     [SerializeField] private GameObject occupant;
+    public event System.Action<GameObject> OccupantChanged;
+
+    [Header("Highlight")]
+    [SerializeField] private GameObject highlightObject; // ลาก Mesh/Quad สีฟ้ามาใส่ช่องนี้
+
+    public void ToggleHighlight(bool show)
+    {
+        if (highlightObject != null)
+        {
+            highlightObject.SetActive(show);
+            if (show) ClearHighlightColorOverride();
+        }
+    }
+
+    private void ClearHighlightColorOverride()
+    {
+        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.SetPropertyBlock(null);
+        }
+    }
+    // =========================
 
     public bool IsOccupied
     {
@@ -35,7 +57,9 @@ public class Tile : MonoBehaviour
             return false;
         }
 
+        if (occupant == newOccupant) return true;
         occupant = newOccupant;
+        OccupantChanged?.Invoke(occupant);
 
         return true;
     }
@@ -46,6 +70,7 @@ public class Tile : MonoBehaviour
         if (occupant == target)
         {
             occupant = null;
+            OccupantChanged?.Invoke(null);
         }
     }
 }

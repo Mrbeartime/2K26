@@ -1,39 +1,26 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // 1. เพิ่มบรรทัดนี้เพื่อเรียกใช้ New Input System
 
+/// <summary>
+/// Marks the level exit. Player movement is transform-based, so the turn
+/// manager checks collider overlap directly instead of relying on trigger
+/// callbacks, which require a Rigidbody to be reliable.
+/// </summary>
 public class WinBox : MonoBehaviour
 {
-    private bool isPlayerNear = false;
-
-    private void OnTriggerEnter(Collider other)
+    public static bool IsReachedBy(PlayerMove player)
     {
-        if (other.CompareTag("Player"))
+        if (player == null) return false;
+
+        Collider playerCollider = player.GetComponent<Collider>();
+        if (playerCollider == null) return false;
+
+        foreach (WinBox winBox in FindObjectsByType<WinBox>(FindObjectsInactive.Include))
         {
-            isPlayerNear = true;
-            Debug.Log("กด E เพื่อจบด่านนนนนนน");
+            Collider goalCollider = winBox.GetComponent<Collider>();
+            if (goalCollider != null && goalCollider.bounds.Intersects(playerCollider.bounds))
+                return true;
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerNear = false;
-        }
-    }
-
-    private void Update()
-    {
-        // 2. เช็คว่ามีคีย์บอร์ดเชื่อมต่ออยู่ และเช็คการกดปุ่ม E จากระบบใหม่
-        if (isPlayerNear && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-        {
-            WinGame();
-        }
-    }
-
-    private void WinGame()
-    {
-        Debug.Log("win");
-        // โค้ดสำหรับจบเกม เช่น เรียกหน้าต่าง UI ชนะ 
+        return false;
     }
 }
