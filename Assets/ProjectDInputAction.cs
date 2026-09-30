@@ -573,12 +573,12 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         },
         {
             ""name"": ""Gameplay_keyboard"",
-            ""id"": ""2881ed59-61ba-475f-a615-ae99e6b24a5e"",
+            ""id"": ""80511cf0-fe55-4883-ab10-e5c6f895b4c3"",
             ""actions"": [
                 {
                     ""name"": ""SelectCharacter"",
                     ""type"": ""Button"",
-                    ""id"": ""b88ac59d-5da9-4036-90c0-0c7ddc5099db"",
+                    ""id"": ""61a46e8c-7fd2-444c-8f19-d71fccf60ae5"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -588,7 +588,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""SelectAction"",
                     ""type"": ""Button"",
-                    ""id"": ""6168964e-dc2b-4ca9-af0a-7c1450eb4440"",
+                    ""id"": ""4edd4f33-6bff-46fc-9b07-d0e54ce4b28e"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -598,7 +598,27 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""ActionControl"",
                     ""type"": ""Button"",
-                    ""id"": ""3b313cfc-bbf4-4d93-9861-ca7cc8acd48d"",
+                    ""id"": ""f022b2a4-8873-4b41-bdb5-5f6889c4813b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Skip"",
+                    ""type"": ""Button"",
+                    ""id"": ""f18bb7e9-bc7d-423b-a7a8-d6774e1e9382"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Hold"",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""413296c7-2ae0-4956-b4a1-ca6dfc123c2f"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -609,7 +629,18 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
             ""bindings"": [
                 {
                     ""name"": """",
-                    ""id"": ""927df176-5b35-4974-a583-d8fe710e16e6"",
+                    ""id"": ""d7825d17-6e48-487b-aec9-765559e0e728"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ab10f14c-e909-4cb6-ab6e-84a35f3c2fb7"",
                     ""path"": ""<Keyboard>/1"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -620,7 +651,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""2d65d38e-719b-4c33-adce-8a3c4f19f435"",
+                    ""id"": ""b65814b9-bc59-4561-b659-6f165e743e4b"",
                     ""path"": ""<Keyboard>/2"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -631,7 +662,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""11213e44-e0fe-4ead-9b26-68b2db920fa0"",
+                    ""id"": ""df7cc205-8d67-4ad4-9a24-75fdf5b57859"",
                     ""path"": ""<Keyboard>/3"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -642,7 +673,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""ada1defa-c9c8-4245-b95a-0f1462999707"",
+                    ""id"": ""b0dd2132-4131-4e23-8f76-d1bf052dcfe9"",
                     ""path"": ""<Keyboard>/4"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -653,7 +684,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""e72e0011-d1ca-4a75-9970-9a91635c64ac"",
+                    ""id"": ""54bc0c9b-b379-4340-a042-345d1d21d81d"",
                     ""path"": ""<Keyboard>/5"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -664,18 +695,18 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""85ab62cd-0281-4c0f-a061-cb0b97634f36"",
-                    ""path"": ""<Keyboard>/tab"",
+                    ""id"": ""3c82f277-b64b-4ca3-ab58-31139f738c66"",
+                    ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""SelectCharacter"",
+                    ""action"": ""SelectAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""4cab9299-2f0a-4e5e-bd01-4131b1263a8c"",
+                    ""id"": ""ed59bec8-6029-4c6c-bcfb-1217cc0d9e5f"",
                     ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -686,29 +717,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""083f9f22-e203-46c4-8b0f-36ae534e7f0d"",
-                    ""path"": ""<Keyboard>/a"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SelectAction"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""1b32671a-a923-443a-8ced-b50a23083fb9"",
-                    ""path"": ""<Keyboard>/d"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SelectAction"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c7597588-74d2-4ff4-aa0e-324dfd19fde1"",
+                    ""id"": ""0321f7e8-6a74-4413-8695-254faa8ebafd"",
                     ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -719,7 +728,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""557de444-3a0f-47f1-90db-d39c3230b317"",
+                    ""id"": ""4210787f-b829-4561-ab77-4eed6d6f6b04"",
                     ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -730,7 +739,18 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""06854b9c-f02f-4353-9dd8-c1972b1af9e5"",
+                    ""id"": ""5cde32dd-3dcd-4f1b-a8cc-b1ae83316bb2"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b2cdc5d0-70c1-403c-bb64-f78126a06d2d"",
                     ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -741,7 +761,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""381dfbde-7803-458b-b89f-f8d3983a9341"",
+                    ""id"": ""b406cf23-6bcc-4554-972c-b4fdd30ec36f"",
                     ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -752,7 +772,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""6bedd58d-294b-4cdf-b9e9-6ef000cd436d"",
+                    ""id"": ""9670fed0-2ae6-4c2a-b66d-2d65b1f6fb57"",
                     ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -763,7 +783,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""8570baa0-f1b4-42aa-936e-bef43dc19b17"",
+                    ""id"": ""50d8fad1-e888-458c-8a95-e0a93507c18e"",
                     ""path"": ""<Keyboard>/d"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -774,12 +794,23 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""d1d62c0a-afef-4b3d-bcea-2c3b4de058b1"",
-                    ""path"": ""<Keyboard>/tab"",
+                    ""id"": ""9d968737-0996-4224-949b-32e90c754d83"",
+                    ""path"": ""<Keyboard>/enter"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""ActionControl"",
+                    ""action"": ""Skip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e53250e5-4cdf-4837-9052-532b6efb2f95"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1391,6 +1422,8 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         m_Gameplay_keyboard_SelectCharacter = m_Gameplay_keyboard.FindAction("SelectCharacter", throwIfNotFound: true);
         m_Gameplay_keyboard_SelectAction = m_Gameplay_keyboard.FindAction("SelectAction", throwIfNotFound: true);
         m_Gameplay_keyboard_ActionControl = m_Gameplay_keyboard.FindAction("ActionControl", throwIfNotFound: true);
+        m_Gameplay_keyboard_Skip = m_Gameplay_keyboard.FindAction("Skip", throwIfNotFound: true);
+        m_Gameplay_keyboard_Pause = m_Gameplay_keyboard.FindAction("Pause", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1672,6 +1705,8 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_keyboard_SelectCharacter;
     private readonly InputAction m_Gameplay_keyboard_SelectAction;
     private readonly InputAction m_Gameplay_keyboard_ActionControl;
+    private readonly InputAction m_Gameplay_keyboard_Skip;
+    private readonly InputAction m_Gameplay_keyboard_Pause;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay_keyboard".
     /// </summary>
@@ -1695,6 +1730,14 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay_keyboard/ActionControl".
         /// </summary>
         public InputAction @ActionControl => m_Wrapper.m_Gameplay_keyboard_ActionControl;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay_keyboard/Skip".
+        /// </summary>
+        public InputAction @Skip => m_Wrapper.m_Gameplay_keyboard_Skip;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay_keyboard/Pause".
+        /// </summary>
+        public InputAction @Pause => m_Wrapper.m_Gameplay_keyboard_Pause;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1730,6 +1773,12 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
             @ActionControl.started += instance.OnActionControl;
             @ActionControl.performed += instance.OnActionControl;
             @ActionControl.canceled += instance.OnActionControl;
+            @Skip.started += instance.OnSkip;
+            @Skip.performed += instance.OnSkip;
+            @Skip.canceled += instance.OnSkip;
+            @Pause.started += instance.OnPause;
+            @Pause.performed += instance.OnPause;
+            @Pause.canceled += instance.OnPause;
         }
 
         /// <summary>
@@ -1750,6 +1799,12 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
             @ActionControl.started -= instance.OnActionControl;
             @ActionControl.performed -= instance.OnActionControl;
             @ActionControl.canceled -= instance.OnActionControl;
+            @Skip.started -= instance.OnSkip;
+            @Skip.performed -= instance.OnSkip;
+            @Skip.canceled -= instance.OnSkip;
+            @Pause.started -= instance.OnPause;
+            @Pause.performed -= instance.OnPause;
+            @Pause.canceled -= instance.OnPause;
         }
 
         /// <summary>
@@ -2142,6 +2197,20 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnActionControl(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Skip" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSkip(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPause(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
