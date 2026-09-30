@@ -11,6 +11,27 @@ public class Tile : MonoBehaviour
     [Header("Occupant")]
     [SerializeField] private GameObject occupant;
 
+    [Header("Highlight")]
+    [SerializeField] private GameObject highlightObject; // ลาก Mesh/Quad สีฟ้ามาใส่ช่องนี้
+
+    public void ToggleHighlight(bool show)
+    {
+        if (highlightObject != null)
+        {
+            highlightObject.SetActive(show);
+            if (show) ClearHighlightColorOverride();
+        }
+    }
+
+    private void ClearHighlightColorOverride()
+    {
+        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.SetPropertyBlock(null);
+        }
+    }
+    // =========================
+
     public bool IsOccupied
     {
         get
