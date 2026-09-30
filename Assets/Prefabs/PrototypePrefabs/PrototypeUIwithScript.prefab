@@ -954,7 +954,7 @@ GameObject:
   - component: {fileID: 1522316320047679263}
   - component: {fileID: 6509632351592151489}
   m_Layer: 5
-  m_Name: TurnCounter
+  m_Name: TurnLimit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
