@@ -26,6 +26,7 @@ public class TurnGameManager : MonoBehaviour
     private readonly HashSet<PlayerMove> movedPlayers = new();
     private PlayerMove currentPlayer;
     private int currentTurn = 1;
+    public int CurrentTurn => currentTurn; //เพิ่มมาเพราะอยากให้มี currentTurn แบบ Public
     private bool currentPlayerSelected;
     private bool hasMoved;
     private bool waitingForMovement;

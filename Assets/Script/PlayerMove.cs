@@ -178,7 +178,7 @@ public class PlayerMove : MonoBehaviour
         Tile nextTile =
             currentPath[pathIndex];
 
-        if (nextTile.IsOccupied || !RogueDoor.CanEnter(nextTile, GetComponent<Character>(), true)) { FinishMove(); return; }
+        if (nextTile.IsOccupied || !RogueDoor.CanEnter(nextTile, GetComponent<Character>())) { FinishMove(); return; }
         Vector3 targetPosition =
             nextTile.transform.position;
 
