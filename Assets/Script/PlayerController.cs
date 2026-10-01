@@ -126,37 +126,39 @@ public class PlayerController : MonoBehaviour
 
     public void SelectPlayer(PlayerMove player)
     {
-        ClearHighlights(); // ล้างสีเก่าทิ้งก่อน
-        selectedPlayer = null;
-        if (player == null) return;
-        if (GridManager.Instance == null || Pathfinder.Instance == null)
-        {
-            string missing = GridManager.Instance == null ? "GridManager" : "Pathfinder";
-            Debug.LogWarning("เลือกตัวละครไม่ได้: เพิ่ม " + missing +
-                " component บน GameObject ที่เปิดใช้งานในฉากก่อน", this);
-            return;
-        }
+        ClearHighlights();
+
         selectedPlayer = player;
-        if (player.IsMoving()) return;
+
+        if (player == null)
+            return;
+
         Debug.Log("Selected: " + player.name);
+    }
 
-        // เปลี่ยนมาใช้ GridManager แปลงพิกัดตัวละครหาแผ่นพื้นแทนการยิง Raycast
-        Vector2Int gridPos = GridManager.Instance.WorldToGrid(player.transform.position);
-        Tile playerTile = GridManager.Instance.GetTile(gridPos);
+    public void ShowMoveRange(PlayerMove player)
+    {
+        ClearHighlights();
 
-        if (playerTile != null)
+        if (player == null ||
+            GridManager.Instance == null ||
+            Pathfinder.Instance == null)
+            return;
+
+        Tile playerTile = player.GetCurrentTile();
+
+        if (playerTile == null)
+            return;
+
+        currentHighlightedTiles =
+            Pathfinder.Instance.GetAllReachableTiles(
+                playerTile,
+                player.GetComponent<Character>()
+            );
+
+        foreach (Tile tile in currentHighlightedTiles)
         {
-            // ดึงเฉพาะช่องที่เดินเชื่อมถึงกันได้จริงๆ (ไม่ทะลุกำแพง)
-            currentHighlightedTiles = Pathfinder.Instance.GetAllReachableTiles(playerTile, player.GetComponent<Character>());
-
-            foreach (Tile tile in currentHighlightedTiles)
-            {
-                tile.ShowHighlight(Tile.HighlightType.Move);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("หาจุดที่ Player ยืนอยู่ไม่เจอ! เช็กพิกัด: " + gridPos);
+            tile.ShowHighlight(Tile.HighlightType.Move);
         }
     }
 

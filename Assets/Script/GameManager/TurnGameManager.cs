@@ -189,30 +189,75 @@ public class TurnGameManager : MonoBehaviour
     }
 
     public bool TrySelectPlayer(PlayerMove player)
+{
+    if (gameComplete ||
+        enemyPhase ||
+        waitingForMovement ||
+        player == null ||
+        finishedPlayers.Contains(player) ||
+        !players.Contains(player))
+        return false;
+
+    if (actionMode == ActionMode.MoveTargeting)
+        CancelMoveTargeting();
+    else if (actionMode == ActionMode.SkillTargeting)
+        CancelSkill();
+
+    currentPlayer = player;
+    currentPlayerSelected = true;
+
+    // เช็กว่าตัวนี้เดินไปแล้วหรือยัง
+
+    PlayerController.Instance?.SelectPlayer(player);
+
+    Character character =
+        player.GetComponent<Character>();
+
+    // =========================
+    // ยังไม่เดิน
+    // =========================
+    if (!hasMoved)
     {
-        // ไม่เช็ก actionMode ที่นี่ เพราะอนุญาตให้เปลี่ยนตัวระหว่างเลือกเป้าหมาย (ยกเลิก action เดิมให้ด้านล่าง)
-        if (gameComplete || enemyPhase || waitingForMovement ||
-            player == null || finishedPlayers.Contains(player) || !players.Contains(player)) return false;
+        PlayerController.Instance?.ShowMoveRange(player);
 
-        if (actionMode == ActionMode.MoveTargeting) CancelMoveTargeting();
-        else if (actionMode == ActionMode.SkillTargeting) CancelSkill();
-
-        currentPlayer = player;
-        PlayerController.Instance?.SelectPlayer(player);
-        currentPlayerSelected = true;
-        hasMoved = movedPlayers.Contains(player);
-        status = player.name + " selected: choose Move, Skill, or React.";
-        RaiseStateChanged();
-        return true;
+        status =
+            player.name +
+            " selected: Move or Skill.";
     }
+
+    // =========================
+    // เดินไปแล้ว
+    // =========================
+    else
+    {
+        character?.ShowSkillRange();
+
+        status =
+            player.name +
+            " selected: Skill, React, or Skip.";
+    }
+
+    RaiseStateChanged();
+    return true;
+}
 
     public void ChooseMove()
     {
-        if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected || hasMoved || waitingForMovement) return;
+        if (gameComplete ||
+            enemyPhase ||
+            CurrentPlayer == null ||
+            !currentPlayerSelected ||
+            hasMoved ||
+            waitingForMovement)
+            return;
+
         actionMode = ActionMode.MoveTargeting;
-        PlayerController.Instance?.ClearHighlights();   // ล้างไฮไลต์ของ Skill เดิม (กรณีสลับมาจากโหมด Skill)
-        PlayerController.Instance?.SelectPlayer(CurrentPlayer);
+
+        PlayerController.Instance?.ClearHighlights();
+        PlayerController.Instance?.ShowMoveRange(CurrentPlayer);
+
         status = "Move: click a highlighted tile.";
+
         RaiseStateChanged();
     }
 
@@ -317,7 +362,9 @@ public class TurnGameManager : MonoBehaviour
 
     public void NotifyMoveFinished(PlayerMove player)
     {
-        if (player != CurrentPlayer || !waitingForMovement) return;
+        if (player != CurrentPlayer || !waitingForMovement)
+            return;
+
         waitingForMovement = false;
 
         if (WinBox.IsReachedBy(player))
@@ -326,7 +373,15 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        status = "Move complete. Choose Skill, React, or Skip.";
+        // เดินเสร็จแล้ว -> โชว์ Skill Range
+        Character character =
+            player.GetComponent<Character>();
+
+        character?.ShowSkillRange();
+
+        status =
+            "Move complete. Choose Skill, React, or Skip.";
+
         RaiseStateChanged();
     }
 
