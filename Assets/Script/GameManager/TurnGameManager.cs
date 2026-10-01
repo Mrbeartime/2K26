@@ -207,6 +207,7 @@ public class TurnGameManager : MonoBehaviour
     currentPlayerSelected = true;
 
     // เช็กว่าตัวนี้เดินไปแล้วหรือยัง
+    hasMoved = movedPlayers.Contains(player);
 
     PlayerController.Instance?.SelectPlayer(player);
 
