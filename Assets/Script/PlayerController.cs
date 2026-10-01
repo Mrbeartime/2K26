@@ -151,7 +151,7 @@ public class PlayerController : MonoBehaviour
 
             foreach (Tile tile in currentHighlightedTiles)
             {
-                tile.ToggleHighlight(true);
+                tile.ShowHighlight(Tile.HighlightType.Move);
             }
         }
         else
@@ -193,7 +193,8 @@ public class PlayerController : MonoBehaviour
     {
         foreach (Tile tile in currentHighlightedTiles)
         {
-            if (tile != null) tile.ToggleHighlight(false);
+            if (tile != null)
+                tile.HideHighlight();
         }
         currentHighlightedTiles.Clear();
     }
@@ -207,7 +208,97 @@ public class PlayerController : MonoBehaviour
             Vector2Int delta = tile.gridPosition - origin.gridPosition;
             if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > range) continue;
             currentHighlightedTiles.Add(tile);
-            tile.ToggleHighlight(true);
+            tile.ShowHighlight(Tile.HighlightType.Skill);
+        }
+    }
+
+    public void ShowSwordSkillRange(Tile origin)
+    {
+        ClearHighlights();
+
+        if (origin == null || GridManager.Instance == null)
+            return;
+
+        Vector2Int[] directions =
+        {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Tile tile =
+                GridManager.Instance.GetTile(
+                    origin.gridPosition + direction
+                );
+
+            if (tile == null)
+                continue;
+
+            // มีกำแพง/ประตูขวาง
+            if (GridManager.Instance.IsBlockedByWall(
+                origin,
+                tile))
+                continue;
+
+            currentHighlightedTiles.Add(tile);
+
+            tile.ShowHighlight(
+                Tile.HighlightType.Skill
+            );
+        }
+    }
+
+    public void ShowArcherSkillRange(Tile origin)
+    {
+        ClearHighlights();
+
+        if (origin == null || GridManager.Instance == null)
+            return;
+
+        Vector2Int[] directions =
+        {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Tile currentTile = origin;
+
+            while (true)
+            {
+                Tile nextTile =
+                    GridManager.Instance.GetTile(
+                        currentTile.gridPosition + direction
+                    );
+
+                // สุดขอบ Map
+                if (nextTile == null)
+                    break;
+
+                // เจอกำแพงหรือประตู → หยุดเส้นนี้
+                if (GridManager.Instance.IsBlockedByWall(
+                    currentTile,
+                    nextTile,
+                    null,
+                    true))
+                {
+                    break;
+                }
+
+                currentHighlightedTiles.Add(nextTile);
+
+                nextTile.ShowHighlight(
+                    Tile.HighlightType.Skill
+                );
+
+                currentTile = nextTile;
+            }
         }
     }
 }

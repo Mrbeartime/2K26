@@ -15,5 +15,19 @@ public class Rogue : Character
         Vector2Int delta = doorPosition - CurrentLocation;
         return Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= lockpickRange;
     }
+
+    public override void ShowSkillRange()
+    {
+        if (GridManager.Instance == null)
+            return;
+
+        Tile origin =
+            GridManager.Instance.GetTile(CurrentLocation);
+
+        PlayerController.Instance?.ShowRogueSkillRange(
+            origin,
+            LockpickRange
+        );
+    }
 }
 

@@ -244,12 +244,27 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkill()
     {
-        if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected || waitingForMovement) return;
+        if (gameComplete ||
+            enemyPhase ||
+            CurrentPlayer == null ||
+            !currentPlayerSelected ||
+            waitingForMovement)
+            return;
+
         actionMode = ActionMode.SkillTargeting;
+
         PlayerController.Instance?.ClearHighlights();
-        if (CurrentPlayer.GetComponent<Rogue>() is Rogue rogue)
-            PlayerController.Instance?.ShowRogueSkillRange(CurrentPlayer.GetCurrentTile(), rogue.LockpickRange);
-        status = "Skill: click a target tile or enemy. This ends " + CurrentPlayer.name + "'s action.";
+
+        Character character =
+            CurrentPlayer.GetComponent<Character>();
+
+        character?.ShowSkillRange();
+
+        status =
+            "Skill: click a target tile or enemy. This ends " +
+            CurrentPlayer.name +
+            "'s action.";
+
         RaiseStateChanged();
     }
 

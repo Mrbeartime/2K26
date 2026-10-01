@@ -12,24 +12,84 @@ public class Tile : MonoBehaviour
     [SerializeField] private GameObject occupant;
 
     [Header("Highlight")]
-    [SerializeField] private GameObject highlightObject; // ลาก Mesh/Quad สีฟ้ามาใส่ช่องนี้
+    [SerializeField] private GameObject highlightObject;
 
-    public void ToggleHighlight(bool show)
+    [Header("Highlight Colors")]
+    [SerializeField] private Color moveHighlightColor = Color.cyan;
+    [SerializeField] private Color skillHighlightColor = Color.yellow;
+
+    public enum HighlightType
+    {
+        Move,
+        Skill
+    }
+
+    // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
+    public void ShowHighlight(HighlightType type)
+    {
+        if (highlightObject == null)
+            return;
+
+        highlightObject.SetActive(true);
+
+        Color targetColor = moveHighlightColor;
+
+        switch (type)
+        {
+            case HighlightType.Move:
+                targetColor = moveHighlightColor;
+                break;
+
+            case HighlightType.Skill:
+                targetColor = skillHighlightColor;
+                break;
+        }
+
+        SetHighlightColor(targetColor);
+    }
+
+    // ปิด Highlight
+    public void HideHighlight()
     {
         if (highlightObject != null)
         {
-            highlightObject.SetActive(show);
-            if (show) ClearHighlightColorOverride();
+            highlightObject.SetActive(false);
         }
     }
 
-    private void ClearHighlightColorOverride()
+    // เก็บ ToggleHighlight เดิมไว้
+    // ป้องกัน Script อื่นที่ใช้อยู่พัง
+    public void ToggleHighlight(bool show)
     {
-        foreach (Renderer renderer in highlightObject.GetComponentsInChildren<Renderer>(true))
+        if (show)
         {
-            renderer.SetPropertyBlock(null);
+            ShowHighlight(HighlightType.Move);
+        }
+        else
+        {
+            HideHighlight();
         }
     }
+
+    private void SetHighlightColor(Color color)
+    {
+        foreach (Renderer renderer in
+                 highlightObject.GetComponentsInChildren<Renderer>(true))
+        {
+            MaterialPropertyBlock properties =
+                new MaterialPropertyBlock();
+
+            renderer.GetPropertyBlock(properties);
+
+            properties.SetColor("_BaseColor", color);
+            properties.SetColor("_Color", color);
+
+            renderer.SetPropertyBlock(properties);
+        }
+    }
+
+    // =========================
+    // Occupant
     // =========================
 
     public bool IsOccupied
@@ -48,7 +108,6 @@ public class Tile : MonoBehaviour
         }
     }
 
-    // ใส่คน/Enemy ลง Tile
     public bool SetOccupant(GameObject newOccupant)
     {
         if (IsOccupied && occupant != newOccupant)
@@ -61,7 +120,6 @@ public class Tile : MonoBehaviour
         return true;
     }
 
-    // เอาคนออกจาก Tile
     public void ClearOccupant(GameObject target)
     {
         if (occupant == target)
