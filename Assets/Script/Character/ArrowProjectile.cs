@@ -3,15 +3,22 @@ using UnityEngine;
 // Physical hits along a straight cardinal shot. Tiles define only the map edge.
 public class ArrowProjectile : MonoBehaviour
 {
-    private Character owner;
+    private Entity owner;
+    private bool enemyArrow;
     private Vector3 heading;
     private float remainingDistance;
     private float speed;
     private bool finished;
     [SerializeField, Min(0.001f)] private float hitRadius = 0.03f;
     private bool initialized;
+    public bool IsFlying => initialized && !finished;
 
     public void Initialize(Character source, Tile origin, Vector2Int direction, float velocity)
+    {
+        Initialize(source, new Vector3(direction.x, 0, direction.y), velocity);
+    }
+
+    public void Initialize(Entity source, Vector3 direction, float velocity, float maxDistance = -1f)
     {
         remainingDistance = 0f;
         finished = false;
@@ -23,12 +30,19 @@ public class ArrowProjectile : MonoBehaviour
         }
         foreach (Collider part in GetComponentsInChildren<Collider>(true)) part.enabled = false;
         owner = source;
-        heading = new Vector3(direction.x, 0, direction.y);
+        enemyArrow = source is Enemy;
+        heading = direction.normalized;
+        if (heading.sqrMagnitude < 0.01f || GridManager.Instance == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
         speed = Mathf.Max(0.1f, velocity);
         foreach (Tile tile in FindObjectsByType<Tile>())
             remainingDistance = Mathf.Max(remainingDistance,
-                Vector3.Dot(tile.transform.position - origin.transform.position, heading));
+                Vector3.Dot(tile.transform.position - transform.position, heading));
         remainingDistance += GridManager.Instance.TileSize * 0.5f;
+        if (maxDistance >= 0f) remainingDistance = maxDistance;
         initialized = true;
     }
 
@@ -50,7 +64,14 @@ public class ArrowProjectile : MonoBehaviour
         }
         Entity entity = collider.GetComponentInParent<Entity>();
         if (entity == null || !entity.isActiveAndEnabled || entity.IsDead) return false;
-        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner);
+        // Enemy arrows are stopped by other enemies/targets but cannot activate
+        // Archer-only targets or kill their own team.
+        if (enemyArrow && !(entity is Character))
+        {
+            Finish();
+            return true;
+        }
+        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner as Character);
         else entity.ReceiveArrowHit();
         Finish();
         return true;

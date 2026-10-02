@@ -12,7 +12,7 @@ public class Enemy : Entity
     private Tile occupiedTile;
     private int patrolIndex;
 
-    private void Start()
+    protected virtual void Start()
     {
         if (GridManager.Instance == null) return;
         occupiedTile = GridManager.Instance.GetTile(CurrentLocation);
@@ -41,7 +41,7 @@ public class Enemy : Entity
         }
     }
 
-    private void React()
+    protected virtual void React()
     {
         if (IsDead || !Aggression || GridManager.Instance == null) return;
         Tile from = GridManager.Instance.GetTile(CurrentLocation);
@@ -96,7 +96,7 @@ public class Enemy : Entity
         onDeath.Invoke();
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (occupiedTile != null) occupiedTile.ClearOccupant(gameObject);
     }

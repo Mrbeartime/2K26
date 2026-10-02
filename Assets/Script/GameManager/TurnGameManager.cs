@@ -496,9 +496,13 @@ public class TurnGameManager : MonoBehaviour
     private System.Collections.IEnumerator RunEnemyPhase()
     {
         yield return new WaitForSeconds(enemyPhaseDelay);
+        // Finish the last player's shot before enemies decide whether they are alive.
+        while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
         Enemy.RunEnemyPhase();
         yield return null;
+        // Both enemy types act in the same frame; only the phase transition waits.
+        while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
 
         trapPhase = true;
@@ -541,6 +545,14 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
         RaiseStateChanged();
+    }
+
+    private bool HasFlyingArrows()
+    {
+        foreach (ArrowProjectile arrow in FindObjectsByType<ArrowProjectile>())
+            if (arrow.isActiveAndEnabled && arrow.gameObject.scene == gameObject.scene && arrow.IsFlying)
+                return true;
+        return false;
     }
 
     private void ShowGameOver(string reason)
