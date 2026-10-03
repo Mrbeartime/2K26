@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
 
 public class InGameUIManager : MonoBehaviour
 {
@@ -33,7 +32,6 @@ public class InGameUIManager : MonoBehaviour
 
     [Header("Input Actions")]
     private ProjectDInputAction _inputAction;
-    private int MaxCharacters;
     private int CurrentFocusCharacterIndex = 0;
     private int CurrentFocusActionIndex = 0;
 
@@ -55,21 +53,18 @@ public class InGameUIManager : MonoBehaviour
         }
         Instance = this;
 
-        if (_inputAction == null)
-        {
-            _inputAction = new ProjectDInputAction();
-        }
+        _inputAction = new ProjectDInputAction();
     }
 
     private void OnEnable()
     {
-        if (_inputAction == null) return;   // กรณีเป็น Instance ซ้ำที่ถูก Destroy ใน Awake
+        if (_inputAction == null) return;
         _inputAction.Enable();
 
         _inputAction.Gameplay_keyboard.SelectCharacter.performed += OnChangeCharacter;
         _inputAction.Gameplay_keyboard.SelectAction.performed += OnChangeAction;
         _inputAction.Gameplay_keyboard.Pause.performed += OnShowPauseUI;
-        
+
         //Holding for skip: Start เริ่มกด Performed กดค้างจนพอ Canceled ยกเลิกการกด
         _inputAction.Gameplay_keyboard.Skip.started += OnSkipTurnStart;
         _inputAction.Gameplay_keyboard.Skip.performed += OnSkipTurnPerform;
@@ -122,10 +117,8 @@ public class InGameUIManager : MonoBehaviour
             Debug.LogWarning("There is NO TurnGameManager");
             return;
         }
-        else
-        {
-            UpdateTurnCounter();
-        }
+
+        UpdateTurnCounter();
 
         PlayerMove current = turnGameManager.CurrentPlayer;
         if (current != previousCharacter)
@@ -246,6 +239,7 @@ public class InGameUIManager : MonoBehaviour
     #region Setup UI and active UI
     private void CreateCharacterandHazardIcon()
     {
+        // Icon Prefab มี ObjectIcon.cs ติดอยู่ เพื่อให้ไอคอนอ้างอิงไปยัง GameObject ที่เกี่ยวข้องได้
         if (CharacterList != null)
         {
             int index = 0;
@@ -256,119 +250,66 @@ public class InGameUIManager : MonoBehaviour
                     Debug.LogWarning("CharacterList ยังไม่ได้ลากตัวละครใส่", this);
                     continue;
                 }
-
-                //สร้าง Prefab ของ Icon ตัวละครใน UI
-                //Prefabs ของ Icon มีการเชื่อมเกัย ObjectIcon.cs เพื่อให้ Icon สามารถอ้างอิงไปยัง GameObject ตัวละครที่เกี่ยวข้องได้
-
-
-                GameObject newIcon = Instantiate(IconPrefab, CharacterUI.transform);
-
-                // 1. ดึง RectTransform จาก Icon ที่เพิ่งสร้าง
-                RectTransform rect = newIcon.GetComponent<RectTransform>();
-
-                // 2. คำนวณตำแหน่ง X (เริ่มที่ 15 บวกเพิ่มชิ้นละ 100)
-                float posX = 30f + (index * 110f);
-                float posY = -20f;
-
-                rect.anchorMin = new Vector2(0, 1);
-                rect.anchorMax = new Vector2(0, 1);
-
-                rect.pivot = new Vector2(0, 1);
-
-                rect.anchoredPosition = new Vector2(posX, posY);
-
-                ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
-                if (iconScript != null)
-                {
-                    iconScript.Setup(character.gameObject, true);
-                }
-
-                index++;
+                SpawnIcon(character.gameObject, CharacterUI.transform, false, index++, true);
             }
         }
 
         if (HazardList != null)
         {
-            int index = 0;
-            foreach (GameObject hazard in HazardList)
-            {
-                GameObject newIcon = Instantiate(IconPrefab, HazardUI.transform);
-
-                RectTransform rect = newIcon.GetComponent<RectTransform>();
-
-                float posX = -30f + (index * -110f);
-                float posY = -20f;
-
-                rect.anchorMin = new Vector2(1, 1);
-                rect.anchorMax = new Vector2(1, 1);
-
-                rect.pivot = new Vector2(1, 1);
-
-                rect.anchoredPosition = new Vector2(posX, posY);
-
-                ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
-                if (iconScript != null)
-                {
-                    iconScript.Setup(hazard, false);
-                }
-                index++;
-            }
+            for (int index = 0; index < HazardList.Length; index++)
+                SpawnIcon(HazardList[index], HazardUI.transform, true, index, false);
         }
     }
 
+    // ตัวละคร: เรียงจากซ้ายบน / Hazard: เรียงจากขวาบน (เว้นช่องละ 110)
+    private void SpawnIcon(GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
+    {
+        GameObject newIcon = Instantiate(IconPrefab, parent);
+        RectTransform rect = newIcon.GetComponent<RectTransform>();
+
+        float side = rightAligned ? 1f : 0f;
+        float direction = rightAligned ? -1f : 1f;
+        rect.anchorMin = new Vector2(side, 1);
+        rect.anchorMax = new Vector2(side, 1);
+        rect.pivot = new Vector2(side, 1);
+        rect.anchoredPosition = new Vector2(direction * (30f + index * 110f), -20f);
+
+        ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
+        if (iconScript != null) iconScript.Setup(target, selectable);
+    }
+
     // ---------- ระบบเลือก Action ----------
-    // ขั้น 0 : เลื่อนโฟกัสด้วย A/W/S/D
-    // ขั้น 1 : กด Space (หรือคลิกปุ่ม)    = ยืนยันใช้ (Move/Skill เข้าโหมดเลือกช่อง, Interact ทำทันที)
-    // การกด A/W/S/D ขณะอยู่ในขั้น 1 ทำให้ยกเลิก action ที่ทำอยู่ทันที
+    // A/W/S/D  = เลื่อนโฟกัส แล้วใช้ action นั้นทันที (ยกเลิก action/โหมดเลือกช่องเดิมก่อน)
+    // Space    = ใช้ action ที่โฟกัสอยู่
+    // คลิกปุ่ม = SelectAction(): คลิกครั้งแรกเลือก คลิกครั้งที่สองยืนยัน
     private void OnChangeAction(InputAction.CallbackContext context)
     {
         int count = availableActions.Count;
         if (count <= 0) return;
-        string key = context.control.name.ToLower();
 
-        int newIndex;
-        if (key == "d" || key == "s")
+        switch (context.control.name.ToLower())
         {
-            newIndex = (CurrentFocusActionIndex - 1 + count) % count;
-            Debug.Log($"Press : {key} , newIndex : {newIndex}");
-
-            CancelPendingAction();
-            CurrentFocusActionIndex = newIndex;
-            UpdateActionFocusUI();
-
-            ConfirmAction(availableActions[CurrentFocusActionIndex]);
-            return;
+            case "d":
+            case "s":
+                FocusAndUseAction((CurrentFocusActionIndex - 1 + count) % count);
+                break;
+            case "a":
+            case "w":
+                FocusAndUseAction((CurrentFocusActionIndex + 1) % count);
+                break;
+            case "space":
+                // CurrentFocusActionIndex คือ "ลำดับในรายการที่ใช้ได้" ต้องแปลงเป็น id ของ action ก่อนส่ง
+                ConfirmAction(availableActions[CurrentFocusActionIndex]);
+                break;
         }
-        else if (key == "a" || key == "w")
-        {
-            newIndex = (CurrentFocusActionIndex + 1) % count;
-            Debug.Log($"Press : {key} , newIndex : {newIndex}");
+    }
 
-            CancelPendingAction();
-            CurrentFocusActionIndex = newIndex;
-            UpdateActionFocusUI();
-
-            ConfirmAction(availableActions[CurrentFocusActionIndex]);
-            return;
-        }
-        else if (key == "space")
-        {
-            // CurrentFocusActionIndex คือ "ลำดับในรายการที่ใช้ได้" ต้องแปลงเป็น id ของ action ก่อนส่ง
-            ConfirmAction(availableActions[CurrentFocusActionIndex]);
-            //SelectAction(availableActions[CurrentFocusActionIndex]);
-            return;
-        }
-        else
-        {
-            return;
-        }
-
-        if (newIndex == CurrentFocusActionIndex) return;   // มี action เดียว = ไม่ได้เปลี่ยน จึงไม่ยกเลิก
-
-        // เปลี่ยน Action ระหว่างเลือกช่อง/รอยืนยัน = ยกเลิกของเดิมทั้งหมด
-        //CancelPendingAction();
-        //CurrentFocusActionIndex = newIndex;
-        //UpdateActionFocusUI();
+    private void FocusAndUseAction(int newIndex)
+    {
+        CancelPendingAction();
+        CurrentFocusActionIndex = newIndex;
+        UpdateActionFocusUI();
+        ConfirmAction(availableActions[CurrentFocusActionIndex]);
     }
 
     public void SelectAction(int actionId)
@@ -416,9 +357,9 @@ public class InGameUIManager : MonoBehaviour
     public void GoBack()
     {
         if (turnGameManager == null) return;
-        if (turnGameManager.IsMoveTargeting) turnGameManager.CancelMoveTargeting();  
+        if (turnGameManager.IsMoveTargeting) turnGameManager.CancelMoveTargeting();
         else if (turnGameManager.IsSkillTargeting) turnGameManager.CancelSkill();
-        else selectedAction = NoAction;                                                 
+        else selectedAction = NoAction;
         UpdateActionFocusUI();
     }
     #endregion
@@ -431,10 +372,13 @@ public class InGameUIManager : MonoBehaviour
 
         if (key == "tab")
         {
-            for (int step = 1; step <= CharacterList.Length; step++)
+            // ยังไม่ได้เลือกตัวไหน (เช่น เพิ่งเริ่มเทิร์น หรือตัวก่อนหน้าจบ action ไปแล้ว) -> เริ่มหาจากตัวแรก
+            // มีตัวที่เลือกอยู่ -> ไปตัวถัดไปจากตัวนั้น
+            int start = turnGameManager.CurrentPlayer == null ? 0 : CurrentFocusCharacterIndex + 1;
+            for (int step = 0; step < CharacterList.Length; step++)
             {
-                int i = (CurrentFocusCharacterIndex + step) % CharacterList.Length;
-                if (TryFocusCharacter(i)) break;
+                int i = (start + step) % CharacterList.Length;
+                if (TryFocusCharacter(i)) break;   // ข้ามตัวที่ทำ action ไปแล้ว/ตายแล้วให้เอง
             }
         }
         else if (int.TryParse(key, out int number))
@@ -464,10 +408,6 @@ public class InGameUIManager : MonoBehaviour
         int focusId = availableActions[Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1)];
         CharacterActionList focused = GetActionObject(focusId).GetComponent<CharacterActionList>();
         focused.Selected();
-
-        // 3. เลือกไว้แล้วแต่ยังไม่ยืนยัน (ยังไม่เข้าโหมดเลือกช่อง) = สถานะ "รอยืนยัน"
-        bool targeting = turnGameManager != null &&
-                         (turnGameManager.IsMoveTargeting || turnGameManager.IsSkillTargeting);
     }
     private void OnSkipTurnStart(InputAction.CallbackContext context)
     {
@@ -483,7 +423,7 @@ public class InGameUIManager : MonoBehaviour
     }
     private void OnShowPauseUI(InputAction.CallbackContext context)
     {
-            PauseUI.SetActive(!PauseUI.activeSelf);
+        PauseUI.SetActive(!PauseUI.activeSelf);
     }
     #endregion
 }
