@@ -2736,7 +2736,7 @@ PrefabInstance:
       objectReference: {fileID: 218768642}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: HazardList.Array.size
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: CharacterList.Array.size
@@ -4160,10 +4160,10 @@ GameObject:
   - component: {fileID: 1154115682}
   - component: {fileID: 1154115681}
   - component: {fileID: 1154115680}
-  - component: {fileID: 1154115679}
   - component: {fileID: 1154115678}
+  - component: {fileID: 1154115684}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: RangeEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4196,28 +4196,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1154115679
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1154115677}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 943e3d3377ac491693f12091c5c300d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  CanKill: 1
-  Aggression: 1
-  patrolEnabled: 0
-  patrolPoints: []
-  onAttack:
-    m_PersistentCalls:
-      m_Calls: []
-  onDeath:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!136 &1154115680
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4306,13 +4284,40 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1154115677}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 3.3, y: 0.483, z: 2.82277}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1108602101}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &1154115684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154115677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15ddd4f347d444f693e4a4ef313ecfdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RangedEnemy
+  CanKill: 1
+  Aggression: 1
+  patrolEnabled: 0
+  patrolPoints: []
+  onAttack:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
+  firePoint: {fileID: 1154115683}
+  arrowSpeed: 12
+  rangeTiles: 8
+  arrowRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1182780444
 GameObject:
   m_ObjectHideFlags: 0

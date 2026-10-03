@@ -37,8 +37,37 @@ public class ObjectIcon : MonoBehaviour
 
     public void OnIconClicked()
     {
-        if (!selectable || TargetObject == null || InGameUIManager.Instance == null) return;
-        InGameUIManager.Instance.OnCharacterIconClicked(TargetObject);
+        //if (!selectable || TargetObject == null || InGameUIManager.Instance == null) return;
+        //InGameUIManager.Instance.OnCharacterIconClicked(TargetObject); //ของเก่า
+
+        if (TargetObject == null ||
+        InGameUIManager.Instance == null)
+            return;
+
+        // =========================
+        // Player Icon
+        // =========================
+        if (TargetObject.TryGetComponent<PlayerMove>(out _))
+        {
+            if (!selectable)
+                return;
+
+            InGameUIManager.Instance
+                .OnCharacterIconClicked(TargetObject);
+
+            return;
+        }
+
+        // =========================
+        // Enemy Icon
+        // =========================
+        if (TargetObject.TryGetComponent<Enemy>(out _))
+        {
+            InGameUIManager.Instance
+                .OnEnemyIconClicked(TargetObject);
+
+            return;
+        }
     }
 
     public void Selected()

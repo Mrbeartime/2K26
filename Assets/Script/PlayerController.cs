@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance;
 
     private PlayerMove selectedPlayer;
+
+    private Enemy selectedEnemy;
     private Camera mainCamera;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -49,6 +51,38 @@ public class PlayerController : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            // =========================
+            // คลิก Enemy
+            // =========================
+            Enemy clickedEnemy =
+                hit.collider.GetComponentInParent<Enemy>();
+
+            if (clickedEnemy != null)
+            {
+                // ถ้ากำลังใช้ Skill
+                // Enemy ต้องเป็นเป้าหมาย Skill ตามระบบเดิม
+                if (turnManager.IsSkillTargeting)
+                {
+                    Tile enemyTile =
+                        GridManager.Instance.GetTile(
+                            clickedEnemy.CurrentLocation
+                        );
+
+                    if (enemyTile != null)
+                        turnManager.UseSkillOn(enemyTile);
+
+                    return;
+                }
+
+                // ถ้าไม่ได้ใช้ Skill
+                // แค่เปิด/ปิด Enemy Range
+                SelectEnemy(clickedEnemy);
+                return;
+            }
+
+            // =========================
+            // คลิก Player เดิม
+            // =========================
             PlayerMove clickedPlayer = hit.collider.GetComponentInParent<PlayerMove>();
             if (clickedPlayer != null)
             {
@@ -302,5 +336,41 @@ public class PlayerController : MonoBehaviour
                 currentTile = nextTile;
             }
         }
+    }
+    public void SelectEnemy(Enemy enemy)
+    {
+        if (enemy == null || enemy.IsDead)
+            return;
+
+        // =========================
+        // กดตัวเดิมซ้ำ = ปิด
+        // =========================
+        if (selectedEnemy == enemy)
+        {
+            ClearHighlights();
+            selectedEnemy = null;
+
+            Debug.Log("Enemy Range OFF");
+            return;
+        }
+
+        // =========================
+        // เลือก Enemy ตัวใหม่
+        // =========================
+        ClearHighlights();
+
+        selectedEnemy = enemy;
+
+        List<Tile> attackRange = enemy.GetAttackRange();
+
+        foreach (Tile tile in attackRange)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
+        }
+
+        Debug.Log(
+            $"Enemy Selected: {enemy.name} | Range: {attackRange.Count} tiles"
+        );
     }
 }

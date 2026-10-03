@@ -236,6 +236,20 @@ public class InGameUIManager : MonoBehaviour
         PlayerMove p = target.GetComponent<PlayerMove>();
         if (p != null) turnGameManager.TrySelectPlayer(p);
     }
+
+    //ของ Enemy ที่ไม่ส่ง Enemy เข้า TurnGameManager เพราะ Enemy Icon แค่เอาไว้ดู Range เฉยๆ
+    public void OnEnemyIconClicked(GameObject target)
+    {
+        if (target == null)
+            return;
+
+        Enemy enemy = target.GetComponent<Enemy>();
+
+        if (enemy == null)
+            return;
+
+        PlayerController.Instance?.SelectEnemy(enemy);
+    }
     #region Setup UI and active UI
     private void CreateCharacterandHazardIcon()
     {

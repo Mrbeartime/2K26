@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RangedEnemy : Enemy
@@ -38,5 +39,68 @@ public class RangedEnemy : Enemy
         Gizmos.color = Color.red;
         Gizmos.DrawRay(muzzle.position, muzzle.forward * Mathf.Max(1, rangeTiles) * tileSize);
         Gizmos.DrawWireSphere(muzzle.position, 0.03f);
+    }
+
+    public override List<Tile> GetAttackRange()
+    {
+        List<Tile> tiles = new List<Tile>();
+
+        if (GridManager.Instance == null)
+            return tiles;
+
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+
+        if (origin == null)
+            return tiles;
+
+        Transform muzzle = firePoint != null ? firePoint : transform;
+
+        Vector3 forward = muzzle.forward;
+
+        // แปลงทิศของ firePoint ให้เป็นทิศบน Grid
+        Vector2Int direction;
+
+        if (Mathf.Abs(forward.x) > Mathf.Abs(forward.z))
+        {
+            direction = new Vector2Int(
+                forward.x > 0 ? 1 : -1,
+                0
+            );
+        }
+        else
+        {
+            direction = new Vector2Int(
+                0,
+                forward.z > 0 ? 1 : -1
+            );
+        }
+
+        Tile current = origin;
+
+        for (int i = 0; i < rangeTiles; i++)
+        {
+            Tile next =
+                GridManager.Instance.GetTile(
+                    current.gridPosition + direction
+                );
+
+            if (next == null)
+                break;
+
+            // ลูกธนูเจอกำแพง = Range จบตรงนั้น
+            if (GridManager.Instance.IsBlockedByWall(
+                current,
+                next,
+                null,
+                true))
+            {
+                break;
+            }
+
+            tiles.Add(next);
+            current = next;
+        }
+
+        return tiles;
     }
 }
