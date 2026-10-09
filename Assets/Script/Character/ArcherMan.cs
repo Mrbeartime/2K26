@@ -62,5 +62,18 @@ public class ArcherMan : Character
         projectile.Initialize(this, origin, direction, arrowSpeed);
         arrow.SetActive(true);
     }
+
+    public override void ShowSkillRange()
+    {
+        if (GridManager.Instance == null)
+            return;
+
+        Tile origin =
+            GridManager.Instance.GetTile(CurrentLocation);
+
+        PlayerController.Instance?.ShowArcherSkillRange(origin);
+    }
+
+    
 }
 

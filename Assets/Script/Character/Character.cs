@@ -39,6 +39,9 @@ public class Character : Entity
                 return true;
         return false;
     }
+    public virtual void ShowSkillRange()
+    {
+    }
     public virtual void Attack(Tile target) { }
 }
 

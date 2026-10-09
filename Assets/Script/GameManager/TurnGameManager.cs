@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;//DO NOT REMOVE
 
 /// <summary>
 /// Controls the five-round player phase in TESTMAP1Version2.
@@ -25,8 +26,11 @@ public class TurnGameManager : MonoBehaviour
     private readonly HashSet<PlayerMove> finishedPlayers = new();
     private readonly HashSet<PlayerMove> movedPlayers = new();
     private PlayerMove currentPlayer;
-    private int currentTurn = 1;
-    public int CurrentTurn => currentTurn; //เพิ่มมาเพราะอยากให้มี currentTurn แบบ Public
+    private int currentTurn;   // นับถอยหลัง: เริ่มที่ maximumTurns, ลดทีละ 1 เมื่อจบเทิร์น, 0 = หมดเทิร์น
+    public int CurrentTurn => currentTurn; //public currentTurn (countdown)
+    public int TurnsLeft => currentTurn;
+    // เลขเทิร์นแบบนับขึ้น (1..maximumTurns) ใช้กับ TurnTrap และข้อความ debug
+    private int ElapsedTurn => Mathf.Clamp(maximumTurns - currentTurn + 1, 1, maximumTurns);
     private bool currentPlayerSelected;
     private bool hasMoved;
     private bool waitingForMovement;
@@ -46,6 +50,28 @@ public class TurnGameManager : MonoBehaviour
         currentPlayerSelected && !waitingForMovement &&
         CurrentPlayer.TryGetComponent(out Character character) && character.CanReact(CurrentPlayer.GetCurrentTile());
 
+    #region AddByChitipat //review this before any change
+
+    public event Action StateChanged;              // ยิงทุกครั้งที่ state เปลี่ยน
+    public event Action<bool, string> GameEnded;   // (ชนะหรือไม่, เหตุผล)
+
+    public bool IsEnemyPhase => enemyPhase;        // enemyPhase ยัง true ตลอด trap phase
+    public bool IsWaitingForMovement => waitingForMovement;
+    public string Status => status;
+
+    public bool CanChooseMove => !gameComplete && !enemyPhase && currentPlayer != null &&
+        currentPlayerSelected && !hasMoved && !waitingForMovement;
+
+    public bool CanChooseSkill => !gameComplete && !enemyPhase && currentPlayer != null &&
+        currentPlayerSelected && !waitingForMovement;
+
+    public bool CanChooseReact => CanCurrentPlayerReact;
+    public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
+
+    private void RaiseStateChanged() => StateChanged?.Invoke();
+    #endregion
+
+    #region tempUI
     public bool IsPointerOverTurnUI(Vector2 screenPosition)
     {
         if (!showTestUI) return false;
@@ -73,6 +99,64 @@ public class TurnGameManager : MonoBehaviour
             new Rect(470f, 126f, 100f, 28f).Contains(guiPosition);
     }
 
+    private void OnGUI()
+    {
+        if (!showTestUI) return;
+        const float width = 570f;
+        GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
+        GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
+            "Turns Left: " + Mathf.Max(0, currentTurn),
+            new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleRight
+            });
+        GUI.Label(new Rect(30, 48, 400, 24), "Turn " + ElapsedTurn + " / " + maximumTurns);
+        GUI.Label(new Rect(30, 72, 400, 24), trapPhase ? "Active: Traps" : enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
+        GUI.Label(new Rect(30, 96, 410, 24), status ?? "Preparing...");
+
+        if (IsMoveTargeting)
+        {
+            if (GUI.Button(new Rect(30, 126, 180, 28), "Cancel Move")) CancelMoveTargeting();
+        }
+        else if (IsSkillTargeting)
+        {
+            if (GUI.Button(new Rect(30, 126, 180, 28), "Cancel Skill")) CancelSkill();
+        }
+        else
+        {
+            GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !hasMoved && !waitingForMovement && actionMode == ActionMode.None;
+            if (GUI.Button(new Rect(30, 126, 100, 28), "Move")) ChooseMove();
+
+            GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !waitingForMovement && actionMode == ActionMode.None;
+            if (GUI.Button(new Rect(140, 126, 100, 28), "Skill")) ChooseSkill();
+            if (CanCurrentPlayerReact && GUI.Button(new Rect(250, 126, 100, 28), "React")) ChooseReact();
+            if (GUI.Button(new Rect(360, 126, 100, 28), "Skip")) ChooseSkip();
+
+            GUI.enabled = !gameComplete && !enemyPhase && !waitingForMovement && actionMode == ActionMode.None;
+            if (GUI.Button(new Rect(470, 126, 100, 28), "End Turn")) ChooseEndTurn();
+        }
+        GUI.enabled = true;
+
+        if (!gameComplete) return;
+        float x = (Screen.width - 360f) * 0.5f;
+        float y = (Screen.height - 180f) * 0.5f;
+        GUI.Box(new Rect(x, y, 360f, 180f), GUIContent.none);
+        GUIStyle titleStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 32,
+            alignment = TextAnchor.MiddleCenter,
+            fontStyle = FontStyle.Bold
+        };
+        GUI.Label(new Rect(x, y + 22f, 360f, 50f), playerWon ? "VICTORY!" : "GAME OVER", titleStyle);
+        GUI.Label(new Rect(x + 20f, y + 75f, 320f, 28f), gameOverReason, new GUIStyle(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter
+        });
+        if (GUI.Button(new Rect(x + 105f, y + 120f, 150f, 36f), "Restart")) RestartCurrentScene();
+    }
+    #endregion
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -81,6 +165,7 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        currentTurn = maximumTurns;   // ตั้งใน Awake เพื่อให้ค่าพร้อมก่อน Start ของทุก script
     }
 
     private void Start()
@@ -104,23 +189,77 @@ public class TurnGameManager : MonoBehaviour
     }
 
     public bool TrySelectPlayer(PlayerMove player)
+{
+    if (gameComplete ||
+        enemyPhase ||
+        waitingForMovement ||
+        player == null ||
+        finishedPlayers.Contains(player) ||
+        !players.Contains(player))
+        return false;
+
+    if (actionMode == ActionMode.MoveTargeting)
+        CancelMoveTargeting();
+    else if (actionMode == ActionMode.SkillTargeting)
+        CancelSkill();
+
+    currentPlayer = player;
+    currentPlayerSelected = true;
+
+    // เช็กว่าตัวนี้เดินไปแล้วหรือยัง
+    hasMoved = movedPlayers.Contains(player);
+
+    PlayerController.Instance?.SelectPlayer(player);
+
+    Character character =
+        player.GetComponent<Character>();
+
+    // =========================
+    // ยังไม่เดิน
+    // =========================
+    if (!hasMoved)
     {
-        if (gameComplete || enemyPhase || waitingForMovement || actionMode != ActionMode.None ||
-            player == null || finishedPlayers.Contains(player)) return false;
-        currentPlayer = player;
-        PlayerController.Instance?.SelectPlayer(player);
-        currentPlayerSelected = true;
-        hasMoved = movedPlayers.Contains(player);
-        status = player.name + " selected: choose Move, Skill, or React.";
-        return true;
+        PlayerController.Instance?.ShowMoveRange(player);
+
+        status =
+            player.name +
+            " selected: Move or Skill.";
     }
+
+    // =========================
+    // เดินไปแล้ว
+    // =========================
+    else
+    {
+        character?.ShowSkillRange();
+
+        status =
+            player.name +
+            " selected: Skill, React, or Skip.";
+    }
+
+    RaiseStateChanged();
+    return true;
+}
 
     public void ChooseMove()
     {
-        if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected || hasMoved || waitingForMovement) return;
+        if (gameComplete ||
+            enemyPhase ||
+            CurrentPlayer == null ||
+            !currentPlayerSelected ||
+            hasMoved ||
+            waitingForMovement)
+            return;
+
         actionMode = ActionMode.MoveTargeting;
-        PlayerController.Instance?.SelectPlayer(CurrentPlayer);
+
+        PlayerController.Instance?.ClearHighlights();
+        PlayerController.Instance?.ShowMoveRange(CurrentPlayer);
+
         status = "Move: click a highlighted tile.";
+
+        RaiseStateChanged();
     }
 
     public void MoveToTarget(Tile target)
@@ -137,6 +276,7 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         PlayerController.Instance?.ClearHighlights();
         status = CurrentPlayer.name + " is moving...";
+        RaiseStateChanged();
     }
 
     public void CancelMoveTargeting()
@@ -145,16 +285,33 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         PlayerController.Instance?.SelectPlayer(CurrentPlayer);
         status = "Move cancelled. Choose an action.";
+        RaiseStateChanged();
     }
 
     public void ChooseSkill()
     {
-        if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected || waitingForMovement) return;
+        if (gameComplete ||
+            enemyPhase ||
+            CurrentPlayer == null ||
+            !currentPlayerSelected ||
+            waitingForMovement)
+            return;
+
         actionMode = ActionMode.SkillTargeting;
+
         PlayerController.Instance?.ClearHighlights();
-        if (CurrentPlayer.GetComponent<Rogue>() is Rogue rogue)
-            PlayerController.Instance?.ShowRogueSkillRange(CurrentPlayer.GetCurrentTile(), rogue.LockpickRange);
-        status = "Skill: click a target tile or enemy. This ends " + CurrentPlayer.name + "'s action.";
+
+        Character character =
+            CurrentPlayer.GetComponent<Character>();
+
+        character?.ShowSkillRange();
+
+        status =
+            "Skill: click a target tile or enemy. This ends " +
+            CurrentPlayer.name +
+            "'s action.";
+
+        RaiseStateChanged();
     }
 
     public void ChooseReact()
@@ -175,7 +332,8 @@ public class TurnGameManager : MonoBehaviour
     /// <summary>Immediately starts the enemy phase, even if players have not acted.</summary>
     public void ChooseEndTurn()
     {
-        if (gameComplete || enemyPhase || waitingForMovement || actionMode != ActionMode.None) return;
+        if (gameComplete || enemyPhase || waitingForMovement) return;
+        actionMode = ActionMode.None;   // จบเทิร์นได้แม้กำลังเลือกเป้าหมายอยู่
         currentPlayer = null;
         currentPlayerSelected = false;
         hasMoved = false;
@@ -189,6 +347,7 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         PlayerController.Instance?.ClearHighlights();
         status = "Skill cancelled. Choose an action.";
+        RaiseStateChanged();
     }
 
     public void NotifyMoveStarted(PlayerMove player)
@@ -199,11 +358,14 @@ public class TurnGameManager : MonoBehaviour
         waitingForMovement = true;
         actionMode = ActionMode.None;
         status = player.name + " is moving...";
+        RaiseStateChanged();
     }
 
     public void NotifyMoveFinished(PlayerMove player)
     {
-        if (player != CurrentPlayer || !waitingForMovement) return;
+        if (player != CurrentPlayer || !waitingForMovement)
+            return;
+
         waitingForMovement = false;
 
         if (WinBox.IsReachedBy(player))
@@ -212,7 +374,16 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        status = "Move complete. Choose Skill, React, or Skip.";
+        // เดินเสร็จแล้ว -> โชว์ Skill Range
+        Character character =
+            player.GetComponent<Character>();
+
+        character?.ShowSkillRange();
+
+        status =
+            "Move complete. Choose Skill, React, or Skip.";
+
+        RaiseStateChanged();
     }
 
     public void NotifyPlayerDefeated(PlayerMove player)
@@ -234,7 +405,11 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        if (player != CurrentPlayer) return;
+        if (player != CurrentPlayer)
+        {
+            RaiseStateChanged();   // ตัวที่ตายไม่ใช่ตัวที่เลือกอยู่ แต่ไอคอนต้องอัปเดต
+            return;
+        }
 
         currentPlayer = null;
         currentPlayerSelected = false;
@@ -244,6 +419,7 @@ public class TurnGameManager : MonoBehaviour
         PlayerController.Instance?.ClearHighlights();
 
         status = player.name + " was defeated. Select another Player.";
+        RaiseStateChanged();
     }
 
     public void UseSkillOn(Tile target)
@@ -305,6 +481,7 @@ public class TurnGameManager : MonoBehaviour
         }
 
         status = actionName + " complete. Select another Player.";
+        RaiseStateChanged();
     }
 
     private void StartEnemyPhase()
@@ -313,6 +490,7 @@ public class TurnGameManager : MonoBehaviour
         enemyPhase = true;
         status = "Enemy Phase...";
         StartCoroutine(RunEnemyPhase());
+        RaiseStateChanged();
     }
 
     private System.Collections.IEnumerator RunEnemyPhase()
@@ -324,7 +502,7 @@ public class TurnGameManager : MonoBehaviour
         if (gameComplete) yield break;
 
         trapPhase = true;
-        status = "Trap Phase: resolving turn " + currentTurn + "...";
+        status = "Trap Phase: resolving turn " + ElapsedTurn + "...";
         // Resolve the current round number, not the next one. Waiting on each
         // trap keeps input locked until activation completes and arrows finish flying.
         // Raised spikes persist without blocking the next player phase.
@@ -332,13 +510,13 @@ public class TurnGameManager : MonoBehaviour
         {
             if (gameComplete) yield break;
             if (trap != null && trap.isActiveAndEnabled && trap.gameObject.scene == gameObject.scene)
-                yield return trap.ResolveTurn(currentTurn);
+                yield return trap.ResolveTurn(ElapsedTurn);   // ส่งเลขเทิร์นแบบนับขึ้นเหมือนเดิม กับดักจะได้ไม่เปลี่ยนพฤติกรรม
         }
         if (gameComplete) yield break;
         trapPhase = false;
         enemyPhase = false;
-        currentTurn++;
-        if (currentTurn > maximumTurns)
+        currentTurn--;
+        if (currentTurn <= 0)
         {
             ShowGameOver("Turn limit reached.");
             yield break;
@@ -362,7 +540,8 @@ public class TurnGameManager : MonoBehaviour
         hasMoved = false;
         waitingForMovement = false;
         actionMode = ActionMode.None;
-        status = "Turn " + currentTurn + "/" + maximumTurns + ": select any Player.";
+        status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
+        RaiseStateChanged();
     }
 
     private void ShowGameOver(string reason)
@@ -374,6 +553,9 @@ public class TurnGameManager : MonoBehaviour
         gameOverReason = reason;
         status = "GAME OVER: " + reason;
         PlayerController.Instance?.ClearHighlights();
+
+        GameEnded?.Invoke(false, reason);
+        RaiseStateChanged();
     }
 
     private void OnDestroy()
@@ -390,68 +572,13 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
+
+        GameEnded?.Invoke(true, gameOverReason);
+        RaiseStateChanged();
     }
 
-    private void RestartCurrentScene()
+    public void RestartCurrentScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    private void OnGUI()
-    {
-        if (!showTestUI) return;
-        const float width = 570f;
-        GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
-        GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
-            "Turns Left: " + Mathf.Max(0, maximumTurns - currentTurn + 1),
-            new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 20,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleRight
-            });
-        GUI.Label(new Rect(30, 48, 400, 24), "Turn " + currentTurn + " / " + maximumTurns);
-        GUI.Label(new Rect(30, 72, 400, 24), trapPhase ? "Active: Traps" : enemyPhase ? "Active: Enemy" : "Active: " + (CurrentPlayer == null ? "Choose a Player" : CurrentPlayer.name));
-        GUI.Label(new Rect(30, 96, 410, 24), status ?? "Preparing...");
-
-        if (IsMoveTargeting)
-        {
-            if (GUI.Button(new Rect(30, 126, 180, 28), "Cancel Move")) CancelMoveTargeting();
-        }
-        else if (IsSkillTargeting)
-        {
-            if (GUI.Button(new Rect(30, 126, 180, 28), "Cancel Skill")) CancelSkill();
-        }
-        else
-        {
-            GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !hasMoved && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(30, 126, 100, 28), "Move")) ChooseMove();
-
-            GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(140, 126, 100, 28), "Skill")) ChooseSkill();
-            if (CanCurrentPlayerReact && GUI.Button(new Rect(250, 126, 100, 28), "React")) ChooseReact();
-            if (GUI.Button(new Rect(360, 126, 100, 28), "Skip")) ChooseSkip();
-
-            GUI.enabled = !gameComplete && !enemyPhase && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(470, 126, 100, 28), "End Turn")) ChooseEndTurn();
-        }
-        GUI.enabled = true;
-
-        if (!gameComplete) return;
-        float x = (Screen.width - 360f) * 0.5f;
-        float y = (Screen.height - 180f) * 0.5f;
-        GUI.Box(new Rect(x, y, 360f, 180f), GUIContent.none);
-        GUIStyle titleStyle = new GUIStyle(GUI.skin.label)
-        {
-            fontSize = 32,
-            alignment = TextAnchor.MiddleCenter,
-            fontStyle = FontStyle.Bold
-        };
-        GUI.Label(new Rect(x, y + 22f, 360f, 50f), playerWon ? "VICTORY!" : "GAME OVER", titleStyle);
-        GUI.Label(new Rect(x + 20f, y + 75f, 320f, 28f), gameOverReason, new GUIStyle(GUI.skin.label)
-        {
-            alignment = TextAnchor.MiddleCenter
-        });
-        if (GUI.Button(new Rect(x + 105f, y + 120f, 150f, 36f), "Restart")) RestartCurrentScene();
     }
 }
