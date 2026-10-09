@@ -573,6 +573,7 @@ public class TurnGameManager : MonoBehaviour
         status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
 
+        ProjectD.Menus.GameSceneManager.CompleteActiveLevel();
         GameEnded?.Invoke(true, gameOverReason);
         RaiseStateChanged();
     }
