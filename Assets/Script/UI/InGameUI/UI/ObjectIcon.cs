@@ -59,13 +59,12 @@ public class ObjectIcon : MonoBehaviour
         }
 
         // =========================
-        // Enemy Icon
+        // Enemy Icon หรือ Trap UI
         // =========================
-        if (TargetObject.TryGetComponent<Enemy>(out _))
+        if (TargetObject.TryGetComponent<Enemy>(out _) ||
+        TargetObject.TryGetComponent<TurnArrowTrap>(out _))
         {
-            InGameUIManager.Instance
-                .OnEnemyIconClicked(TargetObject);
-
+            InGameUIManager.Instance.OnEnemyIconClicked(TargetObject);
             return;
         }
     }
