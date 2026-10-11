@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     private PlayerMove selectedPlayer;
 
     private Enemy selectedEnemy;
+    private TurnArrowTrap selectedArrowTrap;
     private Camera mainCamera;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -51,6 +52,17 @@ public class PlayerController : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            TurnArrowTrap clickedTrap = hit.collider.GetComponentInParent<TurnArrowTrap>();
+
+            if (clickedTrap != null)
+            {
+                if (!turnManager.IsSkillTargeting &&
+                    !turnManager.IsMoveTargeting)
+                {
+                    SelectArrowTrap(clickedTrap);
+                    return;
+                }
+            }
             // =========================
             // คลิก Enemy
             // =========================
@@ -359,6 +371,7 @@ public class PlayerController : MonoBehaviour
         // =========================
         ClearHighlights();
 
+        selectedArrowTrap = null; //เพื่อไม่ให้การเลือก Enemy กับหน้าไม้สลับกันแล้วสถานะค้าง
         selectedEnemy = enemy;
 
         List<Tile> attackRange = enemy.GetAttackRange();
@@ -372,5 +385,31 @@ public class PlayerController : MonoBehaviour
         Debug.Log(
             $"Enemy Selected: {enemy.name} | Range: {attackRange.Count} tiles"
         );
+    }
+
+    public void SelectArrowTrap(TurnArrowTrap trap)
+    {
+        if (trap == null)
+            return;
+
+        if (selectedArrowTrap == trap)
+        {
+            ClearHighlights();
+            selectedArrowTrap = null;
+            return;
+        }
+
+        ClearHighlights();
+
+        selectedEnemy = null;
+        selectedArrowTrap = trap;
+
+        List<Tile> range = trap.GetAttackRange();
+
+        foreach (Tile tile in range)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
+        }
     }
 }
