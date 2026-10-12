@@ -43,7 +43,7 @@ public class InGameUIManager : MonoBehaviour
     private const int ActionMove = 0, ActionInteract = 1, ActionSignature = 2;
     private const int NoAction = -1;
     private int selectedAction = NoAction;
-
+    private static bool NeedsSpaceConfirm(int actionId) => actionId == ActionInteract;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -176,7 +176,12 @@ public class InGameUIManager : MonoBehaviour
         // action ที่เลือกค้างไว้ใช้ไม่ได้แล้ว (เช่น Move ไปแล้ว) -> ล้าง
         if (selectedAction != NoAction && !availableActions.Contains(selectedAction)) selectedAction = NoAction;
 
-        ConfirmAction(availableActions[CurrentFocusActionIndex]);
+        if (availableActions.Count > 0)
+        {
+            CurrentFocusActionIndex = Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1);
+            int focusId = availableActions[CurrentFocusActionIndex];
+            if (!NeedsSpaceConfirm(focusId)) ConfirmAction(focusId);
+        }
 
         if (SignatureText != null) SignatureText.text = GetSignatureName(current);
 
@@ -312,7 +317,6 @@ public class InGameUIManager : MonoBehaviour
                 FocusAndUseAction((CurrentFocusActionIndex + 1) % count);
                 break;
             case "space":
-                // CurrentFocusActionIndex คือ "ลำดับในรายการที่ใช้ได้" ต้องแปลงเป็น id ของ action ก่อนส่ง
                 ConfirmAction(availableActions[CurrentFocusActionIndex]);
                 break;
         }
@@ -323,7 +327,14 @@ public class InGameUIManager : MonoBehaviour
         CancelPendingAction();
         CurrentFocusActionIndex = newIndex;
         UpdateActionFocusUI();
-        ConfirmAction(availableActions[CurrentFocusActionIndex]);
+
+        int id = availableActions[CurrentFocusActionIndex];
+        if (NeedsSpaceConfirm(id))
+        {
+            selectedAction = id;
+            return;
+        }
+        ConfirmAction(id);
     }
 
     public void SelectAction(int actionId)
@@ -351,14 +362,18 @@ public class InGameUIManager : MonoBehaviour
                 if (!turnGameManager.IsMoveTargeting) turnGameManager.ChooseMove();       // -> เลือกช่องเดิน
                 break;
             case ActionInteract:
-                turnGameManager.ChooseReact();                                            // -> ทำทันที (ไม่มีเป้าหมายให้เลือก)
+                ConfirmInteract();
                 break;
             case ActionSignature:
                 if (!turnGameManager.IsSkillTargeting) turnGameManager.ChooseSkill();     // -> เลือกเป้าหมายสกิล
                 break;
         }
     }
-
+    private void ConfirmInteract()
+    {
+        //Claude ลองแก้ตรงนี้
+        turnGameManager.ChooseReact();
+    }
     private void CancelPendingAction()
     {
         selectedAction = NoAction;
