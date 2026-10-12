@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TurnArrowTrap : TurnTrap
@@ -97,5 +98,60 @@ public class TurnArrowTrap : TurnTrap
         Gizmos.color = Color.red;
         Gizmos.DrawRay(muzzle.position, muzzle.forward * rangeTiles * size);
         Gizmos.DrawWireSphere(muzzle.position, hitRadius);
+    }
+
+    //เป็นการแสดงแนวยิงตามช่อง Grid โดยประมาณ ยังไม่ได้จำลองการหยุดของลูกธนูเมื่อชน Player ระหว่างทาง
+    public List<Tile> GetAttackRange()
+    {
+        List<Tile> tiles = new List<Tile>();
+
+        if (GridManager.Instance == null)
+            return tiles;
+
+        Transform muzzle = firePoint != null ? firePoint : transform;
+
+        Vector2Int originPosition =
+            GridManager.Instance.WorldToGrid(transform.position);
+
+        Vector3 forward = muzzle.forward;
+
+        Vector2Int direction;
+
+        if (Mathf.Abs(forward.x) > Mathf.Abs(forward.z))
+        {
+            direction = new Vector2Int(
+                forward.x > 0 ? 1 : -1, 0
+            );
+        }
+        else
+        {
+            direction = new Vector2Int(
+                0, forward.z > 0 ? 1 : -1
+            );
+        }
+
+        Tile current = GridManager.Instance.GetTile(originPosition);
+
+        if (current == null)
+            return tiles;
+
+        for (int i = 0; i < rangeTiles; i++)
+        {
+            Tile next = GridManager.Instance.GetTile(
+                current.gridPosition + direction
+            );
+
+            if (next == null)
+                break;
+
+            if (GridManager.Instance.IsBlockedByWall(
+                current, next, null, true))
+                break;
+
+            tiles.Add(next);
+            current = next;
+        }
+
+        return tiles;
     }
 }

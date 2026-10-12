@@ -248,12 +248,23 @@ public class InGameUIManager : MonoBehaviour
         if (target == null)
             return;
 
+        //หน้าไม้
+        TurnArrowTrap trap = target.GetComponent<TurnArrowTrap>();
+
+        if (trap != null)
+        {
+            PlayerController.Instance?.SelectArrowTrap(trap);
+            return;
+        }
+
+        //Enemy
         Enemy enemy = target.GetComponent<Enemy>();
 
-        if (enemy == null)
+        if (enemy != null)
+        {
+            PlayerController.Instance?.SelectEnemy(enemy);
             return;
-
-        PlayerController.Instance?.SelectEnemy(enemy);
+        }
     }
     #region Setup UI and active UI
     private void CreateCharacterandHazardIcon()
