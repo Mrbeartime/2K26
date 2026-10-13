@@ -1,9 +1,24 @@
 fileFormatVersion: 2
-guid: b1ea24fdd7047614683fecdf9902ccb3
+guid: 16271de8dfbd27e42b4d74e271c27c2b
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Pillar_Body_Texture
+    second: {fileID: 2800000, guid: e0706a2527854804689755f9cee42586, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Wall_Clean_Texture
+    second: {fileID: 2800000, guid: ac0c41df3b2a17841bf48bbd4c59d115, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Wall_Cracked_B_Texture
+    second: {fileID: 2800000, guid: 52b96b1acea05f14ca1871b01af1ff1a, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
