@@ -29,6 +29,11 @@ public class Rogue : Character
 
     public override void ShowSkillRange()
     {
+        if (!CanUseSkill)
+        {
+            PlayerController.Instance?.ClearHighlights();
+            return;
+        }
         if (GridManager.Instance == null)
             return;
 

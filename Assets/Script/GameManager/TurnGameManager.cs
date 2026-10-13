@@ -238,6 +238,7 @@ public class TurnGameManager : MonoBehaviour
     // =========================
     else
     {
+        if (SkipExhaustedSkill()) return true;
         character?.ShowSkillRange();
 
         status =
@@ -297,6 +298,7 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkill()
     {
+        if (SkipExhaustedSkill()) return;
         if (!CanChooseSkill)
         {
             status = "Skill unavailable: no uses left for this level.";
@@ -388,6 +390,7 @@ public class TurnGameManager : MonoBehaviour
         }
 
         // เดินเสร็จแล้ว -> โชว์ Skill Range
+        if (SkipExhaustedSkill()) return;
         Character character =
             player.GetComponent<Character>();
 
@@ -484,6 +487,16 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
         EndCurrentPlayerAction("Rogue Skill");
+    }
+
+    private bool SkipExhaustedSkill()
+    {
+        if (gameComplete || enemyPhase || waitingForMovement || CurrentPlayer == null ||
+            !currentPlayerSelected) return false;
+        Character character = CurrentPlayer.GetComponent<Character>();
+        if (character == null || character.SkillLimit < 0 || character.RemainingSkills > 0) return false;
+        EndCurrentPlayerAction("No skills left: skipped");
+        return true;
     }
 
     private void EndCurrentPlayerAction(string actionName)
