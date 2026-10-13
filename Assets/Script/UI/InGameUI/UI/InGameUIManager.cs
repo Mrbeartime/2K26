@@ -239,6 +239,16 @@ public class InGameUIManager : MonoBehaviour
         if (turnGameManager.CanChooseMove) availableActions.Add(ActionMove);
         if (turnGameManager.CanChooseReact) availableActions.Add(ActionInteract);
         if (turnGameManager.CanChooseSkill) availableActions.Add(ActionSignature);
+        Button skillButton = SignatureAction.GetComponentInChildren<Button>(true);
+        if (skillButton != null) skillButton.interactable = turnGameManager.CanChooseSkill;
+        if (availableActions.Count == 0)
+        {
+            selectedAction = NoAction;
+            ActionUI.SetActive(false);
+            PlayerController.Instance?.ClearHighlights();
+            turnGameManager.SkipExhaustedSkill();
+            return;
+        }
 
         // action ที่เลือกค้างไว้ใช้ไม่ได้แล้ว (เช่น Move ไปแล้ว) -> ล้าง
         if (selectedAction != NoAction && !availableActions.Contains(selectedAction)) selectedAction = NoAction;
@@ -248,9 +258,16 @@ public class InGameUIManager : MonoBehaviour
             CurrentFocusActionIndex = Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1);
             int focusId = availableActions[CurrentFocusActionIndex];
             if (!NeedsSpaceConfirm(focusId)) ConfirmAction(focusId);
+            if (turnGameManager.CurrentPlayer != current || turnGameManager.IsEnemyPhase) return;
         }
 
-        if (SignatureText != null) SignatureText.text = GetSignatureName(current);
+        if (SignatureText != null)
+        {
+            Character character = current.GetComponent<Character>();
+            string count = character != null && character.SkillLimit >= 0
+                ? " (" + character.RemainingSkills + "/" + character.SkillLimit + ")" : " (Unlimited)";
+            SignatureText.text = GetSignatureName(current) + count;
+        }
 
         const float startY = 35f, gapY = 65f, posX = 25f;
         for (int i = 0; i < availableActions.Count; i++)
@@ -462,6 +479,14 @@ public class InGameUIManager : MonoBehaviour
 
     private void ConfirmAction(int actionId)
     {
+        if (turnGameManager == null) return;
+        if (actionId == ActionSignature && !turnGameManager.CanChooseSkill)
+        {
+            selectedAction = NoAction;
+            PlayerController.Instance?.ClearHighlights();
+            turnGameManager.SkipExhaustedSkill();
+            return;
+        }
         switch (actionId)
         {
             case ActionMove:

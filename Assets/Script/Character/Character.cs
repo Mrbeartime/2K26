@@ -3,10 +3,19 @@ using UnityEngine;
 public class Character : Entity
 {
     public virtual int SkillLimit => -1;
-    public int SkillsUsed { get; private set; }
+    [Header("Skill Runtime State")]
+    [SerializeField, Tooltip("Runtime usage counter. Do not edit during play.")]
+    private int skillsUsed;
+    public int SkillsUsed => skillsUsed;
     public int RemainingSkills => SkillLimit < 0 ? -1 : Mathf.Max(0, SkillLimit - SkillsUsed);
     public bool CanUseSkill => !IsDead && (SkillLimit < 0 || RemainingSkills > 0);
-    protected void RecordSkillUse() => SkillsUsed++;
+    protected void RecordSkillUse()
+    {
+        skillsUsed++;
+        Debug.Log(name + " skill used. Remaining: " + RemainingSkills + " / " + SkillLimit, this);
+    }
+
+    private void Awake() => skillsUsed = 0;
     [Header("Movement Range")]
     [Tooltip("Maximum number of tiles per move command, including detours around walls.")]
     [SerializeField, Min(0)] private int movementRange = 3;

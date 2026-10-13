@@ -489,7 +489,7 @@ public class TurnGameManager : MonoBehaviour
         EndCurrentPlayerAction("Rogue Skill");
     }
 
-    private bool SkipExhaustedSkill()
+    public bool SkipExhaustedSkill()
     {
         if (gameComplete || enemyPhase || waitingForMovement || CurrentPlayer == null ||
             !currentPlayerSelected) return false;
@@ -497,6 +497,12 @@ public class TurnGameManager : MonoBehaviour
         if (character == null || character.SkillLimit < 0 || character.RemainingSkills > 0) return false;
         EndCurrentPlayerAction("No skills left: skipped");
         return true;
+    }
+
+    private void LateUpdate()
+    {
+        if (Time.timeScale == 0 || waitingForMovement || CurrentPlayer == null) return;
+        if (hasMoved || actionMode == ActionMode.SkillTargeting) SkipExhaustedSkill();
     }
 
     private void EndCurrentPlayerAction(string actionName)
@@ -627,3 +633,4 @@ public class TurnGameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
+

@@ -250,6 +250,7 @@ public class PlayerController : MonoBehaviour
     public void ShowRogueSkillRange(Tile origin, int range)
     {
         ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
         if (origin == null) return;
         foreach (Tile tile in FindObjectsByType<Tile>())
         {
@@ -258,6 +259,14 @@ public class PlayerController : MonoBehaviour
             currentHighlightedTiles.Add(tile);
             tile.ShowHighlight(Tile.HighlightType.Skill);
         }
+    }
+
+    private bool CanShowSelectedSkill()
+    {
+        TurnGameManager manager = TurnGameManager.Instance;
+        PlayerMove player = manager != null ? manager.CurrentPlayer : selectedPlayer;
+        return player != null && player.TryGetComponent(out Character character) &&
+            character.CanUseSkill && (manager == null || manager.CanChooseSkill);
     }
 
     public void ShowSwordSkillRange(Tile origin)
@@ -302,6 +311,7 @@ public class PlayerController : MonoBehaviour
     public void ShowArcherSkillRange(Tile origin)
     {
         ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
 
         if (origin == null || GridManager.Instance == null)
             return;
