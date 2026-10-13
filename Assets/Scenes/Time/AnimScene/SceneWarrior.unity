@@ -241,6 +241,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &271295884 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2183369417938639602, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+  m_PrefabInstance: {fileID: 1708234520}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1751b0586c4c4488d2715a84a107d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -415,6 +426,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1708234529}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: TurnCounter
+      value: 
+      objectReference: {fileID: 271295884}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: TurnLimitUI
       value: 
       objectReference: {fileID: 1708234526}
@@ -436,11 +451,11 @@ PrefabInstance:
       objectReference: {fileID: 1708234522}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: HazardList.Array.size
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: CharacterList.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: 'HazardList.Array.data[0]'
@@ -462,6 +477,14 @@ PrefabInstance:
       propertyPath: 'HazardList.Array.data[4]'
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[0]'
+      value: 
+      objectReference: {fileID: 5714618509310246427, guid: 9d8780922ba82364c96476bb0befe58d, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[1]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: 'CharacterList.Array.data[0]'
       value: 
