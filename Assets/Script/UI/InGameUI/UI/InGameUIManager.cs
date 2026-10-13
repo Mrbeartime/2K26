@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class InGameUIManager : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class InGameUIManager : MonoBehaviour
     public GameObject HazardUI;
     public GameObject TurnLimitUI;
     public TextMeshProUGUI TurnLimitText;
+    public UITurnCounter TurnCounter;   // drag the object with UITurnCounter here
     public GameObject PauseUI;
+
 
     [Header("Action Lists")]
     public GameObject MoveAction;
@@ -28,7 +31,8 @@ public class InGameUIManager : MonoBehaviour
     [SerializeField] private GameObject[] HazardList;
 
     [Header("Icon Spawning")]
-    [SerializeField] private GameObject IconPrefab; // ลาก Prefab ของ Icon มาใส่(มีอันเดียวมั้งตอนนี้)
+    [Tooltip("Enter Icon list in order of CharacterList and HazardList simultaneously")]
+    [SerializeField] private GameObject[] IconPrefab;
 
     [Header("Input Actions")]
     private ProjectDInputAction _inputAction;
@@ -37,6 +41,9 @@ public class InGameUIManager : MonoBehaviour
 
 
     //System
+
+    private readonly List<(Button button, UnityEngine.Events.UnityAction callback)> actionButtons = new();
+    private HoldButton turnLimitButton;
     private TurnGameManager turnGameManager;
     private PlayerMove previousCharacter;
     private readonly List<int> availableActions = new();
@@ -44,6 +51,7 @@ public class InGameUIManager : MonoBehaviour
     private const int NoAction = -1;
     private int selectedAction = NoAction;
     private static bool NeedsSpaceConfirm(int actionId) => actionId == ActionInteract;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -86,12 +94,14 @@ public class InGameUIManager : MonoBehaviour
 
         _inputAction.Disable();
     }
+
     private void OnDestroy()
     {
         if (turnGameManager == null) return;
         turnGameManager.StateChanged -= RefreshFromTurnManager;
         turnGameManager.GameEnded -= OnGameEnded;
     }
+
     private void Start()
     {
         CreateCharacterandHazardIcon();
@@ -105,9 +115,58 @@ public class InGameUIManager : MonoBehaviour
         turnGameManager.StateChanged += RefreshFromTurnManager;
         turnGameManager.GameEnded += OnGameEnded;
 
+        SetupTurnLimitButton();
+        SetUpActionList();
         RefreshFromTurnManager();
 
         PauseUI.SetActive(false);
+    }
+
+    private void SetupTurnLimitButton()
+    {
+        if (TurnLimitUI == null) return;
+
+        Button button = TurnLimitUI.GetComponentInChildren<Button>(true);
+        if (button == null)
+        {
+            Debug.LogWarning("TurnLimitUI has no Button component.", TurnLimitUI);
+            return;
+        }
+
+        turnLimitButton = button.GetComponent<HoldButton>();
+        if (turnLimitButton == null) turnLimitButton = button.gameObject.AddComponent<HoldButton>();
+
+        turnLimitButton.HoldCompleted -= OnClickEndTurn;
+        turnLimitButton.HoldCompleted += OnClickEndTurn;
+
+        turnLimitButton.HoldStarted -= OnMouseSkipStart;
+        turnLimitButton.HoldStarted += OnMouseSkipStart;
+
+        turnLimitButton.HoldCanceled -= OnMouseSkipCancel;
+        turnLimitButton.HoldCanceled += OnMouseSkipCancel;
+    }
+
+    private void SetUpActionList()
+    {
+        BindActionButton(MoveAction, ActionMove);
+        BindActionButton(InteractAction, ActionInteract);
+        BindActionButton(SignatureAction, ActionSignature);
+    }
+
+    private void BindActionButton(GameObject actionObject, int actionId)
+    {
+        if (actionObject == null) return;
+
+        Button button = actionObject.GetComponentInChildren<Button>(true);
+        if (button == null)
+        {
+            Debug.LogWarning($"{actionObject.name} has no Button component.", actionObject);
+            return;
+        }
+
+        UnityEngine.Events.UnityAction callback = () => SelectAction(actionId);
+        button.onClick.AddListener(callback);
+        actionButtons.Add((button, callback));
     }
 
     private void RefreshFromTurnManager()
@@ -136,11 +195,14 @@ public class InGameUIManager : MonoBehaviour
         UpdateCharacterIcons(current);
         RefreshActionList(current);
     }
+
     public void UpdateTurnCounter()
     {
-        if (TurnGameManager.Instance == null || TurnLimitText == null) return;
-        TurnLimitText.text = $"{TurnGameManager.Instance.CurrentTurn}";
+        if (TurnGameManager.Instance == null) return;
+        if (TurnLimitText != null) TurnLimitText.text = $"{TurnGameManager.Instance.CurrentTurn}";
+        if (TurnCounter != null) TurnCounter.LegMoving(TurnGameManager.Instance.CurrentTurn);
     }
+
     private void UpdateCharacterIcons(PlayerMove current)
     {
         foreach (ObjectIcon icon in CharacterUI.GetComponentsInChildren<ObjectIcon>())
@@ -150,8 +212,13 @@ public class InGameUIManager : MonoBehaviour
             if (p != null && p == current) icon.Selected();
             else icon.Unselected();
 
-            bool unavailable = p == null || turnGameManager.IsPlayerFinished(p) ||
-                               (p.TryGetComponent(out Character c) && c.IsDead);
+            bool finished = p != null && turnGameManager.IsPlayerFinished(p);
+            bool dead = p != null && p.TryGetComponent(out Character c) && c.IsDead;
+            bool unavailable = p == null || finished || dead;
+
+            if (unavailable)
+                Debug.Log($"[Icon] {icon.name} disabled -> targetIsNull={p == null}, finished={finished}, dead={dead}", icon);
+
             icon.SetDisabled(unavailable);
         }
     }
@@ -233,6 +300,7 @@ public class InGameUIManager : MonoBehaviour
 
         //บอกผลชนะ/แพ้
     }
+
     public void CancelCurrentAction() => GoBack();   // เผื่อผูกกับปุ่ม uGUI
     public void OnClickEndTurn() { if (turnGameManager != null) turnGameManager.ChooseEndTurn(); }
     public void OnCharacterIconClicked(GameObject target)
@@ -266,35 +334,62 @@ public class InGameUIManager : MonoBehaviour
             return;
         }
     }
+
     #region Setup UI and active UI
     private void CreateCharacterandHazardIcon()
     {
-        // Icon Prefab มี ObjectIcon.cs ติดอยู่ เพื่อให้ไอคอนอ้างอิงไปยัง GameObject ที่เกี่ยวข้องได้
-        if (CharacterList != null)
+        int characterCount = CharacterList != null ? CharacterList.Length : 0;
+        int hazardCount = HazardList != null ? HazardList.Length : 0;
+
+        int iconCount = IconPrefab != null ? IconPrefab.Length : 0;
+        if (iconCount != characterCount + hazardCount)
         {
-            int index = 0;
-            foreach (PlayerMove character in CharacterList)
-            {
-                if (character == null)
-                {
-                    Debug.LogWarning("CharacterList ยังไม่ได้ลากตัวละครใส่", this);
-                    continue;
-                }
-                SpawnIcon(character.gameObject, CharacterUI.transform, false, index++, true);
-            }
+            Debug.LogWarning(
+                $"IconPrefab length ({iconCount}) does not match CharacterList + HazardList " +
+                $"({characterCount} + {hazardCount}). Order must be characters first, then hazards.", this);
         }
 
-        if (HazardList != null)
+        int slot = 0;
+        for (int i = 0; i < characterCount; i++)
         {
-            for (int index = 0; index < HazardList.Length; index++)
-                SpawnIcon(HazardList[index], HazardUI.transform, true, index, false);
+            PlayerMove character = CharacterList[i];
+            if (character == null)
+            {
+                Debug.LogWarning($"CharacterList[{i}] is not assigned.", this);
+                continue;
+            }
+            SpawnIcon(GetIconPrefab(i), character.gameObject, CharacterUI.transform, false, slot++, true);
+        }
+
+        // Hazards: prefab index = characterCount + i
+        int hazardSlot = 0;
+        for (int i = 0; i < hazardCount; i++)
+        {
+            GameObject hazard = HazardList[i];
+            if (hazard == null)
+            {
+                Debug.LogWarning($"HazardList[{i}] is not assigned.", this);
+                continue;
+            }
+            SpawnIcon(GetIconPrefab(characterCount + i), hazard, HazardUI.transform, true, hazardSlot++, false);
         }
     }
 
-    // ตัวละคร: เรียงจากซ้ายบน / Hazard: เรียงจากขวาบน (เว้นช่องละ 110)
-    private void SpawnIcon(GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
+    private GameObject GetIconPrefab(int prefabIndex)
     {
-        GameObject newIcon = Instantiate(IconPrefab, parent);
+        if (IconPrefab == null || prefabIndex < 0 || prefabIndex >= IconPrefab.Length || IconPrefab[prefabIndex] == null)
+        {
+            Debug.LogWarning($"No IconPrefab assigned at index {prefabIndex}.", this);
+            return null;
+        }
+        return IconPrefab[prefabIndex];
+    }
+
+    private void SpawnIcon(GameObject prefab, GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
+    {
+        if (prefab == null || target == null) return;
+
+        GameObject newIcon = Instantiate(prefab, parent);
         RectTransform rect = newIcon.GetComponent<RectTransform>();
 
         float side = rightAligned ? 1f : 0f;
@@ -302,10 +397,11 @@ public class InGameUIManager : MonoBehaviour
         rect.anchorMin = new Vector2(side, 1);
         rect.anchorMax = new Vector2(side, 1);
         rect.pivot = new Vector2(side, 1);
-        rect.anchoredPosition = new Vector2(direction * (30f + index * 110f), -20f);
+        rect.anchoredPosition = new Vector2(direction * (30f + index * 130f), -20f);
 
         ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
         if (iconScript != null) iconScript.Setup(target, selectable);
+        else Debug.LogWarning($"{prefab.name} has no ObjectIcon component.", newIcon);
     }
 
     // ---------- ระบบเลือก Action ----------
@@ -335,8 +431,8 @@ public class InGameUIManager : MonoBehaviour
 
     private void FocusAndUseAction(int newIndex)
     {
+        CurrentFocusActionIndex = newIndex;   // set first
         CancelPendingAction();
-        CurrentFocusActionIndex = newIndex;
         UpdateActionFocusUI();
 
         int id = availableActions[CurrentFocusActionIndex];
@@ -352,17 +448,16 @@ public class InGameUIManager : MonoBehaviour
     {
         if (turnGameManager == null || !availableActions.Contains(actionId)) return;
 
-        if (selectedAction == actionId)   // เลือกไว้แล้ว -> ครั้งนี้คือยืนยัน
+        // Already the active/selected action -> confirm it (Interact: second click = Space)
+        if (selectedAction == actionId)
         {
             ConfirmAction(actionId);
             return;
         }
 
-        // เลือกครั้งแรก หรือเปลี่ยนไปเลือกอันอื่น: ยกเลิกของเดิมทั้งหมดก่อน แล้วค่อย "เลือก" อันใหม่ (ยังไม่ใช้)
-        CancelPendingAction();
-        selectedAction = actionId;
-        CurrentFocusActionIndex = availableActions.IndexOf(actionId);
-        UpdateActionFocusUI();
+        // Same behaviour as pressing W/S: cancel the old action, focus the new one,
+        // and use it immediately (Interact waits for confirmation)
+        FocusAndUseAction(availableActions.IndexOf(actionId));
     }
 
     private void ConfirmAction(int actionId)
@@ -380,11 +475,13 @@ public class InGameUIManager : MonoBehaviour
                 break;
         }
     }
+
     private void ConfirmInteract()
     {
         //Claude ลองแก้ตรงนี้
         turnGameManager.ChooseReact();
     }
+
     private void CancelPendingAction()
     {
         selectedAction = NoAction;
@@ -426,6 +523,7 @@ public class InGameUIManager : MonoBehaviour
             TryFocusCharacter(number - 1);
         }
     }
+
     private bool TryFocusCharacter(int index)
     {
         if (turnGameManager == null || CharacterList == null) return false;
@@ -449,17 +547,37 @@ public class InGameUIManager : MonoBehaviour
         CharacterActionList focused = GetActionObject(focusId).GetComponent<CharacterActionList>();
         focused.Selected();
     }
+
     private void OnSkipTurnStart(InputAction.CallbackContext context)
     {
-        //รอ Visual เริ่มกดค้าง
+        if (TurnCounter != null)
+        {
+            TurnCounter.PressButton();
+            Debug.Log("can press");
+        }
+    }
+    private void OnMouseSkipStart()
+    {
+        if (TurnCounter != null) TurnCounter.PressButton();
+    }
+
+    private void OnMouseSkipCancel()
+    {
+        if (TurnCounter != null) TurnCounter.ReleaseButton();
     }
     private void OnSkipTurnPerform(InputAction.CallbackContext context)
     {
         OnClickEndTurn();
     }
+
     private void OnSkipTurnCancel(InputAction.CallbackContext context)
     {
-        //รอ Visual ยกเลิกกดค้าง
+        if (TurnCounter != null)
+        {
+            TurnCounter.ReleaseButton();
+
+            Debug.Log("can release");
+        }
     }
     private void OnShowPauseUI(InputAction.CallbackContext context)
     {
