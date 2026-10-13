@@ -3045,6 +3045,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1050197892}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: TurnCounter
+      value: 
+      objectReference: {fileID: 1874420998}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: TurnLimitUI
       value: 
       objectReference: {fileID: 190471486}
@@ -3067,6 +3071,10 @@ PrefabInstance:
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: HazardList.Array.size
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: IconPrefab.Array.size
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: CharacterList.Array.size
@@ -3092,6 +3100,38 @@ PrefabInstance:
       propertyPath: 'HazardList.Array.data[4]'
       value: 
       objectReference: {fileID: 825221190}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[0]'
+      value: 
+      objectReference: {fileID: 5714618509310246427, guid: 9d8780922ba82364c96476bb0befe58d, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[1]'
+      value: 
+      objectReference: {fileID: 5714618509310246427, guid: aedf3d3c34f2a1c4d98f66055f9309a3, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[2]'
+      value: 
+      objectReference: {fileID: 5714618509310246427, guid: c60c8738426ee664f8485625b7920b10, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[3]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[4]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[5]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[6]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: 'IconPrefab.Array.data[7]'
+      value: 
+      objectReference: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: 'CharacterList.Array.data[0]'
       value: 
@@ -3564,6 +3604,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: TurnLimit
       objectReference: {fileID: 0}
+    - target: {fileID: 5551958219760559892, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+      propertyPath: m_Colors.m_PressedColor.b
+      value: 0.91823894
+      objectReference: {fileID: 0}
+    - target: {fileID: 5551958219760559892, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+      propertyPath: m_Colors.m_PressedColor.g
+      value: 0.91823894
+      objectReference: {fileID: 0}
+    - target: {fileID: 5551958219760559892, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+      propertyPath: m_Colors.m_PressedColor.r
+      value: 0.91823894
+      objectReference: {fileID: 0}
     - target: {fileID: 6501871139510241178, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
       propertyPath: sprites.Array.size
       value: 2
@@ -3595,13 +3647,71 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2169827000002185901, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 952992717}
   m_SourcePrefab: {fileID: 100100000, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
 --- !u!1 &952992712 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2169827000002185901, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
   m_PrefabInstance: {fileID: 918292389}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &952992715 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6035018171838389744, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+  m_PrefabInstance: {fileID: 918292389}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 952992712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+--- !u!114 &952992717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 952992712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 952992715}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &988963098
 GameObject:
   m_ObjectHideFlags: 0
@@ -6954,6 +7064,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1874420998 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2183369417938639602, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
+  m_PrefabInstance: {fileID: 918292389}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1751b0586c4c4488d2715a84a107d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!4 &1917704149 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9050517457369105933, guid: be41c820db45d634685f4a8df50da3a9, type: 3}

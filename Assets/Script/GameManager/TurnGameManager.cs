@@ -16,7 +16,7 @@ public class TurnGameManager : MonoBehaviour
     private enum ActionMode { None, MoveTargeting, SkillTargeting }
 
     [Header("Turn Settings")]
-    [SerializeField, Min(1)] private int maximumTurns = 5;
+    [SerializeField, Min(1)] public int maximumTurns = 5;
     [SerializeField, Min(0f)] private float enemyPhaseDelay = 0.35f;
 
     [Header("Debug UI")]
