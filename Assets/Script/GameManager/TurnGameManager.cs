@@ -19,6 +19,10 @@ public class TurnGameManager : MonoBehaviour
     [SerializeField, Min(1)] public int maximumTurns = 5;
     [SerializeField, Min(0f)] private float enemyPhaseDelay = 0.35f;
 
+    [Header("Turn Screen Shake")]
+    [SerializeField] private bool enableTurnShake = false;
+    [SerializeField] private TurnScreenShake screenShake;
+
     [Header("Debug UI")]
     [SerializeField] private bool showTestUI = true;
 
@@ -524,6 +528,7 @@ public class TurnGameManager : MonoBehaviour
             ShowGameOver("Turn limit reached.");
             yield break;
         }
+        PlayTurnShake();
         StartPlayerPhase();
     }
 
@@ -591,5 +596,13 @@ public class TurnGameManager : MonoBehaviour
     public void RestartCurrentScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void PlayTurnShake()
+    {
+        if (!enableTurnShake)
+            return;
+
+        screenShake?.PlayShake();
     }
 }
