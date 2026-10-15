@@ -1,6 +1,10 @@
 using UnityEngine;
 public class ArcherMan : Character
 {
+    [Header("Skill Limit Per Level")]
+    [Tooltip("-1 = unlimited; 0 = disabled. Resets when the level is loaded again.")]
+    [SerializeField, Min(-1)] private int skillUsesPerLevel = -1;
+    public override int SkillLimit => skillUsesPerLevel;
     [Header("Arrow")]
     [Tooltip("Optional arrow prefab. Point the model along the root's local +Z axis.")]
     [SerializeField] private GameObject arrowPrefab;
@@ -37,6 +41,7 @@ public class ArcherMan : Character
 
     private void Fire(Vector2Int direction)
     {
+        if (!CanUseSkill || GridManager.Instance == null) return;
         Tile origin = GridManager.Instance.GetTile(CurrentLocation);
         if (origin == null) return;
         Vector3 position = origin.transform.position + Vector3.up * arrowHeight;
@@ -61,10 +66,16 @@ public class ArcherMan : Character
         projectile.enabled = true;
         projectile.Initialize(this, origin, direction, arrowSpeed);
         arrow.SetActive(true);
+        RecordSkillUse();
     }
 
     public override void ShowSkillRange()
     {
+        if (!CanUseSkill)
+        {
+            PlayerController.Instance?.ClearHighlights();
+            return;
+        }
         if (GridManager.Instance == null)
             return;
 

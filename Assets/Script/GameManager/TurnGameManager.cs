@@ -67,7 +67,8 @@ public class TurnGameManager : MonoBehaviour
         currentPlayerSelected && !hasMoved && !waitingForMovement;
 
     public bool CanChooseSkill => !gameComplete && !enemyPhase && currentPlayer != null &&
-        currentPlayerSelected && !waitingForMovement;
+        currentPlayerSelected && !waitingForMovement &&
+        currentPlayer.TryGetComponent(out Character skillCharacter) && skillCharacter.CanUseSkill;
 
     public bool CanChooseReact => CanCurrentPlayerReact;
     public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
@@ -134,7 +135,13 @@ public class TurnGameManager : MonoBehaviour
             if (GUI.Button(new Rect(30, 126, 100, 28), "Move")) ChooseMove();
 
             GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(140, 126, 100, 28), "Skill")) ChooseSkill();
+            bool actionEnabled = GUI.enabled;
+            GUI.enabled = actionEnabled && CanChooseSkill;
+            Character skillUser = CurrentPlayer != null ? CurrentPlayer.GetComponent<Character>() : null;
+            string skillLabel = skillUser != null && skillUser.SkillLimit >= 0
+                ? "Skill (" + skillUser.RemainingSkills + ")" : "Skill";
+            if (GUI.Button(new Rect(140, 126, 100, 28), skillLabel)) ChooseSkill();
+            GUI.enabled = actionEnabled;
             if (CanCurrentPlayerReact && GUI.Button(new Rect(250, 126, 100, 28), "React")) ChooseReact();
             if (GUI.Button(new Rect(360, 126, 100, 28), "Skip")) ChooseSkip();
 
@@ -235,6 +242,7 @@ public class TurnGameManager : MonoBehaviour
     // =========================
     else
     {
+        if (SkipExhaustedSkill()) return true;
         character?.ShowSkillRange();
 
         status =
@@ -294,6 +302,13 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkill()
     {
+        if (SkipExhaustedSkill()) return;
+        if (!CanChooseSkill)
+        {
+            status = "Skill unavailable: no uses left for this level.";
+            RaiseStateChanged();
+            return;
+        }
         if (gameComplete ||
             enemyPhase ||
             CurrentPlayer == null ||
@@ -379,6 +394,7 @@ public class TurnGameManager : MonoBehaviour
         }
 
         // เดินเสร็จแล้ว -> โชว์ Skill Range
+        if (SkipExhaustedSkill()) return;
         Character character =
             player.GetComponent<Character>();
 
@@ -430,6 +446,12 @@ public class TurnGameManager : MonoBehaviour
     {
         if (!IsSkillTargeting || CurrentPlayer == null || target == null) return;
         Character character = CurrentPlayer.GetComponent<Character>();
+        if (character == null || !character.CanUseSkill)
+        {
+            status = "No skill uses left for this level.";
+            RaiseStateChanged();
+            return;
+        }
         if (character is Rogue rogue)
         {
             foreach (RogueDoor door in FindObjectsByType<RogueDoor>())
@@ -444,7 +466,9 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        character?.Attack(target);
+        int usesBefore = character.SkillsUsed;
+        character.Attack(target);
+        if (character is ArcherMan && character.SkillsUsed == usesBefore) return;
         EndCurrentPlayerAction("Skill");
     }
 
@@ -467,6 +491,22 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
         EndCurrentPlayerAction("Rogue Skill");
+    }
+
+    public bool SkipExhaustedSkill()
+    {
+        if (gameComplete || enemyPhase || waitingForMovement || CurrentPlayer == null ||
+            !currentPlayerSelected) return false;
+        Character character = CurrentPlayer.GetComponent<Character>();
+        if (character == null || character.SkillLimit < 0 || character.RemainingSkills > 0) return false;
+        EndCurrentPlayerAction("No skills left: skipped");
+        return true;
+    }
+
+    private void LateUpdate()
+    {
+        if (Time.timeScale == 0 || waitingForMovement || CurrentPlayer == null) return;
+        if (hasMoved || actionMode == ActionMode.SkillTargeting) SkipExhaustedSkill();
     }
 
     private void EndCurrentPlayerAction(string actionName)
@@ -606,3 +646,4 @@ public class TurnGameManager : MonoBehaviour
         screenShake?.PlayShake();
     }
 }
+
