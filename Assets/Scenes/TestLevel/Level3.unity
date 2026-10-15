@@ -169,7 +169,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rogue
   CanKill: 1
+  skillsUsed: 0
   movementRange: 3
+  skillUsesPerLevel: 1
   LockpickIsAvailable: 1
   lockpickRange: 1
 --- !u!114 &8341054
@@ -2094,6 +2096,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1221775766}
     m_Modifications:
+    - target: {fileID: 2434716966238934116, guid: b0a47ca329ccd2947a9175be509e8e12, type: 3}
+      propertyPath: skillUsesPerLevel
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5814947802292891779, guid: b0a47ca329ccd2947a9175be509e8e12, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.55795

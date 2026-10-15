@@ -499,6 +499,18 @@ public class TurnGameManager : MonoBehaviour
             !currentPlayerSelected) return false;
         Character character = CurrentPlayer.GetComponent<Character>();
         if (character == null || character.SkillLimit < 0 || character.RemainingSkills > 0) return false;
+        // Exhausting the signature skill must not consume Move or Interact.
+        if (CanChooseMove || CanCurrentPlayerReact)
+        {
+            if (actionMode == ActionMode.SkillTargeting)
+            {
+                actionMode = ActionMode.None;
+                PlayerController.Instance?.ClearHighlights();
+                status = "No skills left. Choose Move, Interact, or Skip.";
+                RaiseStateChanged();
+            }
+            return false;
+        }
         EndCurrentPlayerAction("No skills left: skipped");
         return true;
     }
