@@ -16,7 +16,7 @@ public class InGameUIManager : MonoBehaviour
     public GameObject HazardUI;
     public GameObject TurnLimitUI;
     public TextMeshProUGUI TurnLimitText;
-    public UITurnCounter TurnCounter;   // drag the object with UITurnCounter here
+    public UITurnCounter TurnCounter;
     public GameObject PauseUI;
 
 
@@ -26,13 +26,34 @@ public class InGameUIManager : MonoBehaviour
     public GameObject SignatureAction;
     public TextMeshProUGUI SignatureText;
 
-    [Header("Objects List")]
-    [SerializeField] private PlayerMove[] CharacterList;
-    [SerializeField] private GameObject[] HazardList;
+    [Serializable]
+    public class CharacterEntry
+    {
+        [Tooltip("The character in the scene")]
+        public PlayerMove character;
+        [Tooltip("HUD icon prefab of this character (needs ObjectIcon)")]
+        public GameObject iconPrefab;
+        [Tooltip("Optional. Leave empty to use the default name (Lockpick / Bow Shot / Slash)")]
+        public string skillName;
+        [Tooltip("Signature icon, normal state (sprites[0])")]
+        public Sprite signatureIcon;
+        [Tooltip("Optional. Signature icon while focused (sprites[1]). Empty = same as Signature Icon")]
+        public Sprite signatureIconSelected;
+    }
 
-    [Header("Icon Spawning")]
-    [Tooltip("Enter Icon list in order of CharacterList and HazardList simultaneously")]
-    [SerializeField] private GameObject[] IconPrefab;
+    [Header("Objects List")]
+    [SerializeField] private CharacterEntry[] CharacterList;
+
+    [Serializable]
+    public class HazardEntry
+    {
+        [Tooltip("The hazard in the scene (enemy, trap, ...)")]
+        public GameObject hazard;
+        [Tooltip("HUD icon prefab of this hazard (needs ObjectIcon)")]
+        public GameObject iconPrefab;
+    }
+
+    [SerializeField] private HazardEntry[] HazardList;
 
     [Header("Input Actions")]
     private ProjectDInputAction _inputAction;
@@ -51,6 +72,7 @@ public class InGameUIManager : MonoBehaviour
     private const int NoAction = -1;
     private int selectedAction = NoAction;
     private static bool NeedsSpaceConfirm(int actionId) => actionId == ActionInteract;
+    private readonly HashSet<PlayerMove> warnedSignatureEntry = new();
 
     private void Awake()
     {
@@ -184,11 +206,11 @@ public class InGameUIManager : MonoBehaviour
         {
             CurrentFocusActionIndex = 0;
             previousCharacter = current;
-            selectedAction = NoAction;   // เปลี่ยนตัว/จบ action = ล้างสถานะที่เลือกค้างไว้
+            selectedAction = NoAction;
         }
         if (current != null && CharacterList != null)
         {
-            int idx = Array.IndexOf(CharacterList, current);
+            int idx = FindCharacterIndex(current);
             if (idx >= 0) CurrentFocusCharacterIndex = idx;
         }
 
@@ -240,7 +262,6 @@ public class InGameUIManager : MonoBehaviour
         if (turnGameManager.CanChooseReact) availableActions.Add(ActionInteract);
         if (turnGameManager.CanChooseSkill) availableActions.Add(ActionSignature);
 
-        // action ที่เลือกค้างไว้ใช้ไม่ได้แล้ว (เช่น Move ไปแล้ว) -> ล้าง
         if (selectedAction != NoAction && !availableActions.Contains(selectedAction)) selectedAction = NoAction;
 
         if (availableActions.Count > 0)
@@ -250,9 +271,9 @@ public class InGameUIManager : MonoBehaviour
             if (!NeedsSpaceConfirm(focusId)) ConfirmAction(focusId);
         }
 
-        if (SignatureText != null) SignatureText.text = GetSignatureName(current);
+        UpdateSignatureUI(current);
 
-        const float startY = 35f, gapY = 65f, posX = 25f;
+        const float startY = 35f, gapY = 84f, posX = 32f;
         for (int i = 0; i < availableActions.Count; i++)
         {
             GameObject go = GetActionObject(availableActions[i]);
@@ -260,12 +281,11 @@ public class InGameUIManager : MonoBehaviour
             go.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, startY + i * gapY);
         }
 
-        //เวลาเลือก action ใหม่ให้ยกเลิก action ที่ทำอยู่
         int modeAction = turnGameManager.IsMoveTargeting ? ActionMove
                : turnGameManager.IsSkillTargeting ? ActionSignature : -1;
         int modePos = availableActions.IndexOf(modeAction);
         if (modePos >= 0) CurrentFocusActionIndex = modePos;
-        if (modeAction != NoAction) selectedAction = modeAction;   // manager อยู่ในโหมดเลือกช่องอยู่ = action นี้ถูกยืนยันแล้ว
+        if (modeAction != NoAction) selectedAction = modeAction;
 
         CurrentFocusActionIndex = Mathf.Clamp(CurrentFocusActionIndex, 0, Mathf.Max(0, availableActions.Count - 1));
         UpdateActionFocusUI();
@@ -277,6 +297,47 @@ public class InGameUIManager : MonoBehaviour
         ActionInteract => InteractAction,
         _ => SignatureAction
     };
+
+    // Shows the current character's signature name and gives the Signature button its icons.
+    // CharacterActionList.Update() picks normal/focused sprite itself, so only hand the sprites over.
+    private void UpdateSignatureUI(PlayerMove player)
+    {
+        CharacterEntry entry = FindCharacterEntry(player);
+
+        if (SignatureText != null)
+        {
+            bool hasName = entry != null && !string.IsNullOrEmpty(entry.skillName);
+            SignatureText.text = hasName ? entry.skillName : GetSignatureName(player);
+        }
+
+        if (entry != null && entry.signatureIcon != null && SignatureAction != null)
+        {
+            CharacterActionList signatureUI = SignatureAction.GetComponent<CharacterActionList>();
+            if (signatureUI != null) signatureUI.SetSprites(entry.signatureIcon, entry.signatureIconSelected);
+        }
+
+        if (player != null && warnedSignatureEntry.Add(player))
+        {
+            if (entry == null)
+                Debug.LogWarning($"[Signature] {player.name} is not in CharacterList, so its signature icon can't be set.", this);
+            else if (entry.signatureIcon == null)
+                Debug.LogWarning($"[Signature] {player.name} has no Signature Icon assigned in CharacterList.", this);
+        }
+    }
+
+    private int FindCharacterIndex(PlayerMove player)
+    {
+        if (player == null || CharacterList == null) return -1;
+        for (int i = 0; i < CharacterList.Length; i++)
+            if (CharacterList[i] != null && CharacterList[i].character == player) return i;
+        return -1;
+    }
+
+    private CharacterEntry FindCharacterEntry(PlayerMove player)
+    {
+        int idx = FindCharacterIndex(player);
+        return idx >= 0 ? CharacterList[idx] : null;
+    }
 
     private static string GetSignatureName(PlayerMove player)
     {
@@ -294,14 +355,12 @@ public class InGameUIManager : MonoBehaviour
     {
         ActionUI.SetActive(false);
 
-        //Mock-up รอระบบเปลี่ยน scene
         Debug.Log(won ? "VICTORY: " + reason : "GAME OVER: " + reason);
 
 
-        //บอกผลชนะ/แพ้
     }
 
-    public void CancelCurrentAction() => GoBack();   // เผื่อผูกกับปุ่ม uGUI
+    public void CancelCurrentAction() => GoBack();
     public void OnClickEndTurn() { if (turnGameManager != null) turnGameManager.ChooseEndTurn(); }
     public void OnCharacterIconClicked(GameObject target)
     {
@@ -310,13 +369,11 @@ public class InGameUIManager : MonoBehaviour
         if (p != null) turnGameManager.TrySelectPlayer(p);
     }
 
-    //ของ Enemy ที่ไม่ส่ง Enemy เข้า TurnGameManager เพราะ Enemy Icon แค่เอาไว้ดู Range เฉยๆ
     public void OnEnemyIconClicked(GameObject target)
     {
         if (target == null)
             return;
 
-        //หน้าไม้
         TurnArrowTrap trap = target.GetComponent<TurnArrowTrap>();
 
         if (trap != null)
@@ -325,7 +382,6 @@ public class InGameUIManager : MonoBehaviour
             return;
         }
 
-        //Enemy
         Enemy enemy = target.GetComponent<Enemy>();
 
         if (enemy != null)
@@ -341,48 +397,39 @@ public class InGameUIManager : MonoBehaviour
         int characterCount = CharacterList != null ? CharacterList.Length : 0;
         int hazardCount = HazardList != null ? HazardList.Length : 0;
 
-        int iconCount = IconPrefab != null ? IconPrefab.Length : 0;
-        if (iconCount != characterCount + hazardCount)
-        {
-            Debug.LogWarning(
-                $"IconPrefab length ({iconCount}) does not match CharacterList + HazardList " +
-                $"({characterCount} + {hazardCount}). Order must be characters first, then hazards.", this);
-        }
-
         int slot = 0;
         for (int i = 0; i < characterCount; i++)
         {
-            PlayerMove character = CharacterList[i];
-            if (character == null)
+            CharacterEntry entry = CharacterList[i];
+            if (entry == null || entry.character == null)
             {
-                Debug.LogWarning($"CharacterList[{i}] is not assigned.", this);
+                Debug.LogWarning($"CharacterList[{i}] has no character assigned.", this);
                 continue;
             }
-            SpawnIcon(GetIconPrefab(i), character.gameObject, CharacterUI.transform, false, slot++, true);
+            if (entry.iconPrefab == null)
+            {
+                Debug.LogWarning($"CharacterList[{i}] ({entry.character.name}) has no iconPrefab assigned.", this);
+                continue;
+            }
+            SpawnIcon(entry.iconPrefab, entry.character.gameObject, CharacterUI.transform, false, slot++, true);
         }
 
-        // Hazards: prefab index = characterCount + i
         int hazardSlot = 0;
         for (int i = 0; i < hazardCount; i++)
         {
-            GameObject hazard = HazardList[i];
-            if (hazard == null)
+            HazardEntry entry = HazardList[i];
+            if (entry == null || entry.hazard == null)
             {
-                Debug.LogWarning($"HazardList[{i}] is not assigned.", this);
+                Debug.LogWarning($"HazardList[{i}] has no hazard assigned.", this);
                 continue;
             }
-            SpawnIcon(GetIconPrefab(characterCount + i), hazard, HazardUI.transform, true, hazardSlot++, false);
+            if (entry.iconPrefab == null)
+            {
+                Debug.LogWarning($"HazardList[{i}] ({entry.hazard.name}) has no iconPrefab assigned.", this);
+                continue;
+            }
+            SpawnIcon(entry.iconPrefab, entry.hazard, HazardUI.transform, true, hazardSlot++, false);
         }
-    }
-
-    private GameObject GetIconPrefab(int prefabIndex)
-    {
-        if (IconPrefab == null || prefabIndex < 0 || prefabIndex >= IconPrefab.Length || IconPrefab[prefabIndex] == null)
-        {
-            Debug.LogWarning($"No IconPrefab assigned at index {prefabIndex}.", this);
-            return null;
-        }
-        return IconPrefab[prefabIndex];
     }
 
     private void SpawnIcon(GameObject prefab, GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
@@ -431,7 +478,7 @@ public class InGameUIManager : MonoBehaviour
 
     private void FocusAndUseAction(int newIndex)
     {
-        CurrentFocusActionIndex = newIndex;   // set first
+        CurrentFocusActionIndex = newIndex;
         CancelPendingAction();
         UpdateActionFocusUI();
 
@@ -448,15 +495,11 @@ public class InGameUIManager : MonoBehaviour
     {
         if (turnGameManager == null || !availableActions.Contains(actionId)) return;
 
-        // Already the active/selected action -> confirm it (Interact: second click = Space)
         if (selectedAction == actionId)
         {
             ConfirmAction(actionId);
             return;
         }
-
-        // Same behaviour as pressing W/S: cancel the old action, focus the new one,
-        // and use it immediately (Interact waits for confirmation)
         FocusAndUseAction(availableActions.IndexOf(actionId));
     }
 
@@ -465,20 +508,19 @@ public class InGameUIManager : MonoBehaviour
         switch (actionId)
         {
             case ActionMove:
-                if (!turnGameManager.IsMoveTargeting) turnGameManager.ChooseMove();       // -> เลือกช่องเดิน
+                if (!turnGameManager.IsMoveTargeting) turnGameManager.ChooseMove();
                 break;
             case ActionInteract:
                 ConfirmInteract();
                 break;
             case ActionSignature:
-                if (!turnGameManager.IsSkillTargeting) turnGameManager.ChooseSkill();     // -> เลือกเป้าหมายสกิล
+                if (!turnGameManager.IsSkillTargeting) turnGameManager.ChooseSkill();
                 break;
         }
     }
 
     private void ConfirmInteract()
     {
-        //Claude ลองแก้ตรงนี้
         turnGameManager.ChooseReact();
     }
 
@@ -490,7 +532,6 @@ public class InGameUIManager : MonoBehaviour
         else if (turnGameManager.IsSkillTargeting) turnGameManager.CancelSkill();
     }
 
-    // ย้อนกลับทีละขั้น: เลือกช่อง -> รอยืนยัน -> เลือก Action
     public void GoBack()
     {
         if (turnGameManager == null) return;
@@ -509,13 +550,11 @@ public class InGameUIManager : MonoBehaviour
 
         if (key == "tab")
         {
-            // ยังไม่ได้เลือกตัวไหน (เช่น เพิ่งเริ่มเทิร์น หรือตัวก่อนหน้าจบ action ไปแล้ว) -> เริ่มหาจากตัวแรก
-            // มีตัวที่เลือกอยู่ -> ไปตัวถัดไปจากตัวนั้น
             int start = turnGameManager.CurrentPlayer == null ? 0 : CurrentFocusCharacterIndex + 1;
             for (int step = 0; step < CharacterList.Length; step++)
             {
                 int i = (start + step) % CharacterList.Length;
-                if (TryFocusCharacter(i)) break;   // ข้ามตัวที่ทำ action ไปแล้ว/ตายแล้วให้เอง
+                if (TryFocusCharacter(i)) break;
             }
         }
         else if (int.TryParse(key, out int number))
@@ -527,8 +566,10 @@ public class InGameUIManager : MonoBehaviour
     private bool TryFocusCharacter(int index)
     {
         if (turnGameManager == null || CharacterList == null) return false;
-        if (index < 0 || index >= CharacterList.Length || CharacterList[index] == null) return false;
-        return turnGameManager.TrySelectPlayer(CharacterList[index]);
+        if (index < 0 || index >= CharacterList.Length) return false;
+        CharacterEntry entry = CharacterList[index];
+        if (entry == null || entry.character == null) return false;
+        return turnGameManager.TrySelectPlayer(entry.character);
     }
 
 
