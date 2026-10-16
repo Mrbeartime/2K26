@@ -338,6 +338,11 @@ public class TurnGameManager : MonoBehaviour
         if (!CanCurrentPlayerReact) return;
         Character character = CurrentPlayer.GetComponent<Character>();
         if (!character.React(CurrentPlayer.GetCurrentTile())) return;
+
+        // เล่น Interact Animation
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+            .PlayInteract();
+
         EndCurrentPlayerAction("React: door switch toggled");
     }
 

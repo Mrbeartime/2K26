@@ -13,6 +13,9 @@ public class CharacterAnimationController : MonoBehaviour
     private static readonly int UseSkill =
         Animator.StringToHash("UseSkill");
 
+    private static readonly int InteractHash =
+    Animator.StringToHash("Interact");
+
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
@@ -39,5 +42,13 @@ public class CharacterAnimationController : MonoBehaviour
             return;
 
         animator.SetTrigger(UseSkill);
+    }
+
+    public void PlayInteract()
+    {
+        if (animator == null)
+            return;
+
+        animator.SetTrigger(InteractHash);
     }
 }
