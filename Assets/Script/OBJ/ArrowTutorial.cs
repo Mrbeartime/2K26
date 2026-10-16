@@ -20,11 +20,15 @@ public class ArrowTutorial : Entity
     // ฟังก์ชันเสริมสำหรับสั่งเปิด-ปิดประตูทุกบานในลิสต์
     private void SetAllDoors(bool isOpen)
     {
-        if (doors == null) return;
-        foreach (DoorController d in doors)
+        bool linked = false;
+        if (doors != null) foreach (DoorController d in doors)
         {
-            if (d != null) d.SetOpen(doorRequestId, isOpen);
+            if (d == null) continue;
+            linked = true;
+            d.SetOpen(doorRequestId, isOpen);
         }
+        if (isOpen && !linked)
+            Debug.LogWarning("ArrowTutorial: ยิงโดนแล้ว แต่ยังไม่ได้ใส่ DoorController ในรายการ Doors", this);
     }
 
     public void ReceiveArrowFrom(Character shooter)

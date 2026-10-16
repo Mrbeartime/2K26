@@ -2,6 +2,20 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMove))]
 public class Character : Entity
 {
+    public virtual int SkillLimit => -1;
+    [Header("Skill Runtime State")]
+    [SerializeField, Tooltip("Runtime usage counter. Do not edit during play.")]
+    private int skillsUsed;
+    public int SkillsUsed => skillsUsed;
+    public int RemainingSkills => SkillLimit < 0 ? -1 : Mathf.Max(0, SkillLimit - SkillsUsed);
+    public bool CanUseSkill => !IsDead && (SkillLimit < 0 || RemainingSkills > 0);
+    protected void RecordSkillUse()
+    {
+        skillsUsed++;
+        Debug.Log(name + " skill used. Remaining: " + RemainingSkills + " / " + SkillLimit, this);
+    }
+
+    private void Awake() => skillsUsed = 0;
     [Header("Movement Range")]
     [Tooltip("Maximum number of tiles per move command, including detours around walls.")]
     [SerializeField, Min(0)] private int movementRange = 3;
@@ -38,6 +52,9 @@ public class Character : Entity
             if (GridManager.Instance.WorldToGrid(item.transform.position) == tile.gridPosition && item.TryActivate(this))
                 return true;
         return false;
+    }
+    public virtual void ShowSkillRange()
+    {
     }
     public virtual void Attack(Tile target) { }
 }

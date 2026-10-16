@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,7 +13,7 @@ public class Enemy : Entity
     private Tile occupiedTile;
     private int patrolIndex;
 
-    private void Start()
+    protected virtual void Start()
     {
         if (GridManager.Instance == null) return;
         occupiedTile = GridManager.Instance.GetTile(CurrentLocation);
@@ -41,7 +42,7 @@ public class Enemy : Entity
         }
     }
 
-    private void React()
+    protected virtual void React()
     {
         if (IsDead || !Aggression || GridManager.Instance == null) return;
         Tile from = GridManager.Instance.GetTile(CurrentLocation);
@@ -96,8 +97,51 @@ public class Enemy : Entity
         onDeath.Invoke();
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (occupiedTile != null) occupiedTile.ClearOccupant(gameObject);
+    }
+
+    public virtual List<Tile> GetAttackRange()
+    {
+        List<Tile> tiles = new List<Tile>();
+
+        if (GridManager.Instance == null)
+            return tiles;
+
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+
+        if (origin == null)
+            return tiles;
+
+        Vector2Int[] directions =
+        {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Tile target =
+                GridManager.Instance.GetTile(
+                    origin.gridPosition + direction
+                );
+
+            if (target == null)
+                continue;
+
+            if (!RogueDoor.CanEnter(origin, null) ||
+                !RogueDoor.CanEnter(target, null))
+                continue;
+
+            if (GridManager.Instance.IsBlockedByWall(origin, target))
+                continue;
+
+            tiles.Add(target);
+        }
+
+        return tiles;
     }
 }

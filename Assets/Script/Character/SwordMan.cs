@@ -19,5 +19,16 @@ public class SwordMan : Character
         effect.GetComponent<Collider>().enabled = false;
         Destroy(effect, 0.15f);
     }
+
+    public override void ShowSkillRange()
+    {
+        if (GridManager.Instance == null)
+            return;
+
+        Tile origin =
+            GridManager.Instance.GetTile(CurrentLocation);
+
+        PlayerController.Instance?.ShowSwordSkillRange(origin);
+    }
 }
 

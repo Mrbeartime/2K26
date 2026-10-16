@@ -7,6 +7,9 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance;
 
     private PlayerMove selectedPlayer;
+
+    private Enemy selectedEnemy;
+    private TurnArrowTrap selectedArrowTrap;
     private Camera mainCamera;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -49,6 +52,49 @@ public class PlayerController : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            TurnArrowTrap clickedTrap = hit.collider.GetComponentInParent<TurnArrowTrap>();
+
+            if (clickedTrap != null)
+            {
+                if (!turnManager.IsSkillTargeting &&
+                    !turnManager.IsMoveTargeting)
+                {
+                    SelectArrowTrap(clickedTrap);
+                    return;
+                }
+            }
+            // =========================
+            // คลิก Enemy
+            // =========================
+            Enemy clickedEnemy =
+                hit.collider.GetComponentInParent<Enemy>();
+
+            if (clickedEnemy != null)
+            {
+                // ถ้ากำลังใช้ Skill
+                // Enemy ต้องเป็นเป้าหมาย Skill ตามระบบเดิม
+                if (turnManager.IsSkillTargeting)
+                {
+                    Tile enemyTile =
+                        GridManager.Instance.GetTile(
+                            clickedEnemy.CurrentLocation
+                        );
+
+                    if (enemyTile != null)
+                        turnManager.UseSkillOn(enemyTile);
+
+                    return;
+                }
+
+                // ถ้าไม่ได้ใช้ Skill
+                // แค่เปิด/ปิด Enemy Range
+                SelectEnemy(clickedEnemy);
+                return;
+            }
+
+            // =========================
+            // คลิก Player เดิม
+            // =========================
             PlayerMove clickedPlayer = hit.collider.GetComponentInParent<PlayerMove>();
             if (clickedPlayer != null)
             {
@@ -126,37 +172,39 @@ public class PlayerController : MonoBehaviour
 
     public void SelectPlayer(PlayerMove player)
     {
-        ClearHighlights(); // ล้างสีเก่าทิ้งก่อน
-        selectedPlayer = null;
-        if (player == null) return;
-        if (GridManager.Instance == null || Pathfinder.Instance == null)
-        {
-            string missing = GridManager.Instance == null ? "GridManager" : "Pathfinder";
-            Debug.LogWarning("เลือกตัวละครไม่ได้: เพิ่ม " + missing +
-                " component บน GameObject ที่เปิดใช้งานในฉากก่อน", this);
-            return;
-        }
+        ClearHighlights();
+
         selectedPlayer = player;
-        if (player.IsMoving()) return;
+
+        if (player == null)
+            return;
+
         Debug.Log("Selected: " + player.name);
+    }
 
-        // เปลี่ยนมาใช้ GridManager แปลงพิกัดตัวละครหาแผ่นพื้นแทนการยิง Raycast
-        Vector2Int gridPos = GridManager.Instance.WorldToGrid(player.transform.position);
-        Tile playerTile = GridManager.Instance.GetTile(gridPos);
+    public void ShowMoveRange(PlayerMove player)
+    {
+        ClearHighlights();
 
-        if (playerTile != null)
+        if (player == null ||
+            GridManager.Instance == null ||
+            Pathfinder.Instance == null)
+            return;
+
+        Tile playerTile = player.GetCurrentTile();
+
+        if (playerTile == null)
+            return;
+
+        currentHighlightedTiles =
+            Pathfinder.Instance.GetAllReachableTiles(
+                playerTile,
+                player.GetComponent<Character>()
+            );
+
+        foreach (Tile tile in currentHighlightedTiles)
         {
-            // ดึงเฉพาะช่องที่เดินเชื่อมถึงกันได้จริงๆ (ไม่ทะลุกำแพง)
-            currentHighlightedTiles = Pathfinder.Instance.GetAllReachableTiles(playerTile, player.GetComponent<Character>());
-
-            foreach (Tile tile in currentHighlightedTiles)
-            {
-                tile.ToggleHighlight(true);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("หาจุดที่ Player ยืนอยู่ไม่เจอ! เช็กพิกัด: " + gridPos);
+            tile.ShowHighlight(Tile.HighlightType.Move);
         }
     }
 
@@ -193,7 +241,8 @@ public class PlayerController : MonoBehaviour
     {
         foreach (Tile tile in currentHighlightedTiles)
         {
-            if (tile != null) tile.ToggleHighlight(false);
+            if (tile != null)
+                tile.HideHighlight();
         }
         currentHighlightedTiles.Clear();
     }
@@ -201,13 +250,176 @@ public class PlayerController : MonoBehaviour
     public void ShowRogueSkillRange(Tile origin, int range)
     {
         ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
         if (origin == null) return;
         foreach (Tile tile in FindObjectsByType<Tile>())
         {
             Vector2Int delta = tile.gridPosition - origin.gridPosition;
             if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > range) continue;
             currentHighlightedTiles.Add(tile);
-            tile.ToggleHighlight(true);
+            tile.ShowHighlight(Tile.HighlightType.Skill);
+        }
+    }
+
+    private bool CanShowSelectedSkill()
+    {
+        TurnGameManager manager = TurnGameManager.Instance;
+        PlayerMove player = manager != null ? manager.CurrentPlayer : selectedPlayer;
+        return player != null && player.TryGetComponent(out Character character) &&
+            character.CanUseSkill && (manager == null || manager.CanChooseSkill);
+    }
+
+    public void ShowSwordSkillRange(Tile origin)
+    {
+        ClearHighlights();
+
+        if (origin == null || GridManager.Instance == null)
+            return;
+
+        Vector2Int[] directions =
+        {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Tile tile =
+                GridManager.Instance.GetTile(
+                    origin.gridPosition + direction
+                );
+
+            if (tile == null)
+                continue;
+
+            // มีกำแพง/ประตูขวาง
+            if (GridManager.Instance.IsBlockedByWall(
+                origin,
+                tile))
+                continue;
+
+            currentHighlightedTiles.Add(tile);
+
+            tile.ShowHighlight(
+                Tile.HighlightType.Skill
+            );
+        }
+    }
+
+    public void ShowArcherSkillRange(Tile origin)
+    {
+        ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
+
+        if (origin == null || GridManager.Instance == null)
+            return;
+
+        Vector2Int[] directions =
+        {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
+
+        foreach (Vector2Int direction in directions)
+        {
+            Tile currentTile = origin;
+
+            while (true)
+            {
+                Tile nextTile =
+                    GridManager.Instance.GetTile(
+                        currentTile.gridPosition + direction
+                    );
+
+                // สุดขอบ Map
+                if (nextTile == null)
+                    break;
+
+                // เจอกำแพงหรือประตู → หยุดเส้นนี้
+                if (GridManager.Instance.IsBlockedByWall(
+                    currentTile,
+                    nextTile,
+                    null,
+                    true))
+                {
+                    break;
+                }
+
+                currentHighlightedTiles.Add(nextTile);
+
+                nextTile.ShowHighlight(
+                    Tile.HighlightType.Skill
+                );
+
+                currentTile = nextTile;
+            }
+        }
+    }
+    public void SelectEnemy(Enemy enemy)
+    {
+        if (enemy == null || enemy.IsDead)
+            return;
+
+        // =========================
+        // กดตัวเดิมซ้ำ = ปิด
+        // =========================
+        if (selectedEnemy == enemy)
+        {
+            ClearHighlights();
+            selectedEnemy = null;
+
+            Debug.Log("Enemy Range OFF");
+            return;
+        }
+
+        // =========================
+        // เลือก Enemy ตัวใหม่
+        // =========================
+        ClearHighlights();
+
+        selectedArrowTrap = null; //เพื่อไม่ให้การเลือก Enemy กับหน้าไม้สลับกันแล้วสถานะค้าง
+        selectedEnemy = enemy;
+
+        List<Tile> attackRange = enemy.GetAttackRange();
+
+        foreach (Tile tile in attackRange)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
+        }
+
+        Debug.Log(
+            $"Enemy Selected: {enemy.name} | Range: {attackRange.Count} tiles"
+        );
+    }
+
+    public void SelectArrowTrap(TurnArrowTrap trap)
+    {
+        if (trap == null)
+            return;
+
+        if (selectedArrowTrap == trap)
+        {
+            ClearHighlights();
+            selectedArrowTrap = null;
+            return;
+        }
+
+        ClearHighlights();
+
+        selectedEnemy = null;
+        selectedArrowTrap = trap;
+
+        List<Tile> range = trap.GetAttackRange();
+
+        foreach (Tile tile in range)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
         }
     }
 }
