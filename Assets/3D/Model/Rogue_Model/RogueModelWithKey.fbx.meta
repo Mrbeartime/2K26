@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 81e7437b9d34afb44a1d58026887e341
+guid: fae37abfc07c70a4f9622cb90876578f
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
@@ -88,23 +88,23 @@ ModelImporter:
     serializedVersion: 3
     human: []
     skeleton:
-    - name: RogueModel(Clone)
+    - name: RogueModelWithKey(Clone)
       parentName: 
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Dagger
-      parentName: RogueModel(Clone)
+      parentName: RogueModelWithKey(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 100, y: 100, z: 100}
     - name: Key
-      parentName: RogueModel(Clone)
+      parentName: RogueModelWithKey(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 100, y: 100, z: 100}
     - name: Rogue_Rig
-      parentName: RogueModel(Clone)
+      parentName: RogueModelWithKey(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 100, y: 100, z: 100}
