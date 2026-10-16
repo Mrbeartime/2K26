@@ -2755,8 +2755,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
-  maximumTurns: 5
+  maximumTurns: 20
   enemyPhaseDelay: 0.35
+  enableTurnShake: 0
+  screenShake: {fileID: 0}
   showTestUI: 0
 --- !u!1001 &6541827635716528271
 PrefabInstance:

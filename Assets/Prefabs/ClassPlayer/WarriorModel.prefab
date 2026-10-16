@@ -85,6 +85,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 3952251574758515123}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
+      insertIndex: 2
+      addedObject: {fileID: 5980915620888539412}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5395816111347431661}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
@@ -97,11 +103,44 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6106584863410226545}
   m_SourcePrefab: {fileID: 100100000, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
+--- !u!95 &4123578267753836625 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
+  m_PrefabInstance: {fileID: 7517476721750986176}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &7246882161464275089 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d852b842c28bcf46849de4bf63576d3, type: 3}
   m_PrefabInstance: {fileID: 7517476721750986176}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3952251574758515123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7246882161464275089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcf24d7cc2b4bb5468600a4e1ba864d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationController
+  animator: {fileID: 4123578267753836625}
+--- !u!114 &5980915620888539412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7246882161464275089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a88cb07b2b16f4eadc2f213e5cab32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterFacing
+  visualRoot: {fileID: 0}
+  rotationSpeed: 540
+  modelYawOffset: 0
 --- !u!114 &5395816111347431661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,6 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwordMan
   CanKill: 1
+  skillsUsed: 0
   movementRange: 3
 --- !u!136 &6106584863410226545
 CapsuleCollider:

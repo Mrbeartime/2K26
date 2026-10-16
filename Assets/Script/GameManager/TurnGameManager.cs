@@ -467,8 +467,17 @@ public class TurnGameManager : MonoBehaviour
         }
 
         int usesBefore = character.SkillsUsed;
+        // หันไปทางเป้าหมาย Skill
+        CurrentPlayer.GetComponent<CharacterFacing>()?
+            .FaceTowards(target.transform.position, true);
+
+        // โจมตีตามระบบเดิม
         character.Attack(target);
+
         if (character is ArcherMan && character.SkillsUsed == usesBefore) return;
+
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+    .PlaySkill();
         EndCurrentPlayerAction("Skill");
     }
 
@@ -485,11 +494,18 @@ public class TurnGameManager : MonoBehaviour
             status = "Rogue Skill: the door must be within " + rogue.LockpickRange + " tile(s).";
             return;
         }
+
+        // หันหน้าเข้าหาประตูก่อนใช้ Skill
+        CurrentPlayer.GetComponent<CharacterFacing>()?
+            .FaceTowards(door.transform.position, true);
+
         if (!rogue.OPDoor(door))
         {
             status = "Rogue cannot unlock this door.";
             return;
         }
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+    .PlaySkill();
         EndCurrentPlayerAction("Rogue Skill");
     }
 
