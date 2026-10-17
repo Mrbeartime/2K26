@@ -3,7 +3,17 @@ guid: c0d4f663ea6a4ed4d899034c02bcef91
 ModelImporter:
   serializedVersion: 24501
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Prop_Detail_Atlas
+    second: {fileID: 2800000, guid: 79eddeabc6e5fb740aed7cf20f7586a9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Prop_Stone_Texture
+    second: {fileID: 2800000, guid: 0bbad18a88481184f8674cb6e7d67b4d, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
