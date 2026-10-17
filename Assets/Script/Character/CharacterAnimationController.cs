@@ -16,6 +16,11 @@ public class CharacterAnimationController : MonoBehaviour
     private static readonly int InteractHash =
     Animator.StringToHash("Interact");
 
+    private static readonly int DieHash =
+    Animator.StringToHash("Die");
+
+    private bool isDead = false;
+
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
@@ -50,5 +55,21 @@ public class CharacterAnimationController : MonoBehaviour
             return;
 
         animator.SetTrigger(InteractHash);
+    }
+
+    public void PlayDeath()
+    {
+        if (isDead)
+            return;
+
+        isDead = true;
+
+        if (animator == null)
+            return;
+
+        animator.SetBool("IsMoving", false);
+        animator.ResetTrigger("UseSkill");
+        animator.ResetTrigger("Interact");
+        animator.SetTrigger(DieHash);
     }
 }
