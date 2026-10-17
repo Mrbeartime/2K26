@@ -195,6 +195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SwordMan
   CanKill: 1
   skillsUsed: 0
+  deathAnimator: {fileID: 4123578267753836625}
   movementRange: 3
 --- !u!136 &6106584863410226545
 CapsuleCollider:

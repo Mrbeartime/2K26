@@ -91,6 +91,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2146983762615036167}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2500459505673249894}
   m_SourcePrefab: {fileID: 100100000, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
 --- !u!1 &7432603356200643643 stripped
 GameObject:
@@ -124,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Rogue
   CanKill: 1
   skillsUsed: 0
+  deathAnimator: {fileID: 0}
   movementRange: 3
   skillUsesPerLevel: 1
   LockpickIsAvailable: 1
@@ -200,3 +204,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2500459505673249894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7432603356200643643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a88cb07b2b16f4eadc2f213e5cab32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterFacing
+  visualRoot: {fileID: 0}
+  rotationSpeed: 540
+  modelYawOffset: 0

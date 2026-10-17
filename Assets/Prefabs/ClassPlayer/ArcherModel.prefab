@@ -96,6 +96,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9d25359449354084596e51b6d9951cfe, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1939534738420371804}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9d25359449354084596e51b6d9951cfe, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6234950767197057305}
   m_SourcePrefab: {fileID: 100100000, guid: 9d25359449354084596e51b6d9951cfe, type: 3}
 --- !u!1 &6627337788560468537 stripped
 GameObject:
@@ -128,7 +131,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcherMan
   CanKill: 1
+  skillsUsed: 0
+  deathAnimator: {fileID: 0}
   movementRange: 3
+  skillUsesPerLevel: 1
   arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
   arrowRotationOffset: {x: 0, y: 0, z: 0}
   arrowHeight: 0.6
@@ -183,3 +189,18 @@ CapsuleCollider:
   m_Height: 1.4893448
   m_Direction: 1
   m_Center: {x: 0.006482203, y: 0.6701632, z: -4.823277e-12}
+--- !u!114 &-6234950767197057305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6627337788560468537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a88cb07b2b16f4eadc2f213e5cab32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterFacing
+  visualRoot: {fileID: 0}
+  rotationSpeed: 540
+  modelYawOffset: 0
