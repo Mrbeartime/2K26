@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -17,8 +18,20 @@ public class InGameUIManager : MonoBehaviour
     public GameObject TurnLimitUI;
     public TextMeshProUGUI TurnLimitText;
     public UITurnCounter TurnCounter;
-    public GameObject PauseUI;
+    public Canvas PauseUI;
 
+    [Header("Pause Manager")]
+    [SerializeField] private float fadeTime = 0.2f;
+    [Tooltip("Full-screen black Image. Fades to Pause Dim Alpha while paused.")]
+    public Image blackScreen;
+    [Range(0f, 1f)]
+    [SerializeField] private float pauseDimAlpha = 0.6f;
+
+    // Other scripts (PlayerController, ...) can check this to ignore gameplay input while paused
+    public bool IsPaused { get; private set; }
+    private CanvasGroup inGameGroup;
+    private CanvasGroup pauseGroup;
+    private Coroutine pauseRoutine;
 
     [Header("Action Lists")]
     public GameObject MoveAction;
@@ -126,6 +139,7 @@ public class InGameUIManager : MonoBehaviour
 
     private void Start()
     {
+        SetupPause();
         CreateCharacterandHazardIcon();
 
         turnGameManager = TurnGameManager.Instance;
@@ -140,8 +154,6 @@ public class InGameUIManager : MonoBehaviour
         SetupTurnLimitButton();
         SetUpActionList();
         RefreshFromTurnManager();
-
-        PauseUI.SetActive(false);
     }
 
     private void SetupTurnLimitButton()
@@ -457,6 +469,7 @@ public class InGameUIManager : MonoBehaviour
     // คลิกปุ่ม = SelectAction(): คลิกครั้งแรกเลือก คลิกครั้งที่สองยืนยัน
     private void OnChangeAction(InputAction.CallbackContext context)
     {
+        if (IsPaused) return;
         int count = availableActions.Count;
         if (count <= 0) return;
 
@@ -545,6 +558,7 @@ public class InGameUIManager : MonoBehaviour
     #region InputAction
     private void OnChangeCharacter(InputAction.CallbackContext context)
     {
+        if (IsPaused) return;
         if (turnGameManager == null || CharacterList == null || CharacterList.Length == 0) return;
         string key = context.control.name.ToLower();
 
@@ -591,10 +605,10 @@ public class InGameUIManager : MonoBehaviour
 
     private void OnSkipTurnStart(InputAction.CallbackContext context)
     {
+        if (IsPaused) return;
         if (TurnCounter != null)
         {
             TurnCounter.PressButton();
-            Debug.Log("can press");
         }
     }
     private void OnMouseSkipStart()
@@ -608,6 +622,7 @@ public class InGameUIManager : MonoBehaviour
     }
     private void OnSkipTurnPerform(InputAction.CallbackContext context)
     {
+        if (IsPaused) return;
         OnClickEndTurn();
     }
 
@@ -616,13 +631,101 @@ public class InGameUIManager : MonoBehaviour
         if (TurnCounter != null)
         {
             TurnCounter.ReleaseButton();
-
-            Debug.Log("can release");
         }
     }
-    private void OnShowPauseUI(InputAction.CallbackContext context)
+    // ---------- Pause ----------
+    // Normal UI stays visible but can't be clicked (CanvasGroup.blocksRaycasts), instead of SetActive(false).
+    // blackScreen fades to pauseDimAlpha and PauseUI fades in; resuming fades both out.
+    public void CallPause() => SetPaused(!IsPaused);
+
+    private void OnShowPauseUI(InputAction.CallbackContext context) => SetPaused(!IsPaused);
+
+    public void SetPaused(bool paused)
     {
-        PauseUI.SetActive(!PauseUI.activeSelf);
+        if (IsPaused == paused) return;
+        IsPaused = paused;
+
+        // Don't leave the skip button visually held down
+        if (paused && TurnCounter != null) TurnCounter.ReleaseButton();
+
+        if (pauseRoutine != null) StopCoroutine(pauseRoutine);
+        pauseRoutine = StartCoroutine(PauseFade(paused));
+    }
+
+    private void SetupPause()
+    {
+        if (InGameUI != null) inGameGroup = GetOrAddCanvasGroup(InGameUI);
+
+        if (PauseUI != null)
+        {
+            pauseGroup = GetOrAddCanvasGroup(PauseUI.gameObject);
+            pauseGroup.alpha = 0f;
+            PauseUI.gameObject.SetActive(false);
+        }
+        else Debug.LogWarning("PauseUI is not assigned.", this);
+
+        if (blackScreen != null)
+        {
+            SetBlackScreenAlpha(0f);
+            blackScreen.gameObject.SetActive(false);
+        }
+    }
+
+    private static CanvasGroup GetOrAddCanvasGroup(GameObject go)
+    {
+        CanvasGroup group = go.GetComponent<CanvasGroup>();
+        if (group == null) group = go.AddComponent<CanvasGroup>();
+        return group;
+    }
+
+    private void SetBlackScreenAlpha(float alpha)
+    {
+        if (blackScreen == null) return;
+        Color c = blackScreen.color;
+        c.a = alpha;
+        blackScreen.color = c;
+    }
+
+    private IEnumerator PauseFade(bool paused)
+    {
+        if (paused)
+        {
+            if (inGameGroup != null) inGameGroup.blocksRaycasts = false;   // visible, but not clickable
+            if (PauseUI != null) PauseUI.gameObject.SetActive(true);
+            if (pauseGroup != null) { pauseGroup.interactable = true; pauseGroup.blocksRaycasts = true; }
+            if (blackScreen != null) blackScreen.gameObject.SetActive(true);
+        }
+        else if (pauseGroup != null)
+        {
+            pauseGroup.interactable = false;
+            pauseGroup.blocksRaycasts = false;
+        }
+
+        float dimFrom = blackScreen != null ? blackScreen.color.a : 0f;
+        float dimTo = paused ? pauseDimAlpha : 0f;
+        float uiFrom = pauseGroup != null ? pauseGroup.alpha : 0f;
+        float uiTo = paused ? 1f : 0f;
+
+        float t = 0f;
+        while (t < fadeTime)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / fadeTime);
+            SetBlackScreenAlpha(Mathf.Lerp(dimFrom, dimTo, k));
+            if (pauseGroup != null) pauseGroup.alpha = Mathf.Lerp(uiFrom, uiTo, k);
+            yield return null;
+        }
+
+        SetBlackScreenAlpha(dimTo);
+        if (pauseGroup != null) pauseGroup.alpha = uiTo;
+
+        if (!paused)
+        {
+            if (PauseUI != null) PauseUI.gameObject.SetActive(false);
+            if (blackScreen != null) blackScreen.gameObject.SetActive(false);
+            if (inGameGroup != null) inGameGroup.blocksRaycasts = true;
+        }
+        pauseRoutine = null;
     }
     #endregion
 }
