@@ -163,7 +163,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 66592de49eca83a48b900da81e6120df, type: 3}
       propertyPath: m_Name
-      value: Floor01
+      value: Tile001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
