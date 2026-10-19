@@ -17,13 +17,13 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public event Action HoldCanceled;
 
     private bool isHolding;
-    private bool hasTriggered; // เพิ่มตัวแปรป้องกันการสั่งจบเทิร์นซ้ำ
+    private bool hasTriggered;
     private float heldTime;
 
     public void OnPointerDown(PointerEventData eventData)
     {
         isHolding = true;
-        hasTriggered = false; // รีเซ็ตสถานะเมื่อเริ่มกดใหม่
+        hasTriggered = false;
         heldTime = 0f;
 
         HoldStarted?.Invoke();
@@ -34,7 +34,6 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
     private void Update()
     {
-        // ถ้าไม่ได้กด หรือ ทำงานจบไปแล้ว(แต่ยังกดค้างอยู่) ให้หยุดอัปเดตเวลา
         if (!isHolding || hasTriggered) return;
 
         heldTime += Time.unscaledDeltaTime;
@@ -44,13 +43,10 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
         if (t >= 1f)
         {
-            hasTriggered = true; // ล็อกไว้ไม่ให้รันซ้ำ
+            hasTriggered = true;
 
-            // สั่งจบเทิร์น
             HoldCompleted?.Invoke();
 
-            // หมายเหตุ: เอาคำสั่ง HoldCanceled และการรีเซ็ตค่าออกไปจากตรงนี้
-            // เพื่อให้ปุ่มยังคงยุบตัวและหลอดโหลดเต็ม 100% จนกว่าจะปล่อยเมาส์
         }
     }
 
@@ -64,7 +60,6 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             if (fillImage != null) fillImage.fillAmount = 0f;
             HoldProgress?.Invoke(0f);
 
-            // ส่งสัญญาณให้ปุ่มค่อยๆ เด้งกลับขึ้นมา เมื่อผู้เล่นยกนิ้วออกจากเมาส์เท่านั้น
             HoldCanceled?.Invoke();
         }
     }

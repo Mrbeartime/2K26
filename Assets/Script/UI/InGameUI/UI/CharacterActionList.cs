@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ public class CharacterActionList : MonoBehaviour
     [Tooltip("สีย้อมตอนรอยืนยัน (ใช้เมื่อ sprites มีไม่ถึง 3 ช่อง)")]
     [SerializeField] private CharacterActionType actionType;
 
+    [SerializeField] private TextMeshProUGUI actionName;
     public enum CharacterActionType
     {
         Move,
@@ -34,13 +36,21 @@ public class CharacterActionList : MonoBehaviour
         return;
     }
 
-    // InGameUIManager owns click registration and supplies the authoritative ID.
     public void SetActionType(int id) => actionType = (CharacterActionType)id;
+
+    public void SetSprites(Sprite normal, Sprite focused = null, Sprite armed = null)
+    {
+        if (normal == null) return;
+        if (focused == null) focused = normal;
+        sprites = armed != null
+            ? new[] { normal, focused, armed }
+            : new[] { normal, focused };
+    }
 
     public void OnIconClicked()
     {
-        // ค่า enum ต้องตรงกับ id ใน InGameUIManager: Move = 0, Interact = 1, Sig = 2
-        // การไฮไลต์ให้ InGameUIManager เป็นคนคุมทั้งหมด (ห้ามสลับ isSelected เองที่นี่)
+        // ��� enum ��ͧ�ç�Ѻ id � InGameUIManager: Move = 0, Interact = 1, Sig = 2
+        // InGameUIManager �繽��¤��������͡�������� (�������ǡѺ isSelected �ͧ���ʹ��)
         if (InGameUIManager.Instance == null) return;
         InGameUIManager.Instance.SelectAction((int)actionType);
     }
@@ -66,5 +76,17 @@ public class CharacterActionList : MonoBehaviour
             else image.sprite = sprites[0];
         }
 
+        // --- �Ѵ�������ͧ����ѡ�� ---
+        if (actionName != null)
+        {
+            if (isSelected || isArmed)
+            {
+                actionName.fontStyle = FontStyles.Bold;
+            }
+            else
+            {
+                actionName.fontStyle = FontStyles.Normal;
+            }
+        }
     }
 }

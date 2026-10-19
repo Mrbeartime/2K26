@@ -121,7 +121,7 @@ public class UITurnCounter : MonoBehaviour
             yield return null;
         }
 
-        currentAngle = Mathf.Repeat(to, 360f);   // 360 -> 0
+        currentAngle = Mathf.Repeat(to, 360f);
         ApplyAngle(currentAngle);
         moveRoutine = null;
     }
@@ -137,7 +137,6 @@ public class UITurnCounter : MonoBehaviour
     private void ApplyAngle(float angle)
     {
         if (leg == null) return;
-        // RectTransform rotation always happens around its Pivot
         leg.rectTransform.localEulerAngles = new Vector3(0f, 0f, angle);
     }
 

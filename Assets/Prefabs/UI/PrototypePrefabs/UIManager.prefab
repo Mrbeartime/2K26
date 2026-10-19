@@ -56,7 +56,7 @@ MonoBehaviour:
   SignatureAction: {fileID: 0}
   SignatureText: {fileID: 0}
   CharacterList:
-  - {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+  - {fileID: 4348206069926055961, guid: d7edf25608de4dd29c8225d1ecbc8198, type: 3}
   HazardList:
-  - {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
-  IconPrefab: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+  - {fileID: 4348206069926055961, guid: d7edf25608de4dd29c8225d1ecbc8198, type: 3}
+  IconPrefab: {fileID: 4348206069926055961, guid: d7edf25608de4dd29c8225d1ecbc8198, type: 3}
