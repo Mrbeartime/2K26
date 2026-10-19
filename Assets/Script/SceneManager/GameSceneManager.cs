@@ -7,11 +7,20 @@ namespace ProjectD.Menus
     {
         public const string StartScene = "Assets/Scenes/Mon/SceneGame/Start.unity";
         public const string SelectScene = "Assets/Scenes/Mon/SceneGame/LevelSelect.unity";
+        public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
         public static int UnlockedLevel => Mathf.Clamp(PlayerPrefs.GetInt("Progress.UnlockedLevel", 1), 1, LevelCount);
         public static string LevelPath(int level) => $"Assets/Scenes/TestLevel/Level{level}.unity";
         public static bool IsUnlocked(int level) => level >= 1 && level <= UnlockedLevel;
         public static bool IsCompleted(int level) => PlayerPrefs.GetInt($"Progress.Level{level}.Complete", 0) == 1;
+        public static bool IsSecretUnlocked(string id) => PlayerPrefs.GetInt("Progress.Secret." + id + ".Unlocked", 0) == 1;
+        public static void UnlockSecret(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return;
+            PlayerPrefs.SetInt("Progress.Secret." + id + ".Unlocked", 1);
+            PlayerPrefs.Save();
+        }
+        public static void OpenSecretLevel(string path) => Load(path);
 
         public static int ActiveLevel
         {
@@ -28,7 +37,15 @@ namespace ProjectD.Menus
         public static void CompleteActiveLevel()
         {
             int level = ActiveLevel;
-            if (level == 0) return;
+            if (level == 0)
+            {
+                if (SceneManager.GetActiveScene().path == SecretScene)
+                {
+                    PlayerPrefs.SetInt("Progress.Secret.SecretLevel1.Complete", 1);
+                    PlayerPrefs.Save();
+                }
+                return;
+            }
             PlayerPrefs.SetInt($"Progress.Level{level}.Complete", 1);
             PlayerPrefs.SetInt("Progress.UnlockedLevel", Mathf.Max(UnlockedLevel, Mathf.Min(LevelCount, level + 1)));
             PlayerPrefs.Save();

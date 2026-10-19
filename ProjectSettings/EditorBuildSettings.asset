@@ -32,5 +32,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Mon/TESTMAP1Version2.unity
     guid: 3b1e16bf718b5cc4ba4cb3744c9d75b5
+  - enabled: 1
+    path: Assets/Scenes/Mon/SceneGame/SecretLevel1.unity
+    guid: b8a78abbb2544dd68adc2ebccf974b51
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -5,8 +5,8 @@ public class CharacterActionList : MonoBehaviour
 {
 
     [SerializeField] private bool isSelected = false;
-    [SerializeField] private bool isArmed = false;   // àÅ×Í¡äÇéáÅéÇ ÃÍ¡´ Space Â×¹ÂÑ¹
-    [Tooltip("ÊÕÂéÍÁµÍ¹ÃÍÂ×¹ÂÑ¹ (ãªéàÁ×èÍ sprites ÁÕäÁè¶Ö§ 3 ªèÍ§)")]
+    [SerializeField] private bool isArmed = false;   // à¹€à¸¥à¸·à¸­à¸à¹„à¸§à¹‰à¹à¸¥à¹‰à¸§ à¸£à¸­à¸à¸” Space à¸¢à¸·à¸™à¸¢à¸±à¸™
+    [Tooltip("à¸ªà¸µà¸¢à¹‰à¸­à¸¡à¸•à¸­à¸™à¸£à¸­à¸¢à¸·à¸™à¸¢à¸±à¸™ (à¹ƒà¸Šà¹‰à¹€à¸¡à¸·à¹ˆà¸­ sprites à¸¡à¸µà¹„à¸¡à¹ˆà¸–à¸¶à¸‡ 3 à¸Šà¹ˆà¸­à¸‡)")]
     [SerializeField] private CharacterActionType actionType;
 
     public enum CharacterActionType
@@ -23,9 +23,6 @@ public class CharacterActionList : MonoBehaviour
 
     private void Awake()
     {
-        Button button = GetComponent<Button>();
-        if (button != null) button.onClick.AddListener(OnIconClicked);
-
         image = GetComponent<Image>();
         if (image != null) baseColor = image.color;
         if (image != null && sprites != null && sprites.Length > 0)
@@ -37,10 +34,13 @@ public class CharacterActionList : MonoBehaviour
         return;
     }
 
+    // InGameUIManager owns click registration and supplies the authoritative ID.
+    public void SetActionType(int id) => actionType = (CharacterActionType)id;
+
     public void OnIconClicked()
     {
-        // ¤èÒ enum µéÍ§µÃ§¡Ñº id ã¹ InGameUIManager: Move = 0, Interact = 1, Sig = 2
-        // ¡ÒÃäÎäÅµìãËé InGameUIManager à»ç¹¤¹¤ØÁ·Ñé§ËÁ´ (ËéÒÁÊÅÑº isSelected àÍ§·Õè¹Õè)
+        // à¸„à¹ˆà¸² enum à¸•à¹‰à¸­à¸‡à¸•à¸£à¸‡à¸à¸±à¸š id à¹ƒà¸™ InGameUIManager: Move = 0, Interact = 1, Sig = 2
+        // à¸à¸²à¸£à¹„à¸®à¹„à¸¥à¸•à¹Œà¹ƒà¸«à¹‰ InGameUIManager à¹€à¸›à¹‡à¸™à¸„à¸™à¸„à¸¸à¸¡à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸” (à¸«à¹‰à¸²à¸¡à¸ªà¸¥à¸±à¸š isSelected à¹€à¸­à¸‡à¸—à¸µà¹ˆà¸™à¸µà¹ˆ)
         if (InGameUIManager.Instance == null) return;
         InGameUIManager.Instance.SelectAction((int)actionType);
     }
@@ -58,7 +58,7 @@ public class CharacterActionList : MonoBehaviour
 
         bool hasArmedSprite = sprites != null && sprites.Length > 2;
 
-        // àÅ×Í¡ sprite: ÃÍÂ×¹ÂÑ¹ (sprites[2]) > â¿¡ÑÊ (sprites[1]) > »¡µÔ (sprites[0])
+        // à¹€à¸¥à¸·à¸­à¸ sprite: à¸£à¸­à¸¢à¸·à¸™à¸¢à¸±à¸™ (sprites[2]) > à¹‚à¸Ÿà¸à¸±à¸ª (sprites[1]) > à¸›à¸à¸•à¸´ (sprites[0])
         if (sprites != null && sprites.Length > 1)
         {
             if (isArmed && hasArmedSprite) image.sprite = sprites[2];

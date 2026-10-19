@@ -73,7 +73,7 @@ public class InGameUIManager : MonoBehaviour
         _inputAction.Gameplay_keyboard.SelectAction.performed += OnChangeAction;
         _inputAction.Gameplay_keyboard.Pause.performed += OnShowPauseUI;
 
-        //Holding for skip: Start ‡√‘Ë¡°¥ Performed °¥§È“ß®πæÕ Canceled ¬°‡≈‘°°“√°¥
+        //Holding for skip: Start ‡πÄ‡∏£‡∏¥‡πà‡∏°‡∏Å‡∏î Performed ‡∏Å‡∏î‡∏Ñ‡πâ‡∏≤‡∏á‡∏à‡∏ô‡∏û‡∏≠ Canceled ‡∏¢‡∏Å‡πÄ‡∏•‡∏¥‡∏Å‡∏Å‡∏≤‡∏£‡∏Å‡∏î
         _inputAction.Gameplay_keyboard.Skip.started += OnSkipTurnStart;
         _inputAction.Gameplay_keyboard.Skip.performed += OnSkipTurnPerform;
         _inputAction.Gameplay_keyboard.Skip.canceled += OnSkipTurnCancel;
@@ -97,6 +97,9 @@ public class InGameUIManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        foreach (var binding in actionButtons)
+            if (binding.button != null) binding.button.onClick.RemoveListener(binding.callback);
+        actionButtons.Clear();
         if (turnGameManager == null) return;
         turnGameManager.StateChanged -= RefreshFromTurnManager;
         turnGameManager.GameEnded -= OnGameEnded;
@@ -109,7 +112,7 @@ public class InGameUIManager : MonoBehaviour
         turnGameManager = TurnGameManager.Instance;
         if (turnGameManager == null)
         {
-            Debug.LogError("‰¡Ëæ∫ TurnGameManager „π Scene", this);
+            Debug.LogError("‡πÑ‡∏°‡πà‡∏û‡∏ö TurnGameManager ‡πÉ‡∏ô Scene", this);
             return;
         }
         turnGameManager.StateChanged += RefreshFromTurnManager;
@@ -164,6 +167,8 @@ public class InGameUIManager : MonoBehaviour
             return;
         }
 
+        CharacterActionList item = actionObject.GetComponent<CharacterActionList>();
+        if (item != null) item.SetActionType(actionId);
         UnityEngine.Events.UnityAction callback = () => SelectAction(actionId);
         button.onClick.AddListener(callback);
         actionButtons.Add((button, callback));
@@ -184,7 +189,7 @@ public class InGameUIManager : MonoBehaviour
         {
             CurrentFocusActionIndex = 0;
             previousCharacter = current;
-            selectedAction = NoAction;   // ‡ª≈’Ë¬πµ—«/®∫ action = ≈È“ß ∂“π–∑’Ë‡≈◊Õ°§È“ß‰«È
+            selectedAction = NoAction;   // ‡πÄ‡∏õ‡∏•‡∏µ‡πà‡∏¢‡∏ô‡∏ï‡∏±‡∏ß/‡∏à‡∏ö action = ‡∏•‡πâ‡∏≤‡∏á‡∏™‡∏ñ‡∏≤‡∏ô‡∏∞‡∏ó‡∏µ‡πà‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏Ñ‡πâ‡∏≤‡∏á‡πÑ‡∏ß‡πâ
         }
         if (current != null && CharacterList != null)
         {
@@ -250,7 +255,7 @@ public class InGameUIManager : MonoBehaviour
             return;
         }
 
-        // action ∑’Ë‡≈◊Õ°§È“ß‰«È„™È‰¡Ë‰¥È·≈È« (‡™Ëπ Move ‰ª·≈È«) -> ≈È“ß
+        // action ‡∏ó‡∏µ‡πà‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏Ñ‡πâ‡∏≤‡∏á‡πÑ‡∏ß‡πâ‡πÉ‡∏ä‡πâ‡πÑ‡∏°‡πà‡πÑ‡∏î‡πâ‡πÅ‡∏•‡πâ‡∏ß (‡πÄ‡∏ä‡πà‡∏ô Move ‡πÑ‡∏õ‡πÅ‡∏•‡πâ‡∏ß) -> ‡∏•‡πâ‡∏≤‡∏á
         if (selectedAction != NoAction && !availableActions.Contains(selectedAction)) selectedAction = NoAction;
 
         if (availableActions.Count > 0)
@@ -277,12 +282,12 @@ public class InGameUIManager : MonoBehaviour
             go.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, startY + i * gapY);
         }
 
-        //‡«≈“‡≈◊Õ° action „À¡Ë„ÀÈ¬°‡≈‘° action ∑’Ë∑”Õ¬ŸË
+        //‡πÄ‡∏ß‡∏•‡∏≤‡πÄ‡∏•‡∏∑‡∏≠‡∏Å action ‡πÉ‡∏´‡∏°‡πà‡πÉ‡∏´‡πâ‡∏¢‡∏Å‡πÄ‡∏•‡∏¥‡∏Å action ‡∏ó‡∏µ‡πà‡∏ó‡∏≥‡∏≠‡∏¢‡∏π‡πà
         int modeAction = turnGameManager.IsMoveTargeting ? ActionMove
                : turnGameManager.IsSkillTargeting ? ActionSignature : -1;
         int modePos = availableActions.IndexOf(modeAction);
         if (modePos >= 0) CurrentFocusActionIndex = modePos;
-        if (modeAction != NoAction) selectedAction = modeAction;   // manager Õ¬ŸË„π‚À¡¥‡≈◊Õ°™ËÕßÕ¬ŸË = action π’È∂Ÿ°¬◊π¬—π·≈È«
+        if (modeAction != NoAction) selectedAction = modeAction;   // manager ‡∏≠‡∏¢‡∏π‡πà‡πÉ‡∏ô‡πÇ‡∏´‡∏°‡∏î‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ä‡πà‡∏≠‡∏á‡∏≠‡∏¢‡∏π‡πà = action ‡∏ô‡∏µ‡πâ‡∏ñ‡∏π‡∏Å‡∏¢‡∏∑‡∏ô‡∏¢‡∏±‡∏ô‡πÅ‡∏•‡πâ‡∏ß
 
         CurrentFocusActionIndex = Mathf.Clamp(CurrentFocusActionIndex, 0, Mathf.Max(0, availableActions.Count - 1));
         UpdateActionFocusUI();
@@ -311,14 +316,14 @@ public class InGameUIManager : MonoBehaviour
     {
         ActionUI.SetActive(false);
 
-        //Mock-up √Õ√–∫∫‡ª≈’Ë¬π scene
+        //Mock-up ‡∏£‡∏≠‡∏£‡∏∞‡∏ö‡∏ö‡πÄ‡∏õ‡∏•‡∏µ‡πà‡∏¢‡∏ô scene
         Debug.Log(won ? "VICTORY: " + reason : "GAME OVER: " + reason);
 
 
-        //∫Õ°º≈™π–/·æÈ
+        //‡∏ö‡∏≠‡∏Å‡∏ú‡∏•‡∏ä‡∏ô‡∏∞/‡πÅ‡∏û‡πâ
     }
 
-    public void CancelCurrentAction() => GoBack();   // ‡º◊ËÕºŸ°°—∫ªÿË¡ uGUI
+    public void CancelCurrentAction() => GoBack();   // ‡πÄ‡∏ú‡∏∑‡πà‡∏≠‡∏ú‡∏π‡∏Å‡∏Å‡∏±‡∏ö‡∏õ‡∏∏‡πà‡∏° uGUI
     public void OnClickEndTurn() { if (turnGameManager != null) turnGameManager.ChooseEndTurn(); }
     public void OnCharacterIconClicked(GameObject target)
     {
@@ -327,13 +332,13 @@ public class InGameUIManager : MonoBehaviour
         if (p != null) turnGameManager.TrySelectPlayer(p);
     }
 
-    //¢Õß Enemy ∑’Ë‰¡Ë Ëß Enemy ‡¢È“ TurnGameManager ‡æ√“– Enemy Icon ·§Ë‡Õ“‰«È¥Ÿ Range ‡©¬Ê
+    //‡∏Ç‡∏≠‡∏á Enemy ‡∏ó‡∏µ‡πà‡πÑ‡∏°‡πà‡∏™‡πà‡∏á Enemy ‡πÄ‡∏Ç‡πâ‡∏≤ TurnGameManager ‡πÄ‡∏û‡∏£‡∏≤‡∏∞ Enemy Icon ‡πÅ‡∏Ñ‡πà‡πÄ‡∏≠‡∏≤‡πÑ‡∏ß‡πâ‡∏î‡∏π Range ‡πÄ‡∏â‡∏¢‡πÜ
     public void OnEnemyIconClicked(GameObject target)
     {
         if (target == null)
             return;
 
-        //ÀπÈ“‰¡È
+        //‡∏´‡∏ô‡πâ‡∏≤‡πÑ‡∏°‡πâ
         TurnArrowTrap trap = target.GetComponent<TurnArrowTrap>();
 
         if (trap != null)
@@ -421,10 +426,10 @@ public class InGameUIManager : MonoBehaviour
         else Debug.LogWarning($"{prefab.name} has no ObjectIcon component.", newIcon);
     }
 
-    // ---------- √–∫∫‡≈◊Õ° Action ----------
-    // A/W/S/D  = ‡≈◊ËÕπ‚ø°—  ·≈È«„™È action π—Èπ∑—π∑’ (¬°‡≈‘° action/‚À¡¥‡≈◊Õ°™ËÕß‡¥‘¡°ËÕπ)
-    // Space    = „™È action ∑’Ë‚ø°— Õ¬ŸË
-    // §≈‘°ªÿË¡ = SelectAction(): §≈‘°§√—Èß·√°‡≈◊Õ° §≈‘°§√—Èß∑’Ë Õß¬◊π¬—π
+    // ---------- ‡∏£‡∏∞‡∏ö‡∏ö‡πÄ‡∏•‡∏∑‡∏≠‡∏Å Action ----------
+    // A/W/S/D  = ‡πÄ‡∏•‡∏∑‡πà‡∏≠‡∏ô‡πÇ‡∏ü‡∏Å‡∏±‡∏™ ‡πÅ‡∏•‡πâ‡∏ß‡πÉ‡∏ä‡πâ action ‡∏ô‡∏±‡πâ‡∏ô‡∏ó‡∏±‡∏ô‡∏ó‡∏µ (‡∏¢‡∏Å‡πÄ‡∏•‡∏¥‡∏Å action/‡πÇ‡∏´‡∏°‡∏î‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ä‡πà‡∏≠‡∏á‡πÄ‡∏î‡∏¥‡∏°‡∏Å‡πà‡∏≠‡∏ô)
+    // Space    = ‡πÉ‡∏ä‡πâ action ‡∏ó‡∏µ‡πà‡πÇ‡∏ü‡∏Å‡∏±‡∏™‡∏≠‡∏¢‡∏π‡πà
+    // ‡∏Ñ‡∏•‡∏¥‡∏Å‡∏õ‡∏∏‡πà‡∏° = SelectAction(): ‡∏Ñ‡∏•‡∏¥‡∏Å‡∏Ñ‡∏£‡∏±‡πâ‡∏á‡πÅ‡∏£‡∏Å‡πÄ‡∏•‡∏∑‡∏≠‡∏Å ‡∏Ñ‡∏•‡∏¥‡∏Å‡∏Ñ‡∏£‡∏±‡πâ‡∏á‡∏ó‡∏µ‡πà‡∏™‡∏≠‡∏á‡∏¢‡∏∑‡∏ô‡∏¢‡∏±‡∏ô
     private void OnChangeAction(InputAction.CallbackContext context)
     {
         int count = availableActions.Count;
@@ -490,20 +495,20 @@ public class InGameUIManager : MonoBehaviour
         switch (actionId)
         {
             case ActionMove:
-                if (!turnGameManager.IsMoveTargeting) turnGameManager.ChooseMove();       // -> ‡≈◊Õ°™ËÕß‡¥‘π
+                if (!turnGameManager.IsMoveTargeting) turnGameManager.ChooseMove();       // -> ‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ä‡πà‡∏≠‡∏á‡πÄ‡∏î‡∏¥‡∏ô
                 break;
             case ActionInteract:
                 ConfirmInteract();
                 break;
             case ActionSignature:
-                if (!turnGameManager.IsSkillTargeting) turnGameManager.ChooseSkill();     // -> ‡≈◊Õ°‡ªÈ“À¡“¬ °‘≈
+                if (!turnGameManager.IsSkillTargeting) turnGameManager.ChooseSkill();     // -> ‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡πÄ‡∏õ‡πâ‡∏≤‡∏´‡∏°‡∏≤‡∏¢‡∏™‡∏Å‡∏¥‡∏•
                 break;
         }
     }
 
     private void ConfirmInteract()
     {
-        //Claude ≈Õß·°Èµ√ßπ’È
+        //Claude ‡∏•‡∏≠‡∏á‡πÅ‡∏Å‡πâ‡∏ï‡∏£‡∏á‡∏ô‡∏µ‡πâ
         turnGameManager.ChooseReact();
     }
 
@@ -515,7 +520,7 @@ public class InGameUIManager : MonoBehaviour
         else if (turnGameManager.IsSkillTargeting) turnGameManager.CancelSkill();
     }
 
-    // ¬ÈÕπ°≈—∫∑’≈–¢—Èπ: ‡≈◊Õ°™ËÕß -> √Õ¬◊π¬—π -> ‡≈◊Õ° Action
+    // ‡∏¢‡πâ‡∏≠‡∏ô‡∏Å‡∏•‡∏±‡∏ö‡∏ó‡∏µ‡∏•‡∏∞‡∏Ç‡∏±‡πâ‡∏ô: ‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ä‡πà‡∏≠‡∏á -> ‡∏£‡∏≠‡∏¢‡∏∑‡∏ô‡∏¢‡∏±‡∏ô -> ‡πÄ‡∏•‡∏∑‡∏≠‡∏Å Action
     public void GoBack()
     {
         if (turnGameManager == null) return;
@@ -534,13 +539,13 @@ public class InGameUIManager : MonoBehaviour
 
         if (key == "tab")
         {
-            // ¬—ß‰¡Ë‰¥È‡≈◊Õ°µ—«‰Àπ (‡™Ëπ ‡æ‘Ëß‡√‘Ë¡‡∑‘√Ïπ À√◊Õµ—«°ËÕπÀπÈ“®∫ action ‰ª·≈È«) -> ‡√‘Ë¡À“®“°µ—«·√°
-            // ¡’µ—«∑’Ë‡≈◊Õ°Õ¬ŸË -> ‰ªµ—«∂—¥‰ª®“°µ—«π—Èπ
+            // ‡∏¢‡∏±‡∏á‡πÑ‡∏°‡πà‡πÑ‡∏î‡πâ‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏ï‡∏±‡∏ß‡πÑ‡∏´‡∏ô (‡πÄ‡∏ä‡πà‡∏ô ‡πÄ‡∏û‡∏¥‡πà‡∏á‡πÄ‡∏£‡∏¥‡πà‡∏°‡πÄ‡∏ó‡∏¥‡∏£‡πå‡∏ô ‡∏´‡∏£‡∏∑‡∏≠‡∏ï‡∏±‡∏ß‡∏Å‡πà‡∏≠‡∏ô‡∏´‡∏ô‡πâ‡∏≤‡∏à‡∏ö action ‡πÑ‡∏õ‡πÅ‡∏•‡πâ‡∏ß) -> ‡πÄ‡∏£‡∏¥‡πà‡∏°‡∏´‡∏≤‡∏à‡∏≤‡∏Å‡∏ï‡∏±‡∏ß‡πÅ‡∏£‡∏Å
+            // ‡∏°‡∏µ‡∏ï‡∏±‡∏ß‡∏ó‡∏µ‡πà‡πÄ‡∏•‡∏∑‡∏≠‡∏Å‡∏≠‡∏¢‡∏π‡πà -> ‡πÑ‡∏õ‡∏ï‡∏±‡∏ß‡∏ñ‡∏±‡∏î‡πÑ‡∏õ‡∏à‡∏≤‡∏Å‡∏ï‡∏±‡∏ß‡∏ô‡∏±‡πâ‡∏ô
             int start = turnGameManager.CurrentPlayer == null ? 0 : CurrentFocusCharacterIndex + 1;
             for (int step = 0; step < CharacterList.Length; step++)
             {
                 int i = (start + step) % CharacterList.Length;
-                if (TryFocusCharacter(i)) break;   // ¢È“¡µ—«∑’Ë∑” action ‰ª·≈È«/µ“¬·≈È«„ÀÈ‡Õß
+                if (TryFocusCharacter(i)) break;   // ‡∏Ç‡πâ‡∏≤‡∏°‡∏ï‡∏±‡∏ß‡∏ó‡∏µ‡πà‡∏ó‡∏≥ action ‡πÑ‡∏õ‡πÅ‡∏•‡πâ‡∏ß/‡∏ï‡∏≤‡∏¢‡πÅ‡∏•‡πâ‡∏ß‡πÉ‡∏´‡πâ‡πÄ‡∏≠‡∏á
             }
         }
         else if (int.TryParse(key, out int number))
@@ -559,14 +564,14 @@ public class InGameUIManager : MonoBehaviour
 
     private void UpdateActionFocusUI()
     {
-        // 1. ‡§≈’¬√Ï ∂“π–¢Õß∑ÿ°ªÿË¡°ËÕπ
+        // 1. ‡πÄ‡∏Ñ‡∏•‡∏µ‡∏¢‡∏£‡πå‡∏™‡∏ñ‡∏≤‡∏ô‡∏∞‡∏Ç‡∏≠‡∏á‡∏ó‡∏∏‡∏Å‡∏õ‡∏∏‡πà‡∏°‡∏Å‡πà‡∏≠‡∏ô
         foreach (GameObject go in new[] { MoveAction, InteractAction, SignatureAction })
         {
             CharacterActionList item = go.GetComponent<CharacterActionList>();
             item.Unselected();
         }
 
-        // 2. ‰Œ‰≈µÏ action ∑’Ë‚ø°— Õ¬ŸË
+        // 2. ‡πÑ‡∏Æ‡πÑ‡∏•‡∏ï‡πå action ‡∏ó‡∏µ‡πà‡πÇ‡∏ü‡∏Å‡∏±‡∏™‡∏≠‡∏¢‡∏π‡πà
         if (availableActions.Count == 0) return;
         int focusId = availableActions[Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1)];
         CharacterActionList focused = GetActionObject(focusId).GetComponent<CharacterActionList>();
