@@ -366,7 +366,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterActionList
   isSelected: 0
   isArmed: 0
-  actionType: 2
+  actionType: 1
   sprites: []
 --- !u!114 &6740599883106377546
 MonoBehaviour:
@@ -786,7 +786,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterActionList
   isSelected: 0
   isArmed: 0
-  actionType: 1
+  actionType: 2
   sprites: []
 --- !u!114 &110781992104010375
 MonoBehaviour:
