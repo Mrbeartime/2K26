@@ -52,12 +52,16 @@ public class PlayerController : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
-            TurnArrowTrap clickedTrap = hit.collider.GetComponentInParent<TurnArrowTrap>();
+            // =========================
+            // คลิกหน้าไม้เพื่อดู Attack Range
+            // =========================
+            TurnArrowTrap clickedTrap =
+                hit.collider.GetComponentInParent<TurnArrowTrap>();
 
             if (clickedTrap != null)
             {
-                if (!turnManager.IsSkillTargeting &&
-                    !turnManager.IsMoveTargeting)
+                // ไม่เปิด Preview ขณะกำลังใช้ Skill
+                if (!turnManager.IsSkillTargeting)
                 {
                     SelectArrowTrap(clickedTrap);
                     return;

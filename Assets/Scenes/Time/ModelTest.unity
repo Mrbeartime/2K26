@@ -5559,7 +5559,7 @@ GameObject:
   - component: {fileID: 1992033478}
   - component: {fileID: 1992033480}
   m_Layer: 0
-  m_Name: Arrow Trap - Every 3 Turns
+  m_Name: Arrow Trap - Every 2 Turns
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
