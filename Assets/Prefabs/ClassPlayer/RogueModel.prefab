@@ -94,6 +94,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2500459505673249894}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6900527152724382124}
   m_SourcePrefab: {fileID: 100100000, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
 --- !u!1 &7432603356200643643 stripped
 GameObject:
@@ -219,3 +222,16 @@ MonoBehaviour:
   visualRoot: {fileID: 0}
   rotationSpeed: 540
   modelYawOffset: 0
+--- !u!114 &6900527152724382124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7432603356200643643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcf24d7cc2b4bb5468600a4e1ba864d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationController
+  animator: {fileID: 2759402169863461395}
