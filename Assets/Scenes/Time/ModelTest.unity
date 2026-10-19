@@ -5557,6 +5557,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1992033479}
   - component: {fileID: 1992033478}
+  - component: {fileID: 1992033480}
   m_Layer: 0
   m_Name: Arrow Trap - Every 3 Turns
   m_TagString: Untagged
@@ -5600,6 +5601,27 @@ Transform:
   - {fileID: 923010694}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 270, z: 0}
+--- !u!65 &1992033480
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1992033477}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.9342094, y: 1, z: 1.0185504}
+  m_Center: {x: 0.032895297, y: 0, z: -0.24997161}
 --- !u!1001 &2010854070
 PrefabInstance:
   m_ObjectHideFlags: 0
