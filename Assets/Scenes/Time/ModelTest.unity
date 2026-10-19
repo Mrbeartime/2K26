@@ -530,6 +530,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 224112165}
+    - targetCorrespondingSourceObject: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 224112159}
   m_SourcePrefab: {fileID: 100100000, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
 --- !u!1001 &84572937
@@ -922,6 +925,38 @@ MonoBehaviour:
   doors:
   - {fileID: 1526548057}
   - {fileID: 1568875039}
+--- !u!114 &224112161 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+  m_PrefabInstance: {fileID: 70606623}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 224112157}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fae6533672cef1b4c8b645f79631635e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tile
+--- !u!114 &224112165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 224112157}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13079c327ee2f184093c0e217dd0c873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorSwitchHoverBlink
+  hoverType: 0
+  hoverTile: {fileID: 224112161}
+  hoverCollider: {fileID: 0}
+  targetDoors:
+  - {fileID: 1526548057}
+  - {fileID: 1568875039}
+  enableBlink: 1
+  blinkColor: {r: 0, g: 1, b: 0, a: 1}
+  blinkInterval: 0.3
 --- !u!1001 &256806401
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2285,6 +2320,7 @@ GameObject:
   - component: {fileID: 878386688}
   - component: {fileID: 878386687}
   - component: {fileID: 878386686}
+  - component: {fileID: 878386691}
   m_Layer: 6
   m_Name: target
   m_TagString: Untagged
@@ -2407,6 +2443,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!114 &878386691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 878386685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13079c327ee2f184093c0e217dd0c873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorSwitchHoverBlink
+  hoverType: 1
+  hoverTile: {fileID: 0}
+  hoverCollider: {fileID: 878386687}
+  targetDoors:
+  - {fileID: 2023735828}
+  enableBlink: 1
+  blinkColor: {r: 0, g: 1, b: 0, a: 1}
+  blinkInterval: 0.3
 --- !u!1 &923010693
 GameObject:
   m_ObjectHideFlags: 0
@@ -4036,6 +4092,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorSwitch
   doors:
   - {fileID: 826875693}
+--- !u!114 &1656908240 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+  m_PrefabInstance: {fileID: 1973479395}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656908237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fae6533672cef1b4c8b645f79631635e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tile
+--- !u!114 &1656908244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656908237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13079c327ee2f184093c0e217dd0c873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorSwitchHoverBlink
+  hoverType: 0
+  hoverTile: {fileID: 1656908240}
+  hoverCollider: {fileID: 0}
+  targetDoors:
+  - {fileID: 826875693}
+  enableBlink: 1
+  blinkColor: {r: 0, g: 1, b: 0, a: 1}
+  blinkInterval: 0.3
 --- !u!4 &1666206091 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8630445062527418290, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
@@ -5103,6 +5190,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1656908244}
     - targetCorrespondingSourceObject: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1656908239}
