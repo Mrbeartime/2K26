@@ -6,6 +6,7 @@ public abstract class TurnTrap : MonoBehaviour
 {
     public abstract int IntervalTurns { get; }
     public int LastTriggeredTurn { get; private set; }
+    public bool IsResolving { get; private set; }
 
     public bool IsDue(int turn) => turn > 0 && turn % Mathf.Max(1, IntervalTurns) == 0;
 
@@ -14,7 +15,15 @@ public abstract class TurnTrap : MonoBehaviour
         if (!isActiveAndEnabled || !IsDue(turn) || LastTriggeredTurn == turn) yield break;
         LastTriggeredTurn = turn;
         Debug.Log($"Turn {turn}: {name} activated.", this);
-        yield return Activate();
+        IsResolving = true;
+        try
+        {
+            yield return Activate();
+        }
+        finally
+        {
+            IsResolving = false;
+        }
     }
 
     protected abstract IEnumerator Activate();
