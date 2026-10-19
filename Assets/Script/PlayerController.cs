@@ -7,6 +7,9 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance;
 
     private PlayerMove selectedPlayer;
+
+    private Enemy selectedEnemy;
+    private TurnArrowTrap selectedArrowTrap;
     private Camera mainCamera;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -49,6 +52,49 @@ public class PlayerController : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            TurnArrowTrap clickedTrap = hit.collider.GetComponentInParent<TurnArrowTrap>();
+
+            if (clickedTrap != null)
+            {
+                if (!turnManager.IsSkillTargeting &&
+                    !turnManager.IsMoveTargeting)
+                {
+                    SelectArrowTrap(clickedTrap);
+                    return;
+                }
+            }
+            // =========================
+            // คลิก Enemy
+            // =========================
+            Enemy clickedEnemy =
+                hit.collider.GetComponentInParent<Enemy>();
+
+            if (clickedEnemy != null)
+            {
+                // ถ้ากำลังใช้ Skill
+                // Enemy ต้องเป็นเป้าหมาย Skill ตามระบบเดิม
+                if (turnManager.IsSkillTargeting)
+                {
+                    Tile enemyTile =
+                        GridManager.Instance.GetTile(
+                            clickedEnemy.CurrentLocation
+                        );
+
+                    if (enemyTile != null)
+                        turnManager.UseSkillOn(enemyTile);
+
+                    return;
+                }
+
+                // ถ้าไม่ได้ใช้ Skill
+                // แค่เปิด/ปิด Enemy Range
+                SelectEnemy(clickedEnemy);
+                return;
+            }
+
+            // =========================
+            // คลิก Player เดิม
+            // =========================
             PlayerMove clickedPlayer = hit.collider.GetComponentInParent<PlayerMove>();
             if (clickedPlayer != null)
             {
@@ -204,6 +250,7 @@ public class PlayerController : MonoBehaviour
     public void ShowRogueSkillRange(Tile origin, int range)
     {
         ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
         if (origin == null) return;
         foreach (Tile tile in FindObjectsByType<Tile>())
         {
@@ -212,6 +259,14 @@ public class PlayerController : MonoBehaviour
             currentHighlightedTiles.Add(tile);
             tile.ShowHighlight(Tile.HighlightType.Skill);
         }
+    }
+
+    private bool CanShowSelectedSkill()
+    {
+        TurnGameManager manager = TurnGameManager.Instance;
+        PlayerMove player = manager != null ? manager.CurrentPlayer : selectedPlayer;
+        return player != null && player.TryGetComponent(out Character character) &&
+            character.CanUseSkill && (manager == null || manager.CanChooseSkill);
     }
 
     public void ShowSwordSkillRange(Tile origin)
@@ -256,6 +311,7 @@ public class PlayerController : MonoBehaviour
     public void ShowArcherSkillRange(Tile origin)
     {
         ClearHighlights();
+        if (!CanShowSelectedSkill()) return;
 
         if (origin == null || GridManager.Instance == null)
             return;
@@ -301,6 +357,69 @@ public class PlayerController : MonoBehaviour
 
                 currentTile = nextTile;
             }
+        }
+    }
+    public void SelectEnemy(Enemy enemy)
+    {
+        if (enemy == null || enemy.IsDead)
+            return;
+
+        // =========================
+        // กดตัวเดิมซ้ำ = ปิด
+        // =========================
+        if (selectedEnemy == enemy)
+        {
+            ClearHighlights();
+            selectedEnemy = null;
+
+            Debug.Log("Enemy Range OFF");
+            return;
+        }
+
+        // =========================
+        // เลือก Enemy ตัวใหม่
+        // =========================
+        ClearHighlights();
+
+        selectedArrowTrap = null; //เพื่อไม่ให้การเลือก Enemy กับหน้าไม้สลับกันแล้วสถานะค้าง
+        selectedEnemy = enemy;
+
+        List<Tile> attackRange = enemy.GetAttackRange();
+
+        foreach (Tile tile in attackRange)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
+        }
+
+        Debug.Log(
+            $"Enemy Selected: {enemy.name} | Range: {attackRange.Count} tiles"
+        );
+    }
+
+    public void SelectArrowTrap(TurnArrowTrap trap)
+    {
+        if (trap == null)
+            return;
+
+        if (selectedArrowTrap == trap)
+        {
+            ClearHighlights();
+            selectedArrowTrap = null;
+            return;
+        }
+
+        ClearHighlights();
+
+        selectedEnemy = null;
+        selectedArrowTrap = trap;
+
+        List<Tile> range = trap.GetAttackRange();
+
+        foreach (Tile tile in range)
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(Tile.HighlightType.Enemy);
         }
     }
 }

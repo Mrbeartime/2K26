@@ -13,6 +13,13 @@ public class PlayerMove : MonoBehaviour
 
     private bool isMoving;
 
+    private CharacterFacing facing;
+
+    private void Awake()
+    {
+        facing = GetComponent<CharacterFacing>();
+    }
+
     private void Start()
     {
         FindStartingTile();
@@ -184,6 +191,9 @@ public class PlayerMove : MonoBehaviour
 
         targetPosition.y =
             transform.position.y;
+
+        // หันไปทาง Tile ที่กำลังเดินไป
+        facing?.FaceTowards(targetPosition);
 
         transform.position =
             Vector3.MoveTowards(

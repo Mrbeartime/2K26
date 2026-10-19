@@ -16,8 +16,12 @@ public class TurnGameManager : MonoBehaviour
     private enum ActionMode { None, MoveTargeting, SkillTargeting }
 
     [Header("Turn Settings")]
-    [SerializeField, Min(1)] private int maximumTurns = 5;
+    [SerializeField, Min(1)] public int maximumTurns = 5;
     [SerializeField, Min(0f)] private float enemyPhaseDelay = 0.35f;
+
+    [Header("Turn Screen Shake")]
+    [SerializeField] private bool enableTurnShake = false;
+    [SerializeField] private TurnScreenShake screenShake;
 
     [Header("Debug UI")]
     [SerializeField] private bool showTestUI = true;
@@ -63,7 +67,8 @@ public class TurnGameManager : MonoBehaviour
         currentPlayerSelected && !hasMoved && !waitingForMovement;
 
     public bool CanChooseSkill => !gameComplete && !enemyPhase && currentPlayer != null &&
-        currentPlayerSelected && !waitingForMovement;
+        currentPlayerSelected && !waitingForMovement &&
+        currentPlayer.TryGetComponent(out Character skillCharacter) && skillCharacter.CanUseSkill;
 
     public bool CanChooseReact => CanCurrentPlayerReact;
     public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
@@ -130,7 +135,13 @@ public class TurnGameManager : MonoBehaviour
             if (GUI.Button(new Rect(30, 126, 100, 28), "Move")) ChooseMove();
 
             GUI.enabled = !gameComplete && !enemyPhase && CurrentPlayer != null && currentPlayerSelected && !waitingForMovement && actionMode == ActionMode.None;
-            if (GUI.Button(new Rect(140, 126, 100, 28), "Skill")) ChooseSkill();
+            bool actionEnabled = GUI.enabled;
+            GUI.enabled = actionEnabled && CanChooseSkill;
+            Character skillUser = CurrentPlayer != null ? CurrentPlayer.GetComponent<Character>() : null;
+            string skillLabel = skillUser != null && skillUser.SkillLimit >= 0
+                ? "Skill (" + skillUser.RemainingSkills + ")" : "Skill";
+            if (GUI.Button(new Rect(140, 126, 100, 28), skillLabel)) ChooseSkill();
+            GUI.enabled = actionEnabled;
             if (CanCurrentPlayerReact && GUI.Button(new Rect(250, 126, 100, 28), "React")) ChooseReact();
             if (GUI.Button(new Rect(360, 126, 100, 28), "Skip")) ChooseSkip();
 
@@ -231,6 +242,7 @@ public class TurnGameManager : MonoBehaviour
     // =========================
     else
     {
+        if (SkipExhaustedSkill()) return true;
         character?.ShowSkillRange();
 
         status =
@@ -290,6 +302,13 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkill()
     {
+        if (SkipExhaustedSkill()) return;
+        if (!CanChooseSkill)
+        {
+            status = "Skill unavailable: no uses left for this level.";
+            RaiseStateChanged();
+            return;
+        }
         if (gameComplete ||
             enemyPhase ||
             CurrentPlayer == null ||
@@ -319,6 +338,11 @@ public class TurnGameManager : MonoBehaviour
         if (!CanCurrentPlayerReact) return;
         Character character = CurrentPlayer.GetComponent<Character>();
         if (!character.React(CurrentPlayer.GetCurrentTile())) return;
+
+        // เล่น Interact Animation
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+            .PlayInteract();
+
         EndCurrentPlayerAction("React: door switch toggled");
     }
 
@@ -375,6 +399,7 @@ public class TurnGameManager : MonoBehaviour
         }
 
         // เดินเสร็จแล้ว -> โชว์ Skill Range
+        if (SkipExhaustedSkill()) return;
         Character character =
             player.GetComponent<Character>();
 
@@ -426,6 +451,12 @@ public class TurnGameManager : MonoBehaviour
     {
         if (!IsSkillTargeting || CurrentPlayer == null || target == null) return;
         Character character = CurrentPlayer.GetComponent<Character>();
+        if (character == null || !character.CanUseSkill)
+        {
+            status = "No skill uses left for this level.";
+            RaiseStateChanged();
+            return;
+        }
         if (character is Rogue rogue)
         {
             foreach (RogueDoor door in FindObjectsByType<RogueDoor>())
@@ -440,7 +471,18 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        character?.Attack(target);
+        int usesBefore = character.SkillsUsed;
+        // หันไปทางเป้าหมาย Skill
+        CurrentPlayer.GetComponent<CharacterFacing>()?
+            .FaceTowards(target.transform.position, true);
+
+        // โจมตีตามระบบเดิม
+        character.Attack(target);
+
+        if (character is ArcherMan && character.SkillsUsed == usesBefore) return;
+
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+    .PlaySkill();
         EndCurrentPlayerAction("Skill");
     }
 
@@ -457,12 +499,47 @@ public class TurnGameManager : MonoBehaviour
             status = "Rogue Skill: the door must be within " + rogue.LockpickRange + " tile(s).";
             return;
         }
+
+        // หันหน้าเข้าหาประตูก่อนใช้ Skill
+        CurrentPlayer.GetComponent<CharacterFacing>()?
+            .FaceTowards(door.transform.position, true);
+
         if (!rogue.OPDoor(door))
         {
             status = "Rogue cannot unlock this door.";
             return;
         }
+        CurrentPlayer.GetComponent<CharacterAnimationController>()?
+    .PlaySkill();
         EndCurrentPlayerAction("Rogue Skill");
+    }
+
+    public bool SkipExhaustedSkill()
+    {
+        if (gameComplete || enemyPhase || waitingForMovement || CurrentPlayer == null ||
+            !currentPlayerSelected) return false;
+        Character character = CurrentPlayer.GetComponent<Character>();
+        if (character == null || character.SkillLimit < 0 || character.RemainingSkills > 0) return false;
+        // Exhausting the signature skill must not consume Move or Interact.
+        if (CanChooseMove || CanCurrentPlayerReact)
+        {
+            if (actionMode == ActionMode.SkillTargeting)
+            {
+                actionMode = ActionMode.None;
+                PlayerController.Instance?.ClearHighlights();
+                status = "No skills left. Choose Move, Interact, or Skip.";
+                RaiseStateChanged();
+            }
+            return false;
+        }
+        EndCurrentPlayerAction("No skills left: skipped");
+        return true;
+    }
+
+    private void LateUpdate()
+    {
+        if (Time.timeScale == 0 || waitingForMovement || CurrentPlayer == null) return;
+        if (hasMoved || actionMode == ActionMode.SkillTargeting) SkipExhaustedSkill();
     }
 
     private void EndCurrentPlayerAction(string actionName)
@@ -496,16 +573,19 @@ public class TurnGameManager : MonoBehaviour
     private System.Collections.IEnumerator RunEnemyPhase()
     {
         yield return new WaitForSeconds(enemyPhaseDelay);
+        // Finish the last player's shot before enemies decide whether they are alive.
+        while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
         Enemy.RunEnemyPhase();
         yield return null;
+        // Both enemy types act in the same frame; only the phase transition waits.
+        while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
 
         trapPhase = true;
         status = "Trap Phase: resolving turn " + ElapsedTurn + "...";
         // Resolve the current round number, not the next one. Waiting on each
-        // trap keeps input locked until activation completes and arrows finish flying.
-        // Raised spikes persist without blocking the next player phase.
+        // trap keeps input locked until spikes retract and arrows finish flying.
         foreach (TurnTrap trap in FindObjectsByType<TurnTrap>())
         {
             if (gameComplete) yield break;
@@ -521,6 +601,7 @@ public class TurnGameManager : MonoBehaviour
             ShowGameOver("Turn limit reached.");
             yield break;
         }
+        PlayTurnShake();
         StartPlayerPhase();
     }
 
@@ -542,6 +623,14 @@ public class TurnGameManager : MonoBehaviour
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
         RaiseStateChanged();
+    }
+
+    private bool HasFlyingArrows()
+    {
+        foreach (ArrowProjectile arrow in FindObjectsByType<ArrowProjectile>())
+            if (arrow.isActiveAndEnabled && arrow.gameObject.scene == gameObject.scene && arrow.IsFlying)
+                return true;
+        return false;
     }
 
     private void ShowGameOver(string reason)
@@ -573,7 +662,6 @@ public class TurnGameManager : MonoBehaviour
         status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
 
-        ProjectD.Menus.GameSceneManager.CompleteActiveLevel();
         GameEnded?.Invoke(true, gameOverReason);
         RaiseStateChanged();
     }
@@ -582,4 +670,13 @@ public class TurnGameManager : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    private void PlayTurnShake()
+    {
+        if (!enableTurnShake)
+            return;
+
+        screenShake?.PlayShake();
+    }
 }
+

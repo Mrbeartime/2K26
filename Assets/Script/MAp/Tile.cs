@@ -18,11 +18,13 @@ public class Tile : MonoBehaviour
     [Header("Highlight Colors")]
     [SerializeField] private Color moveHighlightColor = Color.cyan;
     [SerializeField] private Color skillHighlightColor = Color.yellow;
+    [SerializeField] private Color enemyHighlightColor = Color.red;
 
     public enum HighlightType
     {
         Move,
-        Skill
+        Skill,
+        Enemy
     }
 
     // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
@@ -44,9 +46,14 @@ public class Tile : MonoBehaviour
             case HighlightType.Skill:
                 targetColor = skillHighlightColor;
                 break;
+
+            case HighlightType.Enemy:
+                targetColor = enemyHighlightColor;
+                break;
         }
 
         SetHighlightColor(targetColor);
+
     }
 
     // ปิด Highlight

@@ -13,11 +13,32 @@ public class Entity : MonoBehaviour
     public virtual void OnDeath()
     {
         if (IsDead) return;
+
+        // ถือว่าตายทันที
         IsDead = true;
+
+        // คืนช่อง Tile
         if (GridManager.Instance != null)
-            GridManager.Instance.GetTile(CurrentLocation)?.ClearOccupant(gameObject);
+        {
+            GridManager.Instance
+                .GetTile(CurrentLocation)?
+                .ClearOccupant(gameObject);
+        }
+
+        // แจ้ง Turn Manager ว่า Player ตายแล้ว
         if (TryGetComponent(out PlayerMove player))
-            TurnGameManager.Instance?.NotifyPlayerDefeated(player);
+        {
+            TurnGameManager.Instance?
+                .NotifyPlayerDefeated(player);
+        }
+
+        // แยกการลบออกจากระบบตาย
+        RemoveAfterDeath();
+    }
+
+    protected virtual void RemoveAfterDeath()
+    {
+        // Entity ทั่วไปยังลบทันทีเหมือนเดิม
         Destroy(gameObject);
     }
 }
