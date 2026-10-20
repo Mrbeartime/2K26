@@ -7599,6 +7599,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PrototypePauseUI
       objectReference: {fileID: 0}
+    - target: {fileID: 816866810080854643, guid: d4316dbacebac964d812980872e69e9d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4667041376007757145, guid: d4316dbacebac964d812980872e69e9d, type: 3}
       propertyPath: m_Pivot.x
       value: 0
