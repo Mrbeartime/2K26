@@ -11,6 +11,7 @@ public class ArrowProjectile : MonoBehaviour
     private bool finished;
     [SerializeField, Min(0.001f)] private float hitRadius = 0.03f;
     private bool initialized;
+    public float HitRadius => Mathf.Max(0.001f, hitRadius);
     public bool IsFlying => initialized && !finished;
 
     public void Initialize(Character source, Tile origin, Vector2Int direction, float velocity)
@@ -57,6 +58,7 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (owner != null && collider.transform.IsChildOf(owner.transform)) return false;
         if (collider.transform.IsChildOf(transform)) return false;
+        if (collider.GetComponentInParent<Character>() is Character corpse && corpse.IsDead) return false;
         if (GridManager.Instance.IsArrowWall(collider))
         {
             Finish();

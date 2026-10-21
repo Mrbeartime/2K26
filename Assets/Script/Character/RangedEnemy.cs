@@ -21,6 +21,7 @@ public class RangedEnemy : Enemy
             return;
         }
         Transform muzzle = firePoint != null ? firePoint : transform;
+        if (!HasAdventurerInSight(muzzle)) return;
         GameObject arrow = Instantiate(arrowPrefab, muzzle.position,
             muzzle.rotation * Quaternion.Euler(arrowRotationOffset));
         ArrowProjectile projectile = arrow.GetComponent<ArrowProjectile>();
@@ -30,6 +31,43 @@ public class RangedEnemy : Enemy
             Mathf.Max(1, rangeTiles) * GridManager.Instance.TileSize);
         arrow.SetActive(true);
         onAttack.Invoke();
+    }
+
+    private bool HasAdventurerInSight(Transform muzzle)
+    {
+        Physics.SyncTransforms();
+        float range = Mathf.Max(1, rangeTiles) * GridManager.Instance.TileSize;
+        ArrowProjectile template = arrowPrefab.GetComponent<ArrowProjectile>();
+        float radius = template != null ? template.HitRadius : 0.03f;
+        float blocker = float.PositiveInfinity;
+        float target = float.PositiveInfinity;
+        foreach (Collider col in Physics.OverlapSphere(muzzle.position, radius, ~0, QueryTriggerInteraction.Collide))
+            CheckSightContact(col, 0f, ref blocker, ref target);
+        foreach (RaycastHit hit in Physics.SphereCastAll(muzzle.position, radius, muzzle.forward,
+            range, ~0, QueryTriggerInteraction.Collide))
+            CheckSightContact(hit.collider, hit.distance, ref blocker, ref target);
+        Ray ray = new Ray(muzzle.position, muzzle.forward);
+        foreach (Character character in FindObjectsByType<Character>())
+        {
+            if (!character.IsDead || !character.IsFreshCorpse || character.gameObject.scene != gameObject.scene) continue;
+            Bounds bounds = character.CorpseSightBounds;
+            bounds.Expand(radius * 2f);
+            if (bounds.IntersectRay(ray, out float distance)) target = Mathf.Min(target, distance);
+        }
+        return target <= range && target < blocker;
+    }
+
+    private void CheckSightContact(Collider col, float distance, ref float blocker, ref float target)
+    {
+        if (col.transform.IsChildOf(transform)) return;
+        Entity entity = col.GetComponentInParent<Entity>();
+        if (entity != null && entity.IsDead) return;
+        if (GridManager.Instance.IsArrowWall(col)) blocker = Mathf.Min(blocker, distance);
+        else if (entity != null && entity.isActiveAndEnabled)
+        {
+            if (entity is Character) target = Mathf.Min(target, distance);
+            else blocker = Mathf.Min(blocker, distance);
+        }
     }
 
     private void OnDrawGizmosSelected()

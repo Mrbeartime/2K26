@@ -13,6 +13,14 @@ public class Character : Entity
 
     [Header("Death Animation")]
     [SerializeField] private Animator deathAnimator;
+    [Header("Corpse")]
+    [Tooltip("World-space visual offset after death; does not change the firing lane.")]
+    [SerializeField] private Vector3 corpseOffset = new Vector3(0.2f, 0f, 0.2f);
+    [SerializeField] private Vector3 fallbackCorpseRotation = new Vector3(0f, 0f, 90f);
+    public bool IsFreshCorpse { get; private set; }
+    public Bounds CorpseSightBounds { get; private set; }
+    public void ExpireCorpseSight() => IsFreshCorpse = false;
+
     protected void RecordSkillUse()
     {
         skillsUsed++;
@@ -60,26 +68,39 @@ public class Character : Entity
 
     protected override void RemoveAfterDeath()
     {
-        // หยุดการเดิน
-        PlayerMove movement = GetComponent<PlayerMove>();
-
-        if (movement != null)
-            movement.enabled = false;
-
-        // ปิด Collider เพื่อไม่ให้ตัวละครที่ตายแล้วขวางการโจมตี
+        Bounds bounds = new Bounds(transform.position + Vector3.up * 0.5f, Vector3.one * 0.5f);
+        bool found = false;
         foreach (Collider col in GetComponentsInChildren<Collider>())
         {
+            if (col.enabled)
+            {
+                if (!found) bounds = col.bounds;
+                else bounds.Encapsulate(col.bounds);
+                found = true;
+            }
             col.enabled = false;
         }
+        CorpseSightBounds = bounds;
+        IsFreshCorpse = true;
+        foreach (Rigidbody body in GetComponentsInChildren<Rigidbody>())
+        {
+            body.isKinematic = true;
+            body.useGravity = false;
+        }
+        PlayerMove movement = GetComponent<PlayerMove>();
+        if (movement != null) { movement.StopAllCoroutines(); movement.enabled = false; }
+        if (TryGetComponent(out CharacterFacing facing)) facing.enabled = false;
+        if (TryGetComponent(out CharacterAnimationController animationController)) animationController.enabled = false;
+        transform.position += corpseOffset;
 
         // หา Animator
         if (deathAnimator == null)
             deathAnimator = GetComponentInChildren<Animator>();
 
-        // ไม่มี Animator ก็ลบทันที
+        // Use a resting pose when there is no death animation.
         if (deathAnimator == null)
         {
-            Destroy(gameObject);
+            transform.rotation *= Quaternion.Euler(fallbackCorpseRotation);
             return;
         }
 
@@ -89,14 +110,15 @@ public class Character : Entity
         if (!deathAnimator.HasState(0, deathState))
         {
             Debug.LogWarning("ไม่พบ Death State ใน Animator", this);
-            Destroy(gameObject);
+            deathAnimator.enabled = false;
+            transform.rotation *= Quaternion.Euler(fallbackCorpseRotation);
             return;
         }
 
-        StartCoroutine(PlayDeathThenDestroy());
+        StartCoroutine(PlayDeathThenKeepCorpse());
     }
 
-    private IEnumerator PlayDeathThenDestroy()
+    private IEnumerator PlayDeathThenKeepCorpse()
     {
         // ให้ Animation เดินต่อได้แม้ Time.timeScale = 0
         deathAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
@@ -130,8 +152,8 @@ public class Character : Entity
             yield return null;
         }
 
-        // Animation จบแล้ว ลบตัวละคร
-        Destroy(gameObject);
+        // Preserve the final pose as a non-blocking corpse.
+        if (deathAnimator != null) deathAnimator.enabled = false;
     }
 
     public virtual void ShowSkillRange()

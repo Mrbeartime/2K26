@@ -37,9 +37,11 @@ public class Enemy : Entity
     public static void RunEnemyPhase()
     {
         foreach (Enemy enemy in FindObjectsByType<Enemy>())
-        {
-            if (enemy != null) enemy.React();
-        }
+            if (enemy != null && enemy.isActiveAndEnabled) enemy.React();
+        // Expire only after every enemy has decided. Deaths from arrows still
+        // in flight remain fresh for the next enemy decision batch.
+        foreach (Character character in FindObjectsByType<Character>())
+            if (character.IsDead) character.ExpireCorpseSight();
     }
 
     protected virtual void React()
