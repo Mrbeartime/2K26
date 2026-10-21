@@ -1,9 +1,15 @@
 using UnityEngine;
 
-public class TurnTile : MonoBehaviour
+public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
 {
     [Header("Turn Settings")]
     [SerializeField] private int appearTurn = 4;
+    public string ScheduledActionName => "Appearance when TurnsLeft >= " + appearTurn +
+        " (existing countdown rule; starts in round 1 if initially enabled)";
+
+    // Match the existing Update condition without changing gameplay semantics.
+    public bool IsScheduledOnTurn(int roundNumber, int maximumRounds) =>
+        roundNumber == 1 && maximumRounds >= 1 && maximumRounds >= appearTurn;
 
     [Header("Rise Settings")]
     [SerializeField] private float hiddenHeight = 2f;
@@ -76,6 +82,8 @@ public class TurnTile : MonoBehaviour
     private void StartRise()
     {
         isRising = true;
+        TurnGameManager manager = TurnGameManager.Instance;
+        if (manager != null) manager.RecordFixedTurnExecution(this, manager.RoundNumber, "Tile appearance started");
 
         // เปิด Collider ตอนเริ่มขึ้น
         SetColliders(true);
