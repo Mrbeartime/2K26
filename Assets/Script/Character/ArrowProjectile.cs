@@ -66,14 +66,13 @@ public class ArrowProjectile : MonoBehaviour
         }
         Entity entity = collider.GetComponentInParent<Entity>();
         if (entity == null || !entity.isActiveAndEnabled || entity.IsDead) return false;
-        // Enemy arrows are stopped by other enemies/targets but cannot activate
-        // Archer-only targets or kill their own team.
-        if (enemyArrow && !(entity is Character))
+        // Enemy arrows can activate training targets but cannot kill their own team.
+        if (enemyArrow && !(entity is Character) && !(entity is ArrowTutorial))
         {
             Finish();
             return true;
         }
-        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner as Character);
+        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner);
         else entity.ReceiveArrowHit();
         Finish();
         return true;

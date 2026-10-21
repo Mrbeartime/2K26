@@ -3246,7 +3246,7 @@ MonoBehaviour:
   arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
   firePoint: {fileID: 1339055221}
   arrowSpeed: 12
-  rangeTiles: 3
+  rangeTiles: 5
   arrowRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1213303222
 Rigidbody:

@@ -91,6 +91,11 @@ public class Character : Entity
         if (movement != null) { movement.StopAllCoroutines(); movement.enabled = false; }
         if (TryGetComponent(out CharacterFacing facing)) facing.enabled = false;
         if (TryGetComponent(out CharacterAnimationController animationController)) animationController.enabled = false;
+        PlayDeathVisuals();
+    }
+
+    protected virtual void PlayDeathVisuals()
+    {
         transform.position += corpseOffset;
 
         // หา Animator

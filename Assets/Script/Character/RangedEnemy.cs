@@ -62,6 +62,9 @@ public class RangedEnemy : Enemy
         if (col.transform.IsChildOf(transform)) return;
         Entity entity = col.GetComponentInParent<Entity>();
         if (entity != null && entity.IsDead) return;
+        // A training target does not hide adventurers behind it, but the fired
+        // arrow still hits the target first. The target alone does not trigger fire.
+        if (entity is ArrowTutorial) return;
         if (GridManager.Instance.IsArrowWall(col)) blocker = Mathf.Min(blocker, distance);
         else if (entity != null && entity.isActiveAndEnabled)
         {
