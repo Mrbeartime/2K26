@@ -71,9 +71,24 @@ public class CharacterActionList : MonoBehaviour
         // เลือก sprite: รอยืนยัน (sprites[2]) > โฟกัส (sprites[1]) > ปกติ (sprites[0])
         if (sprites != null && sprites.Length > 1)
         {
-            if (isArmed && hasArmedSprite) image.sprite = sprites[2];
-            else if (isSelected || isArmed) image.sprite = sprites[1];
-            else image.sprite = sprites[0];
+            if (isArmed && hasArmedSprite)
+            {
+                image.sprite = sprites[2];
+                image.rectTransform.sizeDelta = new Vector2(86f, 86f);
+                SetPosX(17f);   // ปรับ x ของตอน arm ตามต้องการ
+            }
+            else if (isSelected || isArmed)
+            {
+                image.sprite = sprites[1];
+                image.rectTransform.sizeDelta = new Vector2(86f, 86f);
+                SetPosX(17f);
+            }
+            else
+            {
+                image.sprite = sprites[0];
+                image.rectTransform.sizeDelta = new Vector2(70f, 70f);
+                SetPosX(25f);
+            }
         }
 
         // --- �Ѵ�������ͧ����ѡ�� ---
@@ -82,11 +97,28 @@ public class CharacterActionList : MonoBehaviour
             if (isSelected || isArmed)
             {
                 actionName.fontStyle = FontStyles.Bold;
+                actionName.fontSize = 36;
+                SetPosXText(98f);
             }
             else
             {
                 actionName.fontStyle = FontStyles.Normal;
+                actionName.fontSize = 30;
+                SetPosXText(90f);
             }
         }
+    }
+    private void SetPosX(float x)
+    {
+        Vector2 p = image.rectTransform.anchoredPosition;
+        p.x = x;
+        image.rectTransform.anchoredPosition = p;
+    }
+    private void SetPosXText(float x)
+    {
+        Vector2 p = actionName.rectTransform.anchoredPosition;
+        p.x = x;
+        actionName.rectTransform.anchoredPosition = p;
+
     }
 }
