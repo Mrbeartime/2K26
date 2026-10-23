@@ -1291,6 +1291,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwordMan
   CanKill: 1
+  skillsUsed: 0
+  deathAnimator: {fileID: 0}
   movementRange: 3
 --- !u!1001 &211654801
 PrefabInstance:
@@ -5077,7 +5079,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcherMan
   CanKill: 1
+  skillsUsed: 0
+  deathAnimator: {fileID: 0}
   movementRange: 3
+  skillUsesPerLevel: -1
   arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
   arrowRotationOffset: {x: 0, y: 0, z: 0}
   arrowHeight: 0.6
@@ -7018,7 +7023,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rogue
   CanKill: 1
+  skillsUsed: 0
+  deathAnimator: {fileID: 0}
   movementRange: 3
+  skillUsesPerLevel: -1
   LockpickIsAvailable: 1
   lockpickRange: 1
 --- !u!54 &1726576322
@@ -8206,8 +8214,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
+  turnScheduleData: {fileID: 0}
   maximumTurns: 13
   enemyPhaseDelay: 0.35
+  enableTurnShake: 0
+  screenShake: {fileID: 0}
   showTestUI: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -9,16 +9,22 @@ namespace ProjectD.Menus
         public const string SelectScene = "Assets/Scenes/Mon/SceneGame/LevelSelect.unity";
         public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
-        public static int UnlockedLevel => Mathf.Clamp(PlayerPrefs.GetInt("Progress.UnlockedLevel", 1), 1, LevelCount);
+        public static int UnlockedLevel
+        {
+            get
+            {
+                for (int level = LevelCount; level >= 1; level--)
+                    if (IsUnlocked(level)) return level;
+                return 1;
+            }
+        }
         public static string LevelPath(int level) => $"Assets/Scenes/TestLevel/Level{level}.unity";
-        public static bool IsUnlocked(int level) => level >= 1 && level <= UnlockedLevel;
-        public static bool IsCompleted(int level) => PlayerPrefs.GetInt($"Progress.Level{level}.Complete", 0) == 1;
-        public static bool IsSecretUnlocked(string id) => PlayerPrefs.GetInt("Progress.Secret." + id + ".Unlocked", 0) == 1;
+        public static bool IsUnlocked(int level) => LevelProgressStore.IsUnlocked(level);
+        public static bool IsCompleted(int level) => LevelProgressStore.IsCompleted(level);
+        public static bool IsSecretUnlocked(string id) => LevelProgressStore.IsSecretUnlocked(id);
         public static void UnlockSecret(string id)
         {
-            if (string.IsNullOrWhiteSpace(id)) return;
-            PlayerPrefs.SetInt("Progress.Secret." + id + ".Unlocked", 1);
-            PlayerPrefs.Save();
+            LevelProgressStore.UnlockSecret(id);
         }
         public static void OpenSecretLevel(string path) => Load(path);
 
@@ -36,19 +42,19 @@ namespace ProjectD.Menus
         // Called only by the game's confirmed victory path, never by opening a menu.
         public static void CompleteActiveLevel()
         {
-            int level = ActiveLevel;
-            if (level == 0)
-            {
-                if (SceneManager.GetActiveScene().path == SecretScene)
+            CompleteLevelForScene(SceneManager.GetActiveScene().path);
+        }
+
+        // Use the chest's own scene, including when scenes are loaded additively.
+        public static void CompleteLevelForScene(string scenePath)
+        {
+            for (int level = 1; level <= LevelCount; level++)
+                if (scenePath == LevelPath(level))
                 {
-                    PlayerPrefs.SetInt("Progress.Secret.SecretLevel1.Complete", 1);
-                    PlayerPrefs.Save();
+                    LevelProgressStore.CompleteLevel(level);
+                    return;
                 }
-                return;
-            }
-            PlayerPrefs.SetInt($"Progress.Level{level}.Complete", 1);
-            PlayerPrefs.SetInt("Progress.UnlockedLevel", Mathf.Max(UnlockedLevel, Mathf.Min(LevelCount, level + 1)));
-            PlayerPrefs.Save();
+            if (scenePath == SecretScene) LevelProgressStore.CompleteSecret("SecretLevel1");
         }
 
         public static void OpenStart() => Load(StartScene);

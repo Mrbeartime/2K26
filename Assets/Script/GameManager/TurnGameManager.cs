@@ -9,9 +9,12 @@ using UnityEngine.EventSystems;//DO NOT REMOVE
 /// Each player can be selected in any order, once per round.
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public partial class TurnGameManager : MonoBehaviour
+public class TurnGameManager : MonoBehaviour
 {
     public static TurnGameManager Instance { get; private set; }
+    [SerializeField] private TurnScheduleData turnScheduleData;
+    public TurnScheduleData ScheduleData => turnScheduleData;
+    public int RoundNumber => ElapsedTurn;
 
     private enum ActionMode { None, MoveTargeting, SkillTargeting }
 
@@ -73,7 +76,11 @@ public partial class TurnGameManager : MonoBehaviour
     public bool CanChooseReact => CanCurrentPlayerReact;
     public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
 
-    private void RaiseStateChanged() => StateChanged?.Invoke();
+    private void RaiseStateChanged()
+    {
+        turnScheduleData?.SetCurrentRound(RoundNumber);
+        StateChanged?.Invoke();
+    }
     #endregion
 
     #region tempUI
@@ -181,7 +188,10 @@ public partial class TurnGameManager : MonoBehaviour
 
     private void Start()
     {
-        InitializeFixedTurnLogging();
+        if (turnScheduleData == null) turnScheduleData = GetComponent<TurnScheduleData>();
+        if (turnScheduleData == null) turnScheduleData = gameObject.AddComponent<TurnScheduleData>();
+        turnScheduleData.RefreshFromScene(maximumTurns);
+        turnScheduleData.SetCurrentRound(RoundNumber);
         players.AddRange(FindObjectsByType<PlayerMove>(FindObjectsSortMode.None));
         players.Sort((left, right) => GetPlayerNumber(left).CompareTo(GetPlayerNumber(right)));
 
@@ -623,7 +633,6 @@ public partial class TurnGameManager : MonoBehaviour
         waitingForMovement = false;
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
-        LogFixedTurnRoundStart();
         RaiseStateChanged();
     }
 
