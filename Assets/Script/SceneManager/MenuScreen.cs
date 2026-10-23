@@ -18,6 +18,9 @@ namespace ProjectD.Menus
         [SerializeField] private Text fullscreenLabel;
         [SerializeField] private Button[] levelButtons;
         [SerializeField] private Text[] levelLabels;
+        [Header("Level progress source (runtime)")]
+        [SerializeField] private string activeProgressJsonPath;
+        [SerializeField] private bool firstLevelCompleted;
         [Header("Level details (scene objects)")]
         [SerializeField] private string[] levelDescriptions = new string[5];
         [SerializeField] private GameObject paperPanel;
@@ -45,13 +48,21 @@ namespace ProjectD.Menus
         private PaperView paperView;
         private PaperView detailReturnView;
         private readonly List<int> entries = new List<int>();
-        private readonly int[] visibleLevels = new int[4];
+        private readonly int[] visibleLevels = new int[GameSceneManager.LevelCount];
         private int paperPage;
         private int selectedLevel;
         private SecretLevel selectedSecret;
+        private float nextProgressCheck;
+        private int appliedProgressRevision = -1;
 
         private void Update()
         {
+            if (page == Page.LevelSelect && Time.unscaledTime >= nextProgressCheck)
+            {
+                nextProgressCheck = Time.unscaledTime + 0.25f;
+                if (LevelProgressStore.ReloadIfFileChanged() || appliedProgressRevision != LevelProgressStore.Revision)
+                    ApplyProgressToUI();
+            }
             if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
             GoBack();
         }
@@ -90,7 +101,44 @@ namespace ProjectD.Menus
                         paperLevelButtons[i].onClick.AddListener(() => OpenPaperSlot(slot));
                 }
             }
+            if (page == Page.LevelSelect) ReloadProgressFromJson();
+            else RefreshUI();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus && page == Page.LevelSelect) ReloadProgressFromJson();
+        }
+
+        [ContextMenu("Progress/Reload From JSON")]
+        public void ReloadProgressFromJson()
+        {
+            if (page != Page.LevelSelect) return;
+            LevelProgressStore.Reload();
+            ApplyProgressToUI();
+        }
+
+        private void ApplyProgressToUI()
+        {
+            activeProgressJsonPath = LevelProgressStore.SaveFilePath;
+            firstLevelCompleted = LevelProgressStore.IsCompleted(1);
             RefreshUI();
+            if (paperView == PaperView.Completed || paperView == PaperView.Secret)
+                OpenCollection(paperView, false);
+            else if (paperView == PaperView.Details &&
+                (selectedSecret == null ? !GameSceneManager.IsUnlocked(selectedLevel) : !IsSecretUnlocked(selectedSecret)))
+                ClosePaper();
+            appliedProgressRevision = LevelProgressStore.Revision;
+        }
+
+        [ContextMenu("Progress/Open Active JSON")]
+        public void OpenActiveProgressJson()
+        {
+#if UNITY_EDITOR
+            const string path = "Assets/Script/SceneManager/level-progress.json";
+            UnityEditor.AssetDatabase.ImportAsset(path);
+            UnityEditor.AssetDatabase.OpenAsset(UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(path));
+#endif
         }
 
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
@@ -258,27 +306,25 @@ namespace ProjectD.Menus
                 fullscreenLabel.text = "Fullscreen: " + (GameSettings.FullscreenEnabled ? "On" : "Off");
 
             if (page != Page.LevelSelect || levelButtons == null) return;
-            // A later level replaces a completed slot without moving other papers.
-            int nextLevel = visibleLevels.Length + 1;
+            // Completed levels move to Complete; unfinished levels keep their scene-authored positions.
             for (int i = 0; i < levelButtons.Length; i++)
             {
                 int level = i + 1;
-                if (GameSceneManager.IsCompleted(level))
-                {
-                    while (nextLevel <= GameSceneManager.LevelCount && GameSceneManager.IsCompleted(nextLevel)) nextLevel++;
-                    level = nextLevel++;
-                }
-                bool visible = i < visibleLevels.Length && level <= GameSceneManager.LevelCount;
+                bool visible = level <= GameSceneManager.LevelCount && !GameSceneManager.IsCompleted(level);
                 if (i < visibleLevels.Length) visibleLevels[i] = visible ? level : 0;
                 bool unlocked = GameSceneManager.IsUnlocked(level);
                 if (levelButtons[i] != null)
                 {
                     levelButtons[i].gameObject.SetActive(visible);
                     levelButtons[i].interactable = unlocked;
+                    var colors = levelButtons[i].colors;
+                    colors.disabledColor = new Color(0.38f, 0.38f, 0.38f, 1f);
+                    levelButtons[i].colors = colors;
                 }
                 if (levelLabels != null && i < levelLabels.Length && levelLabels[i] != null)
                 {
-                    levelLabels[i].text = string.Empty;
+                    levelLabels[i].text = visible ? "Level " + level + (unlocked ? string.Empty : "\nLocked") : string.Empty;
+                    levelLabels[i].color = unlocked ? new Color(0.19f, 0.14f, 0.08f, 1f) : new Color(0.92f, 0.92f, 0.92f, 1f);
                 }
             }
         }
