@@ -5090,6 +5090,52 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+--- !u!1001 &1800600000
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1992033479}
+    m_Modifications:
+    - target: {fileID: 1001, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.51
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: targetTrap
+      value: 
+      objectReference: {fileID: 1992033478}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: targetObject
+      value: 
+      objectReference: {fileID: 1992033477}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: worldOffset.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: worldOffset.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: worldOffset.z
+      value: -0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: positionAnchor
+      value: 
+      objectReference: {fileID: 923010694}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+--- !u!4 &1800600001 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1001, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+  m_PrefabInstance: {fileID: 1800600000}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1828885620
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6212,48 +6258,6 @@ MonoBehaviour:
   visualRoot: {fileID: 0}
   rotationSpeed: 540
   modelYawOffset: 0
---- !u!1001 &1800600000
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1992033479}
-    m_Modifications:
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: targetObject
-      value:
-      objectReference: {fileID: 1992033477}
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: targetTrap
-      value:
-      objectReference: {fileID: 1992033478}
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: positionAnchor
-      value:
-      objectReference: {fileID: 923010694}
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: worldOffset.x
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: worldOffset.y
-      value: 0.35
-      objectReference: {fileID: 0}
-    - target: {fileID: 1002, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-      propertyPath: worldOffset.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
---- !u!4 &1800600001 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1001, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
-  m_PrefabInstance: {fileID: 1800600000}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

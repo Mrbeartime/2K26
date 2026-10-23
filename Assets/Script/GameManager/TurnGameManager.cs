@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;//DO NOT REMOVE
 /// Each player can be selected in any order, once per round.
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public class TurnGameManager : MonoBehaviour
+public partial class TurnGameManager : MonoBehaviour
 {
     public static TurnGameManager Instance { get; private set; }
 
@@ -181,6 +181,7 @@ public class TurnGameManager : MonoBehaviour
 
     private void Start()
     {
+        InitializeFixedTurnLogging();
         players.AddRange(FindObjectsByType<PlayerMove>(FindObjectsSortMode.None));
         players.Sort((left, right) => GetPlayerNumber(left).CompareTo(GetPlayerNumber(right)));
 
@@ -622,6 +623,7 @@ public class TurnGameManager : MonoBehaviour
         waitingForMovement = false;
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
+        LogFixedTurnRoundStart();
         RaiseStateChanged();
     }
 
