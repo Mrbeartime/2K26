@@ -11,7 +11,6 @@ public class Chest : MonoBehaviour
     {
         if (character == null || isOpen || Time.timeScale == 0) return;
         isOpen = true;
-        ProjectD.Menus.GameSceneManager.CompleteLevelForScene(gameObject.scene.path);
         previousTimeScale = Time.timeScale;
         showWin = true;
         Time.timeScale = 0;

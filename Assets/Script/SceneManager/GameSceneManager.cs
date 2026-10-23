@@ -45,16 +45,16 @@ namespace ProjectD.Menus
             CompleteLevelForScene(SceneManager.GetActiveScene().path);
         }
 
-        // Use the chest's own scene, including when scenes are loaded additively.
-        public static void CompleteLevelForScene(string scenePath)
+        // Use the goal object's own scene, including when scenes are loaded additively.
+        public static bool CompleteLevelForScene(string scenePath)
         {
             for (int level = 1; level <= LevelCount; level++)
                 if (scenePath == LevelPath(level))
                 {
-                    LevelProgressStore.CompleteLevel(level);
-                    return;
+                    return LevelProgressStore.CompleteLevel(level);
                 }
-            if (scenePath == SecretScene) LevelProgressStore.CompleteSecret("SecretLevel1");
+            if (scenePath == SecretScene) return LevelProgressStore.CompleteSecret("SecretLevel1");
+            return false;
         }
 
         public static void OpenStart() => Load(StartScene);
