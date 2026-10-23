@@ -30,12 +30,18 @@ public class Tile : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float enemyHighlightOpacity = 1f;
 
+    [Header("Highlight Glow")]
+    [SerializeField, Min(0f)] private float moveGlow = 1.5f;
+    [SerializeField, Min(0f)] private float skillGlow = 2.5f;
+    [SerializeField, Min(0f)] private float enemyGlow = 3f;
+
     public enum HighlightType
     {
         Move,
         Skill,
         Enemy
     }
+
 
     // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
     public void ShowHighlight(HighlightType type)
@@ -65,7 +71,15 @@ public class Tile : MonoBehaviour
                 break;
         }
 
-        SetHighlightColor(targetColor);
+        float glow = type switch
+        {
+            HighlightType.Move => moveGlow,
+            HighlightType.Skill => skillGlow,
+            HighlightType.Enemy => enemyGlow,
+            _ => 0f
+        };
+
+        SetHighlightColor(targetColor, glow);
 
     }
 
@@ -92,7 +106,7 @@ public class Tile : MonoBehaviour
         }
     }
 
-    private void SetHighlightColor(Color color)
+    private void SetHighlightColor(Color color, float glow)
     {
         if (highlightObject == null)
             return;
@@ -108,6 +122,12 @@ public class Tile : MonoBehaviour
 
             properties.SetColor("_BaseColor", color);
             properties.SetColor("_Color", color);
+
+            //Add glowww
+            Color emission = color;
+            emission.a = 1f;
+
+            properties.SetColor("_EmissionColor", emission * glow);
 
             renderer.SetPropertyBlock(properties);
         }
