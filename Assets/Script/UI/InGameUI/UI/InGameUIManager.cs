@@ -7,11 +7,11 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// HUD �ͧ��: �ͤ͹����Ф�/Hazard, ��¡�� Action (Move / Interact / Signature), ��ǹѺ���� ����к� Pause
-/// �����Ѵ�Թ��ԡ����ͧ � ���觤����价�� TurnGameManager �����ʴ��ŵ��ʶҹз�����Ѻ��
+/// In-game HUD: character/hazard icons, action list (Move / Interact / Signature), turn counter, and pause system.
+/// Does not decide game rules itself: it sends commands to TurnGameManager and only displays the state it reports back.
 ///
-/// �ӴѺ region: Fields -> Unity Lifecycle -> Setup -> Turn Manager Sync -> Icons
-///               -> Action List (�ʴ���) -> Action Selection (��á����͡/�׹�ѹ)
+/// Region order: Fields -> Unity Lifecycle -> Setup -> Turn Manager Sync -> Icons
+///               -> Action List (display) -> Action Selection (select/confirm)
 ///               -> Keyboard Input -> UI Callbacks -> Pause
 /// </summary>
 public class InGameUIManager : MonoBehaviour
@@ -36,6 +36,21 @@ public class InGameUIManager : MonoBehaviour
     public Image blackScreen;
     [Range(0f, 1f)]
     [SerializeField] private float pauseDimAlpha = 0.6f;
+
+    // ★ ADDED: turn number text animation (used by ClockMovingOff / ClockMovingBack)
+    [Header("Turn Text Animation")]
+    [Tooltip("How far (posX) the old number slides to the right before it disappears")]
+    [SerializeField] private float turnTextMoveDistance = 80f;
+    [Tooltip("The new number starts this far to the LEFT of its resting position, then slides right back to rest")]
+    [SerializeField] private float turnTextBackStartOffset = 80f;
+    [SerializeField] private float turnTextOffDuration = 0.15f;
+    [SerializeField] private float turnTextBackDuration = 0.2f;
+    // ★ ADDED: editable easing graphs (click the curve in the Inspector). X = time 0..1, Y = progress 0..1
+    //   Y may go above 1 for an overshoot/bounce. Default = ease in-out (same as the old SmoothStep).
+    [Tooltip("Easing of the old number sliding out")]
+    [SerializeField] private AnimationCurve turnTextOffEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("Easing of the new number sliding in")]
+    [SerializeField] private AnimationCurve turnTextBackEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Action Lists")]
     public GameObject MoveAction;
@@ -75,35 +90,48 @@ public class InGameUIManager : MonoBehaviour
 
     #region Fields - Runtime State
 
-    // ---- �к���¹͡ ----
+    // ---- External systems ----
     private ProjectDInputAction _inputAction;
     private TurnGameManager turnGameManager;
     private HoldButton turnLimitButton;
 
-    // ---- ⿡�ʵ���Ф� ----
-    private PlayerMove previousCharacter;           // ���Ǩ��ҵ�Ƿ�������������¹�����ѧ (����¹ -> ����⿡�� action)
-    private int CurrentFocusCharacterIndex = 0;     // index � CharacterList
+    // ---- Character focus ----
+    private PlayerMove previousCharacter;           // Used to detect when the current character changes (changed -> reset action focus)
+    private int CurrentFocusCharacterIndex = 0;     // Index into CharacterList
 
-    // ---- Action ----
-    // id �ͧ action (����� index): Move = 0, Interact = 1, Signature = 2
-    // ��ҵ�ͧ�ç�Ѻ enum actionType � CharacterActionList
+    // ---- Actions ----
+    // Action ids (not indices): Move = 0, Interact = 1, Signature = 2
+    // Must match the actionType enum in CharacterActionList
     private const int ActionMove = 0, ActionInteract = 1, ActionSignature = 2;
     private const int NoAction = -1;
 
-    private readonly List<int> availableActions = new();    // action �����������͡��͹��� (���§�������ʴ�����)
-    private int CurrentFocusActionIndex = 0;                // index � availableActions (����� id)
-    private int selectedAction = NoAction;                  // action ��� "���͡���/��������" ���׹�ѹ (NoAction = �����)
+    private readonly List<int> availableActions = new();    // Actions usable right now (sorted in display order)
+    private int CurrentFocusActionIndex = 0;                // Index into availableActions (not the id)
+    private int selectedAction = NoAction;                  // Action that is "chosen/armed" and awaiting confirmation (NoAction = none)
 
-    // action ����ͧ����� (Space ���ͤ�ԡ�ա����) �֧�зӨ�ԧ � ���� action �������ͧ�׹�ѹ������
+    // ★ ADDED: action layout values (moved out of RefreshActionList so LayoutActions() can share them)
+    //   startY    = bottom offset of the lowest action
+    //   gapY      = normal spacing between two actions
+    //   focusGapY = spacing used next to the FOCUSED action (keep >= gapY; bigger = more breathing room around it)
+    //   posX      = offset from the edge
+    private const float startY = 75f, gapY = 84f, posX = 32f, focusGapY = 93f;
+
+    // Actions that need an extra confirm (Space or a second click) before really executing; other actions run immediately
     private static bool NeedsSpaceConfirm(int actionId) => actionId == ActionInteract;
 
-    private bool changingFocus;     // true �����ҧ FocusAndUseAction (�ѹ RefreshActionList ���١���¡��͹���С�����͡)
-    private int armedFrame = -1;    // ������ action �Ѩ�غѹ�١ arm (��ԡ�׹�ѹ�������ǡѹ���Ѻ)
-    private int lastSelectFrame = -1;           // �ѹ SelectAction �١���¡����������ǡѹ
-    private int lastSelectId = NoAction;        //   (������ onClick 2 ���: BindActionButton + CharacterActionList)
+    private bool changingFocus;     // true while inside FocusAndUseAction (prevents RefreshActionList, triggered earlier, from re-selecting)
+    private int armedFrame = -1;    // Frame in which the current action was armed (prevents click-confirm in the same frame)
+    private int lastSelectFrame = -1;           // Frame in which SelectAction was last called
+    private int lastSelectId = NoAction;        //   (guards against onClick firing twice: BindActionButton + CharacterActionList)
 
     private readonly List<(Button button, UnityEngine.Events.UnityAction callback)> actionButtons = new();
-    private readonly HashSet<PlayerMove> warnedSignatureEntry = new();    // ��͹ icon ���ú��������ǵ�͵���Ф�
+    private readonly HashSet<PlayerMove> warnedSignatureEntry = new();    // Warn about a missing icon only once per character
+
+    // ★ ADDED: turn text animation state
+    private Coroutine turnTextRoutine;
+    private float turnTextRestX;
+    private bool turnTextRestCaptured;
+    private int lastShownTurn = int.MinValue;
 
     // ---- Pause ----
     public bool IsPaused { get; private set; }
@@ -136,7 +164,7 @@ public class InGameUIManager : MonoBehaviour
         _inputAction.Gameplay_keyboard.SelectAction.performed += OnChangeAction;
         _inputAction.Gameplay_keyboard.Pause.performed += OnShowPauseUI;
 
-        // Holding for skip: Started ������� / Performed ����ҧ���ú���� / Canceled ����¡�͹�ú
+        // Hold to skip: Started = begin hold / Performed = hold completed / Canceled = released early
         _inputAction.Gameplay_keyboard.Skip.started += OnSkipTurnStart;
         _inputAction.Gameplay_keyboard.Skip.performed += OnSkipTurnPerform;
         _inputAction.Gameplay_keyboard.Skip.canceled += OnSkipTurnCancel;
@@ -174,11 +202,11 @@ public class InGameUIManager : MonoBehaviour
         turnGameManager = TurnGameManager.Instance;
         if (turnGameManager == null)
         {
-            Debug.LogError("ไม่พบ TurnGameManager ใน Scene", this);
+            Debug.LogError("TurnGameManager not found in the scene", this);
             return;
         }
 
-        // �ش�������ѡ: �ء���駷��ʶҹ�������¹ HUD �����ê��������ҹ RefreshFromTurnManager
+        // Main hook: every time the state changes, the HUD is redrawn through RefreshFromTurnManager
         turnGameManager.StateChanged += RefreshFromTurnManager;
         turnGameManager.GameEnded += OnGameEnded;
 
@@ -189,9 +217,9 @@ public class InGameUIManager : MonoBehaviour
 
     #endregion
 
-    #region Setup (�١����)
+    #region Setup (run once)
 
-    // ��������ҧ���͢�������: HoldCompleted = �������침�ԧ, HoldStarted/Canceled = ���Ҿ������ŧ/¡���
+    // Hold-to-end-turn button: HoldCompleted = hold finished (ends turn), HoldStarted/Canceled = press/release animation
     private void SetupTurnLimitButton()
     {
         if (TurnLimitUI == null) return;
@@ -206,7 +234,7 @@ public class InGameUIManager : MonoBehaviour
         turnLimitButton = button.GetComponent<HoldButton>();
         if (turnLimitButton == null) turnLimitButton = button.gameObject.AddComponent<HoldButton>();
 
-        // -= ��͹ += �ѹ subscribe ���
+        // -= before += to prevent subscribing twice
         turnLimitButton.HoldCompleted -= OnClickEndTurn;
         turnLimitButton.HoldCompleted += OnClickEndTurn;
 
@@ -244,11 +272,11 @@ public class InGameUIManager : MonoBehaviour
 
     #endregion
 
-    #region Turn Manager Sync (�� -> HUD)
+    #region Turn Manager Sync (game state -> HUD)
 
-    // �١���¡�ء���駷�� TurnGameManager.StateChanged �ԧ
-    // �����˵�: CancelMoveTargeting/CancelSkill �Ҩ�ԧ StateChanged "��͹" �����ҧ�����ҡ��ѧ�Ѵ��ä�ԡ
-    //           (�� changingFocus � Action Selection)
+    // Called every time TurnGameManager.StateChanged fires
+    // Note: CancelMoveTargeting/CancelSkill may fire StateChanged "early" while a click is still being handled
+    //       (see changingFocus in Action Selection)
     private void RefreshFromTurnManager()
     {
         if (turnGameManager == null)
@@ -262,7 +290,7 @@ public class InGameUIManager : MonoBehaviour
         PlayerMove current = turnGameManager.CurrentPlayer;
         if (current != previousCharacter)
         {
-            // ����¹����Ф� -> �����⿡�� action �á �����ҧ��觷�����͡/arm ��ҧ���
+            // Character changed -> reset focus to the first action and clear any pending selection/arm
             CurrentFocusActionIndex = 0;
             previousCharacter = current;
             selectedAction = NoAction;
@@ -277,12 +305,79 @@ public class InGameUIManager : MonoBehaviour
         RefreshActionList(current);
     }
 
-    // ��������¹ -> �ѻവ����Ţ ������������ԡ�� UITurnCounter ��ع (͹����ѹ 1 ��)
+    // When the turn changes -> update the number and play the UITurnCounter animation (once per turn)
     public void UpdateTurnCounter()
     {
         if (TurnGameManager.Instance == null) return;
-        if (TurnLimitText != null) TurnLimitText.text = $"{TurnGameManager.Instance.CurrentTurn}";
-        if (TurnCounter != null) TurnCounter.LegMoving(TurnGameManager.Instance.CurrentTurn);
+        int turn = TurnGameManager.Instance.CurrentTurn;
+
+        // ★ CHANGED: the text now animates (off -> change number -> back) only when the turn number really changes.
+        //   RefreshFromTurnManager calls this on every state change, so unchanged turns must not replay it.
+        if (TurnLimitText != null && turn != lastShownTurn)
+        {
+            bool firstTime = lastShownTurn == int.MinValue;
+            lastShownTurn = turn;
+
+            CaptureTurnTextRest();
+            if (turnTextRoutine != null) StopCoroutine(turnTextRoutine);
+            SetTurnTextX(turnTextRestX);   // restart from a clean position if a previous animation was cut off
+
+            if (firstTime || !isActiveAndEnabled) TurnLimitText.text = $"{turn}";   // no animation on first draw
+            else turnTextRoutine = StartCoroutine(TurnTextRoutine(turn));
+        }
+
+        if (TurnCounter != null) TurnCounter.LegMoving(turn);
+    }
+
+    // ★ ADDED: full sequence = ClockMovingOff (slide out) -> set new number -> ClockMovingBack (slide in)
+    private IEnumerator TurnTextRoutine(int turn)
+    {
+        yield return ClockMovingOff();
+        TurnLimitText.text = $"{turn}";
+        yield return ClockMovingBack();
+        turnTextRoutine = null;
+    }
+
+    // ★ ADDED: old number slides left -> right by turnTextMoveDistance (80)
+    private IEnumerator ClockMovingOff()
+    {
+        yield return MoveTurnTextX(turnTextRestX, turnTextRestX + turnTextMoveDistance, turnTextOffDuration, turnTextOffEase);
+    }
+
+    // ★ ADDED: new number is placed to the left (rest - turnTextBackStartOffset) and slides left -> right back to rest
+    private IEnumerator ClockMovingBack()
+    {
+        float startX = turnTextRestX - turnTextBackStartOffset;
+        SetTurnTextX(startX);
+        yield return MoveTurnTextX(startX, turnTextRestX, turnTextBackDuration, turnTextBackEase);
+    }
+
+    private IEnumerator MoveTurnTextX(float from, float to, float duration, AnimationCurve ease)
+    {
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;   // keeps working while paused (timeScale = 0)
+            SetTurnTextX(Mathf.LerpUnclamped(from, to, ease.Evaluate(Mathf.Clamp01(t / duration))));   // ★ CHANGED: curve instead of SmoothStep
+            yield return null;
+        }
+        SetTurnTextX(to);
+    }
+
+    // The resting position is read from the scene once, so you place the text where you want it in the editor
+    private void CaptureTurnTextRest()
+    {
+        if (turnTextRestCaptured || TurnLimitText == null) return;
+        turnTextRestX = TurnLimitText.rectTransform.anchoredPosition.x;
+        turnTextRestCaptured = true;
+    }
+
+    private void SetTurnTextX(float x)
+    {
+        if (TurnLimitText == null) return;
+        Vector2 pos = TurnLimitText.rectTransform.anchoredPosition;
+        pos.x = x;
+        TurnLimitText.rectTransform.anchoredPosition = pos;
     }
 
     private void OnGameEnded(bool won, string reason)
@@ -296,7 +391,7 @@ public class InGameUIManager : MonoBehaviour
 
     #region Character & Hazard Icons
 
-    // ���ҧ�ͤ͹����Ф� (����, �����͡��) ��� Hazard (���, ���������) �ҡ CharacterList / HazardList
+    // Creates character icons (left, selectable) and hazard icons (right, display only) from CharacterList / HazardList
     private void CreateCharacterandHazardIcon()
     {
         int characterCount = CharacterList != null ? CharacterList.Length : 0;
@@ -337,7 +432,7 @@ public class InGameUIManager : MonoBehaviour
         }
     }
 
-    // ��Ѻ������ҧ�ͤ͹������: 30 = ���Шҡ�ͺ��, 130 = ������ҧ�����ҧ�ͤ͹, -20 = ���Шҡ�ͺ��
+    // Adjust icon layout here: 30 = offset from the edge, 130 = spacing between icons, -12 = offset from the top
     private void SpawnIcon(GameObject prefab, GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
     {
         if (prefab == null || target == null) return;
@@ -350,14 +445,14 @@ public class InGameUIManager : MonoBehaviour
         rect.anchorMin = new Vector2(side, 1);
         rect.anchorMax = new Vector2(side, 1);
         rect.pivot = new Vector2(side, 1);
-        rect.anchoredPosition = new Vector2(direction * (30f + index * 130f), -20f);
+        rect.anchoredPosition = new Vector2(direction * (30f + index * 130f), -12f);
 
         ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
         if (iconScript != null) iconScript.Setup(target, selectable);
         else Debug.LogWarning($"{prefab.name} has no ObjectIcon component.", newIcon);
     }
 
-    // ���ŵ��ͤ͹�ͧ��Ƿ��������� ��з�����Ƿ����/��蹨�����/������������ �������
+    // Updates each character icon: highlights the current character, and greys out characters that are finished / dead / unavailable
     private void UpdateCharacterIcons(PlayerMove current)
     {
         foreach (ObjectIcon icon in CharacterUI.GetComponentsInChildren<ObjectIcon>())
@@ -378,7 +473,7 @@ public class InGameUIManager : MonoBehaviour
         }
     }
 
-    // ---- ���Ң����ŵ���Ф�� CharacterList ----
+    // ---- Look up character data in CharacterList ----
 
     private int FindCharacterIndex(PlayerMove player)
     {
@@ -396,13 +491,13 @@ public class InGameUIManager : MonoBehaviour
 
     #endregion
 
-    #region Action List (�ʴ�����¡�� action)
+    #region Action List (displaying the action list)
 
-    // ���ê��¡�� action ���������ʶҹ��� � "�ش����ռŵ�����ҡ����ش�ͧ��� UI"
-    //  1) ���ҧ availableActions �ҡ CanChooseMove / CanChooseReact / CanChooseSkill
-    //  2) action ���⿡������: Interact -> arm ���׹�ѹ, action ��� -> �׹�ѹ (�ӷѹ��)
-    //  3) �Ѵ���˹觻�������
-    //  4) ��������������� Move/Skill ���� ���⿡��������͡ action ������ç�Ѻ��
+    // Rebuilds the action list every time the state changes; this is "the point with the most side effects in the whole UI"
+    //  1) Build availableActions from CanChooseMove / CanChooseReact / CanChooseSkill
+    //  2) Action under focus: Interact -> arm and wait for confirmation, other actions -> confirm (immediately)
+    //  3) Lay out the positions
+    //  4) If a Move/Skill mode is already active, move focus to match that action
     public void RefreshActionList(PlayerMove current)
     {
         availableActions.Clear();
@@ -410,14 +505,14 @@ public class InGameUIManager : MonoBehaviour
         InteractAction.SetActive(false);
         SignatureAction.SetActive(false);
 
-        // ��͹ action �����������: ����ռ����� / ���� / ���ѵ�� / ���ѧ�͵���Ф��Թ
+        // Hide all actions when: no current player / game over / enemy phase / waiting for a character to finish moving
         bool show = current != null && !turnGameManager.IsGameComplete && !turnGameManager.IsEnemyPhase &&
             !turnGameManager.IsWaitingForMovement;
 
         ActionUI.SetActive(show);
         if (!show) { selectedAction = NoAction; return; }
 
-        // �ӴѺ��� add ����� = �ӴѺ����ʴ����� (��ҧ��鹺�)
+        // The order of Add calls = display order (bottom to top)
         if (turnGameManager.CanChooseMove) availableActions.Add(ActionMove);
         if (turnGameManager.CanChooseReact) availableActions.Add(ActionInteract);
         if (turnGameManager.CanChooseSkill) availableActions.Add(ActionSignature);
@@ -439,29 +534,22 @@ public class InGameUIManager : MonoBehaviour
             CurrentFocusActionIndex = Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1);
             int focusId = availableActions[CurrentFocusActionIndex];
 
-            // ��ҡ��ѧ����� FocusAndUseAction (Cancel* �ԧ StateChanged ��͹�����)
-            // ������¡�еѴ�Թ�ͧ��Ҩ� arm/�׹�ѹ���� -> �ͺ��������С�����͡
+            // If we are inside FocusAndUseAction (Cancel* fired StateChanged early),
+            // skip the auto arm/confirm here -> the caller will handle selection itself
             if (!changingFocus)
             {
-                if (NeedsSpaceConfirm(focusId)) Arm(focusId);   // Interact ������ŵ����� = arm: �� Space ���ͤ�ԡ�ա����
-                else ConfirmAction(focusId);                    // Move/Signature = �ӷѹ��
+                if (NeedsSpaceConfirm(focusId)) Arm(focusId);   // Interact: arm it and wait for Space or a second click
+                else ConfirmAction(focusId);                    // Move/Signature: confirm immediately
             }
         }
 
         if (turnGameManager.CurrentPlayer != current || turnGameManager.IsEnemyPhase) return;
         UpdateSignatureUI(current);
 
-        // ������ҧ���� action: startY = ������ҧ�ش, gapY = ������ҧ�����ҧ����, posX = ���Шҡ�ͺ����
-        // (��Ҵ�͹���͡������� CharacterActionList ���� localScale �֧����з� gapY)
-        const float startY = 35f, gapY = 84f, posX = 32f;
-        for (int i = 0; i < availableActions.Count; i++)
-        {
-            GameObject go = GetActionObject(availableActions[i]);
-            go.SetActive(true);
-            go.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, startY + i * gapY);
-        }
+        // ★ CHANGED: the layout loop that used to be here now lives in LayoutActions(),
+        //   which UpdateActionFocusUI() calls at the end (so the focus gap also updates on keyboard/click focus changes)
 
-        // sync �Ѻ��: ����������������� ��� UI ��� action ��� (����͵鹩�Ѻ�ͧʶҹ�)
+        // Sync with the game state: if a mode is already active, make the UI focus that action (state takes precedence)
         int modeAction = turnGameManager.IsMoveTargeting ? ActionMove
                : turnGameManager.IsSkillTargeting ? ActionSignature : -1;
         int modePos = availableActions.IndexOf(modeAction);
@@ -479,7 +567,7 @@ public class InGameUIManager : MonoBehaviour
         _ => SignatureAction
     };
 
-    // ���ŵ� action ���⿡������ (�������� Unselected) � �Ҿ�͹���͡ (����/���˹�/sprite) ����� CharacterActionList
+    // Shows each action as focused (or Unselected otherwise); the visuals (size/position/sprite) are handled by CharacterActionList
     private void UpdateActionFocusUI()
     {
         foreach (GameObject go in new[] { MoveAction, InteractAction, SignatureAction })
@@ -492,12 +580,39 @@ public class InGameUIManager : MonoBehaviour
         int focusId = availableActions[Mathf.Clamp(CurrentFocusActionIndex, 0, availableActions.Count - 1)];
         CharacterActionList focused = GetActionObject(focusId).GetComponent<CharacterActionList>();
         focused.Selected();
+
+        LayoutActions();   // ★ ADDED: re-space the list every time focus changes
     }
 
-    // ---- Signature (���� + �ͤ͹੾�е���Ф�) ----
+    // ★ ADDED: positions the visible actions bottom -> top.
+    //   The gap touching the focused action is focusGapY, every other gap is gapY.
+    //   The bottom action stays at startY, so the list only grows upward.
+    //   (The focused icon's own size comes from CharacterActionList: selectedIconScale / selectedFontScale)
+    private void LayoutActions()
+    {
+        float y = startY;
+        for (int i = 0; i < availableActions.Count; i++)
+        {
+            if (i > 0)
+            {
+                bool nearFocus = i == CurrentFocusActionIndex || i - 1 == CurrentFocusActionIndex;
+                y += nearFocus ? focusGapY : gapY;
+            }
 
-    // ��駪���/�ͤ͹�ͧ���� Signature �������Ф÷��������� (�������Ҩҡ CharacterEntry � Inspector)
-    // ��ͧ�� SetSprites ��ҹ�� � CharacterActionList.Update() ��¹ sprite �Ѻ�ء��� ���� set image.sprite �ç�
+            GameObject go = GetActionObject(availableActions[i]);
+            go.SetActive(true);
+            go.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, y);
+
+            RectTransform rt = go.GetComponent<RectTransform>();
+            rt.pivot = new Vector2(rt.pivot.x, 0.5f);
+            rt.anchoredPosition = new Vector2(posX, y);
+        }
+    }
+
+    // ---- Signature (name + per-character icon) ----
+
+    // Sets the name/icon of the Signature action for the current character (data comes from CharacterEntry in the Inspector)
+    // Goes through SetSprites because CharacterActionList.Update() rewrites the sprite every frame, so setting image.sprite directly would be overwritten
     private void UpdateSignatureUI(PlayerMove player)
     {
         CharacterEntry entry = FindCharacterEntry(player);
@@ -526,7 +641,7 @@ public class InGameUIManager : MonoBehaviour
         }
     }
 
-    // ���� skill ��駵������������͡ skillName � Inspector � ��������Ф������������ case �����
+    // Default skill name, used when skillName is not set in the Inspector; add a case here when adding a new character class
     private static string GetSignatureName(PlayerMove player)
     {
         if (player == null) return string.Empty;
@@ -541,27 +656,27 @@ public class InGameUIManager : MonoBehaviour
 
     #endregion
 
-    #region Action Selection (��á����͡/�����/�׹�ѹ/¡��ԡ)
+    #region Action Selection (select / arm / confirm / cancel)
 
-    // ��ػ��ԡ�:
-    //  - A/W/S/D  : ����͹⿡�� + �� action ��鹷ѹ�� (¡��ԡ action/������������͹)
-    //  - Space    : �׹�ѹ action ���⿡������
-    //  - ��ԡ���� : SelectAction() -> action ������� = ���͡/�����, action ��鹶١������������ = �׹�ѹ
-    //  - Interact �� action ����ͧ�׹�ѹ�ա�� (NeedsSpaceConfirm): ���͡���� "arm" �� Space/��ԡ�ա����
-    //  - Move/Signature �ӷѹ�շ�����͡ (���������秪�ͧ) ¡��ԡ���¡�����͡ action ���/GoBack
+    // Behavior summary:
+    //  - A/W/S/D  : move focus + enter that action's mode immediately (cancels the previous action / mode first)
+    //  - Space    : confirm the focused action
+    //  - Click    : SelectAction() -> a different action = select/arm, the already-armed action = confirm
+    //  - Interact needs an extra confirm (NeedsSpaceConfirm): selecting only "arms" it; press Space/click again to confirm
+    //  - Move/Signature run immediately on selection (and show target highlights); cancel by selecting another action or GoBack
 
-    // ���͡/��ԡ action (���¡�ҡ��������) � �ش�Ѵ�Թ��� "�����" ���� "�Ө�ԧ"
+    // Select/click an action (called from buttons) - the decision point between "arm" and "really execute"
     public void SelectAction(int actionId)
     {
         if (turnGameManager == null || !availableActions.Contains(actionId)) return;
 
-        // ������ onClick 2 ��� ��ԡ�����Ҩ����� 2 ������������
-        // ������ѹ ���駷�� 2 �ж١�Ѻ�� "��ԡ����ͧ" ���� Interact �ӧҹ�ѹ��
+        // Guard against onClick firing twice: a single click may call this twice in the same frame
+        // Ignore the second call so the click is not counted as a "double click" and Interact fires immediately
         if (Time.frameCount == lastSelectFrame && actionId == lastSelectId) return;
         lastSelectFrame = Time.frameCount;
         lastSelectId = actionId;
 
-        // �׹�ѹ���������� action ��� arm ��� "������͹˹��" ����ѧ⿡��������ҹ��
+        // Confirm only if this action was armed in an earlier frame and focus is still on it
         if (selectedAction == actionId && Time.frameCount > armedFrame &&
             availableActions[CurrentFocusActionIndex] == actionId)
         {
@@ -571,10 +686,10 @@ public class InGameUIManager : MonoBehaviour
         FocusAndUseAction(availableActions.IndexOf(actionId));
     }
 
-    // ����⿡��� action ����: ¡��ԡ�ͧ��� -> Interact: arm �� / ����: �ӷѹ��
+    // Move focus to a new action: cancel the old one -> Interact: arm and wait / others: execute immediately
     private void FocusAndUseAction(int newIndex)
     {
-        // �����ҧ��ǧ��� Cancel* �ԧ StateChanged ��͹ -> RefreshActionList ��ͧ��� arm/�׹�ѹ�ͧ
+        // During this block, Cancel* may fire StateChanged early -> RefreshActionList must not arm/confirm on its own
         changingFocus = true;
         int id;
         try
@@ -587,7 +702,7 @@ public class InGameUIManager : MonoBehaviour
 
         if (NeedsSpaceConfirm(id))
         {
-            selectedAction = NoAction;   // �ѧ�Ѻ arm ���� ������ refresh ��͹�е���������
+            selectedAction = NoAction;   // Force a fresh arm so an earlier refresh can't leave stale state
             Arm(id);
             UpdateActionFocusUI();
             return;
@@ -596,14 +711,14 @@ public class InGameUIManager : MonoBehaviour
         ConfirmAction(id);
     }
 
-    // "�����" action: ����� selectedAction �������׹�ѹ (�ѧ������¡��)
+    // "Arm" an action: set selectedAction so it is ready to confirm (but does not execute yet)
     private void Arm(int id)
     {
         if (selectedAction != id) armedFrame = Time.frameCount;
         selectedAction = id;
     }
 
-    // ===== �ش����觤������� TurnGameManager ��ԧ (�ռŵ�����µç) =====
+    // ===== The point that sends the real command to TurnGameManager (has direct gameplay effects) =====
     private void ConfirmAction(int actionId)
     {
         if (turnGameManager == null) return;
@@ -628,13 +743,13 @@ public class InGameUIManager : MonoBehaviour
         }
     }
 
-    // �� Interact ��ԧ (���¡ TurnGameManager.ChooseReact)
+    // Execute Interact for real (calls TurnGameManager.ChooseReact)
     private void ConfirmInteract()
     {
         turnGameManager.ChooseReact();
     }
 
-    // ��ҧ������͡ ����͡�ҡ������� Move/Skill ����ҧ���� (�Ҩ�ԧ StateChanged ��͹)
+    // Clears pending selection and exits Move/Skill targeting if active (may fire StateChanged early)
     private void CancelPendingAction()
     {
         selectedAction = NoAction;
@@ -643,7 +758,7 @@ public class InGameUIManager : MonoBehaviour
         else if (turnGameManager.IsSkillTargeting) turnGameManager.CancelSkill();
     }
 
-    // ������͹��Ѻ/¡��ԡ: �͡�ҡ������� ��������������������ҧ��� arm ���
+    // Go back / cancel: exit the current mode, or if there is none, just clear any armed action
     public void GoBack()
     {
         if (turnGameManager == null) return;
@@ -659,7 +774,7 @@ public class InGameUIManager : MonoBehaviour
 
     #region Keyboard Input
 
-    // ---- ���͡ Action: A/W/S/D ����͹⿡��, Space �׹�ѹ ----
+    // ---- Choose action: A/W/S/D moves focus, Space confirms ----
     private void OnChangeAction(InputAction.CallbackContext context)
     {
         if (IsPaused) return;
@@ -682,7 +797,7 @@ public class InGameUIManager : MonoBehaviour
         }
     }
 
-    // ---- ���͡����Ф�: Tab = ��ǶѴ价�����͡��, �Ţ 1-9 = ��Ƿ�� n � CharacterList ----
+    // ---- Choose character: Tab = next selectable one, number keys 1-9 = nth character in CharacterList ----
     private void OnChangeCharacter(InputAction.CallbackContext context)
     {
         if (IsPaused) return;
@@ -695,7 +810,7 @@ public class InGameUIManager : MonoBehaviour
             for (int step = 0; step < CharacterList.Length; step++)
             {
                 int i = (start + step) % CharacterList.Length;
-                if (TryFocusCharacter(i)) break;    // ������Ƿ�����͡����� (���/��蹨�����)
+                if (TryFocusCharacter(i)) break;    // Stop at the first character that can be selected (alive / not finished)
             }
         }
         else if (int.TryParse(key, out int number))
@@ -713,8 +828,8 @@ public class InGameUIManager : MonoBehaviour
         return turnGameManager.TrySelectPlayer(entry.character);
     }
 
-    // ---- �������� (����ҧ) ----
-    // Started = ������ŧ (�Ҿ) / Performed = ����ҧ�ú���� -> �������침�ԧ / Canceled = ����� -> ����¡���
+    // ---- Skip turn (hold) ----
+    // Started = press begins (animation) / Performed = held long enough -> end turn for real / Canceled = released early -> cancel animation
     private void OnSkipTurnStart(InputAction.CallbackContext context)
     {
         if (IsPaused) return;
@@ -732,7 +847,7 @@ public class InGameUIManager : MonoBehaviour
         if (TurnCounter != null) TurnCounter.ReleaseButton();
     }
 
-    // ---- �������카�������� (HoldButton): �����Ҿ���� ��ǹ��â�����ԧ�Ҩҡ HoldCompleted ----
+    // ---- Skip turn with the mouse (HoldButton): animation only; the actual end turn comes from HoldCompleted ----
     private void OnMouseSkipStart()
     {
         if (TurnCounter != null) TurnCounter.PressButton();
@@ -745,12 +860,12 @@ public class InGameUIManager : MonoBehaviour
 
     #endregion
 
-    #region UI Callbacks (������/�ͤ͹���¡�ҡ Inspector ���������)
+    #region UI Callbacks (buttons/icons call these, e.g. from the Inspector)
 
-    // �����침�ԧ (�ռŵ�����µç)
+    // End the turn for real (has direct gameplay effects)
     public void OnClickEndTurn() { if (turnGameManager != null) turnGameManager.ChooseEndTurn(); }
 
-    // ��ԡ�ͤ͹����Ф� -> ��Ѻ���蹵�ǹ�� (������͡��)
+    // Click a character icon -> switch to that player (if selectable)
     public void OnCharacterIconClicked(GameObject target)
     {
         if (turnGameManager == null || target == null) return;
@@ -758,8 +873,8 @@ public class InGameUIManager : MonoBehaviour
         if (p != null) turnGameManager.TrySelectPlayer(p);
     }
 
-    // ��ԡ�ͤ͹ Hazard -> ����� PlayerController ��� (�١��١Ѻ�ѡ�����ѵ��)
-    // ������Դ Hazard �������ԡ�����������������
+    // Click a hazard icon -> tell PlayerController to select it (so it can be targeted/inspected)
+    // Decides which kind of hazard it is and forwards to the matching select method
     public void OnEnemyIconClicked(GameObject target)
     {
         if (target == null)
@@ -790,14 +905,14 @@ public class InGameUIManager : MonoBehaviour
 
     private void OnShowPauseUI(InputAction.CallbackContext context) => SetPaused(!IsPaused);
 
-    // ��ش/��蹵��: UI �����衴����� (blocksRaycasts) ����� SetActive(false) �֧�ѧ�ͧ�������
-    // ��á�������촷ء���� class ����� IsPaused ����
+    // Pause/resume: the in-game UI is blocked via CanvasGroup (blocksRaycasts) instead of SetActive(false), so its state is kept
+    // Input handlers in this class check IsPaused before doing anything
     public void SetPaused(bool paused)
     {
         if (IsPaused == paused) return;
         IsPaused = paused;
 
-        // �ѹ���� skip ��ҧ�������Ҿ��ŧ
+        // Release any skip hold that is still showing its press animation
         if (paused && TurnCounter != null) TurnCounter.ReleaseButton();
 
         if (pauseRoutine != null) StopCoroutine(pauseRoutine);
@@ -838,13 +953,13 @@ public class InGameUIManager : MonoBehaviour
         blackScreen.color = c;
     }
 
-    // ࿴ blackScreen (价�� pauseDimAlpha) ��� PauseUI ������ѹ �� unscaledDeltaTime (�ӧҹ����� timeScale = 0)
-    // ��Ѻ��������/�����״���� fadeTime ��� pauseDimAlpha � Inspector
+    // Fades blackScreen (to pauseDimAlpha) and PauseUI together, using unscaledDeltaTime (works when timeScale = 0)
+    // Adjust the pause/resume fade speed with fadeTime and pauseDimAlpha in the Inspector
     private IEnumerator PauseFade(bool paused)
     {
         if (paused)
         {
-            if (inGameGroup != null) inGameGroup.blocksRaycasts = false;   // �ͧ��� �衴�����
+            if (inGameGroup != null) inGameGroup.blocksRaycasts = false;   // Block the in-game UI from clicks
             if (PauseUI != null) PauseUI.gameObject.SetActive(true);
             if (pauseGroup != null) { pauseGroup.interactable = true; pauseGroup.blocksRaycasts = true; }
             if (blackScreen != null) blackScreen.gameObject.SetActive(true);
@@ -873,7 +988,7 @@ public class InGameUIManager : MonoBehaviour
         SetBlackScreenAlpha(dimTo);
         if (pauseGroup != null) pauseGroup.alpha = uiTo;
 
-        // ��蹵��: �Դ PauseUI/�ʹ� ��ѧ࿴�� ���Ǥ������ UI ���ԡ����ա����
+        // Resume: hide PauseUI/black screen after the fade, then let the in-game UI receive clicks again
         if (!paused)
         {
             if (PauseUI != null) PauseUI.gameObject.SetActive(false);

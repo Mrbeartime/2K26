@@ -11,6 +11,7 @@ public class ArrowProjectile : MonoBehaviour
     private bool finished;
     [SerializeField, Min(0.001f)] private float hitRadius = 0.03f;
     private bool initialized;
+    public float HitRadius => Mathf.Max(0.001f, hitRadius);
     public bool IsFlying => initialized && !finished;
 
     public void Initialize(Character source, Tile origin, Vector2Int direction, float velocity)
@@ -57,6 +58,7 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (owner != null && collider.transform.IsChildOf(owner.transform)) return false;
         if (collider.transform.IsChildOf(transform)) return false;
+        if (collider.GetComponentInParent<Character>() is Character corpse && corpse.IsDead) return false;
         if (GridManager.Instance.IsArrowWall(collider))
         {
             Finish();
@@ -64,14 +66,13 @@ public class ArrowProjectile : MonoBehaviour
         }
         Entity entity = collider.GetComponentInParent<Entity>();
         if (entity == null || !entity.isActiveAndEnabled || entity.IsDead) return false;
-        // Enemy arrows are stopped by other enemies/targets but cannot activate
-        // Archer-only targets or kill their own team.
-        if (enemyArrow && !(entity is Character))
+        // Enemy arrows can activate training targets but cannot kill their own team.
+        if (enemyArrow && !(entity is Character) && !(entity is ArrowTutorial))
         {
             Finish();
             return true;
         }
-        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner as Character);
+        if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner);
         else entity.ReceiveArrowHit();
         Finish();
         return true;

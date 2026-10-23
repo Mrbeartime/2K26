@@ -13,7 +13,7 @@ public class ArrowTutorial : Entity
     [SerializeField] private DoorController[] doors;
 
     private string doorRequestId;
-    private bool openedByArcher;
+    private bool openedByArrow;
 
     private void Awake() => doorRequestId = "ArrowTutorial:" + System.Guid.NewGuid().ToString("N");
 
@@ -31,11 +31,12 @@ public class ArrowTutorial : Entity
             Debug.LogWarning("ArrowTutorial: ยิงโดนแล้ว แต่ยังไม่ได้ใส่ DoorController ในรายการ Doors", this);
     }
 
-    public void ReceiveArrowFrom(Character shooter)
+    public void ReceiveArrowFrom(Entity shooter)
     {
-        if (!(shooter is ArcherMan) || Time.timeScale == 0) return;
+        if (!(shooter is ArcherMan) && !(shooter is RangedEnemy)) return;
+        if (Time.timeScale == 0) return;
         ReceiveArrowHit();
-        openedByArcher = true;
+        openedByArrow = true;
 
         // สั่งเปิดประตูทุกบาน
         SetAllDoors(true);
@@ -99,7 +100,7 @@ public class ArrowTutorial : Entity
     {
         HitCount = 0;
         IsCompleted = false;
-        openedByArcher = false;
+        openedByArrow = false;
 
         // สั่งปิดประตูทุกบาน
         SetAllDoors(false);
@@ -107,7 +108,7 @@ public class ArrowTutorial : Entity
 
     private void OnEnable()
     {
-        if (openedByArcher) SetAllDoors(true);
+        if (openedByArrow) SetAllDoors(true);
     }
 
     private void OnDisable()

@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class Rogue : Character
 {
+    // The Rogue's death pose is authored in its Animator, not forced by Character.
+    protected override void PlayDeathVisuals() { }
+
     [Header("Skill Limit Per Level")]
     [Tooltip("-1 = unlimited; 0 = disabled. Resets when the level is loaded again.")]
     [SerializeField, Min(-1)] private int skillUsesPerLevel = -1;
