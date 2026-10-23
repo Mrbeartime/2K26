@@ -20,6 +20,10 @@ public class Tile : MonoBehaviour
     [SerializeField] private Color skillHighlightColor = Color.yellow;
     [SerializeField] private Color enemyHighlightColor = Color.red;
 
+    [Header("Highlight Opacity")]
+    [Range(0f, 1f)]
+    [SerializeField] private float highlightOpacity = 0.5f;
+
     public enum HighlightType
     {
         Move,
@@ -81,6 +85,13 @@ public class Tile : MonoBehaviour
 
     private void SetHighlightColor(Color color)
     {
+        if (highlightObject == null)
+            return;
+
+        // ปรับค่าความโปร่งใส
+        color.a = Mathf.Clamp01(highlightOpacity);
+
+
         foreach (Renderer renderer in
                  highlightObject.GetComponentsInChildren<Renderer>(true))
         {
