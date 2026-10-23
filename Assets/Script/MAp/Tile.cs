@@ -22,7 +22,13 @@ public class Tile : MonoBehaviour
 
     [Header("Highlight Opacity")]
     [Range(0f, 1f)]
-    [SerializeField] private float highlightOpacity = 0.5f;
+    [SerializeField] private float moveHighlightOpacity = 1f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float skillHighlightOpacity = 0.5f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float enemyHighlightOpacity = 1f;
 
     public enum HighlightType
     {
@@ -45,14 +51,17 @@ public class Tile : MonoBehaviour
         {
             case HighlightType.Move:
                 targetColor = moveHighlightColor;
+                targetColor.a = moveHighlightOpacity;
                 break;
 
             case HighlightType.Skill:
                 targetColor = skillHighlightColor;
+                targetColor.a = skillHighlightOpacity;
                 break;
 
             case HighlightType.Enemy:
                 targetColor = enemyHighlightColor;
+                targetColor.a = enemyHighlightOpacity;
                 break;
         }
 
@@ -87,9 +96,6 @@ public class Tile : MonoBehaviour
     {
         if (highlightObject == null)
             return;
-
-        // ปรับค่าความโปร่งใส
-        color.a = Mathf.Clamp01(highlightOpacity);
 
 
         foreach (Renderer renderer in

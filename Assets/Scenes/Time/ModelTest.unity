@@ -1919,6 +1919,26 @@ PrefabInstance:
       propertyPath: highlightObject
       value: 
       objectReference: {fileID: 1840394544}
+    - target: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: highlightOpacity
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: moveHighlightColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: moveHighlightOpacity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: enemyHighlightOpacity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: skillHighlightOpacity
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 8630445062527418290, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.9184501
@@ -6122,6 +6142,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
+  logFixedTurnsToConsole: 1
+  saveFixedTurnLogToFile: 1
+  fixedTurnScheduleSummary: 
+  fixedTurnSchedule: []
+  fixedTurnLog: []
+  fixedTurnLogFilePath: 
   maximumTurns: 7
   enemyPhaseDelay: 0.35
   enableTurnShake: 1
