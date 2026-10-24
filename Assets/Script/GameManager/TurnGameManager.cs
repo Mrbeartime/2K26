@@ -664,6 +664,10 @@ public partial class TurnGameManager : MonoBehaviour
         status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
 
+        //เพื่อบันทึกว่าผ่านด่านแล้ว
+        ProjectD.Menus.GameSceneManager.CompleteActiveLevel();
+
+        // แจ้งให้LevelCompleteUI แสดงหน้าจอชนะ
         GameEnded?.Invoke(true, gameOverReason);
         RaiseStateChanged();
     }
