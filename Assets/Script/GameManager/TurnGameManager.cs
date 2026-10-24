@@ -565,6 +565,8 @@ public partial class TurnGameManager : MonoBehaviour
     private void StartEnemyPhase()
     {
         if (gameComplete || enemyPhase) return;
+        // Both manual End Turn and automatic completion pass this boundary.
+        PlayerCorpseShatter.CompletePlayerPhase(this, RoundNumber);
         enemyPhase = true;
         status = "Enemy Phase...";
         StartCoroutine(RunEnemyPhase());
