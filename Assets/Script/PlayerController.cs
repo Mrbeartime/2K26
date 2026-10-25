@@ -183,6 +183,9 @@ public class PlayerController : MonoBehaviour
         if (player == null)
             return;
 
+        // เพิ่ม: เลื่อนกล้องไปหา Player และ Zoom In
+        CameraFocusManager.Instance?.FocusCharacter(player);
+
         Debug.Log("Selected: " + player.name);
     }
 
@@ -380,6 +383,8 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        CameraFocusManager.Instance?.FocusObject(enemy.transform); // Camera
+
         // =========================
         // เลือก Enemy ตัวใหม่
         // =========================
@@ -425,5 +430,7 @@ public class PlayerController : MonoBehaviour
             currentHighlightedTiles.Add(tile);
             tile.ShowHighlight(Tile.HighlightType.Enemy);
         }
+
+        CameraFocusManager.Instance?.FocusObject(trap.transform);
     }
 }
