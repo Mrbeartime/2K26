@@ -125,7 +125,7 @@ public class LevelCompleteUI : MonoBehaviour
     {
         // TODO: กลับหน้าเลือกด่านเมื่อสร้าง Scene เสร็จ
 
-        GameSceneManager.OpenLevelSelect();
+        // GameSceneManager.OpenLevelSelect();
 
         Debug.Log("Level Select - Not implemented yet");
     }
