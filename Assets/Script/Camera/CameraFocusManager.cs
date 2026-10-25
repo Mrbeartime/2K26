@@ -42,8 +42,14 @@ public class CameraFocusManager : MonoBehaviour
 
     [Header("Camera Target Bounds (World X / Z)")]
     [SerializeField] private bool enableCameraBounds = true;
-    [SerializeField] private Vector2 minimumXZ = new Vector2(-20f, -20f);
-    [SerializeField] private Vector2 maximumXZ = new Vector2(20f, 20f);
+    [SerializeField] private Vector2 minimumXZ = new Vector2(-5f, -5f);
+    [SerializeField] private Vector2 maximumXZ = new Vector2(5f, 5f);
+
+    [Header("Return To Default After Drag")]
+    [Tooltip("Return to the starting camera view after dragging.")]
+    [SerializeField] private bool returnToDefaultAfterDrag = false;
+
+    private Vector3 defaultPosition;
 
     private PlayerMove trackedPlayer;
     private PlayerMove lastObservedWalkingPlayer;
@@ -88,6 +94,8 @@ public class CameraFocusManager : MonoBehaviour
         defaultLens = orthographic ? lens.OrthographicSize : lens.FieldOfView;
         desiredLens = defaultLens;
         desiredPosition = cameraTarget.position;
+        defaultPosition = cameraTarget.position;
+        desiredPosition = defaultPosition;
         ready = true;
     }
 
@@ -200,12 +208,18 @@ public class CameraFocusManager : MonoBehaviour
         Mouse mouse = Mouse.current;
         if (!enableCameraDrag || mouse == null)
         {
+            if (isDragging && returnToDefaultAfterDrag)
+                ReturnToDefaultView();
+
             CancelDragInput();
             return;
         }
 
         if (mouse.rightButton.wasReleasedThisFrame || !mouse.rightButton.isPressed)
         {
+            if (isDragging && returnToDefaultAfterDrag)
+                ReturnToDefaultView();
+
             CancelDragInput();
             return;
         }
@@ -266,6 +280,16 @@ public class CameraFocusManager : MonoBehaviour
         shift.y = 0f;
 
         desiredPosition = ClampToBounds(desiredPosition + shift);
+    }
+
+    private void ReturnToDefaultView()
+    {
+        trackedPlayer = null;
+        manualPanMode = false;
+        wasWalking = false;
+
+        desiredPosition = ClampToBounds(defaultPosition);
+        desiredLens = defaultLens;
     }
 
     private static bool IsPointerOverUI()
