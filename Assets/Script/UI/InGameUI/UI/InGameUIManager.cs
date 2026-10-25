@@ -903,12 +903,24 @@ public class InGameUIManager : MonoBehaviour
 
     public void CallPause() => SetPaused(!IsPaused);
 
-    private void OnShowPauseUI(InputAction.CallbackContext context) => SetPaused(!IsPaused);
+    private void OnShowPauseUI(InputAction.CallbackContext context)
+    {
+        // ถ้าเกมจบแล้ว ห้ามกด ESC เพื่อเปิด Pause
+        if (turnGameManager != null && turnGameManager.IsGameComplete)
+            return;
+
+        SetPaused(!IsPaused);
+    }
 
     // Pause/resume: the in-game UI is blocked via CanvasGroup (blocksRaycasts) instead of SetActive(false), so its state is kept
     // Input handlers in this class check IsPaused before doing anything
     public void SetPaused(bool paused)
     {
+        // ถ้าเกมจบแล้ว ไม่อนุญาตให้เปิด Pause
+        if (paused && turnGameManager != null &&
+            turnGameManager.IsGameComplete)
+            return;
+
         if (IsPaused == paused) return;
         IsPaused = paused;
 
