@@ -62,6 +62,11 @@ public class CameraFocusManager : MonoBehaviour
     private float lensVelocity;
     private bool orthographic;
     private bool ready;
+    private Transform cutsceneTarget;
+    private bool cutsceneActive;
+    private float cutsceneZoomFactor;
+    private Vector3 beforeCutscenePosition;
+    private float beforeCutsceneLens;
 
     private bool dragArmed;
     private bool isDragging;
@@ -121,9 +126,58 @@ public class CameraFocusManager : MonoBehaviour
         desiredLens = defaultLens * focusZoomFactor;
     }
 
+    public bool BeginCutscene(Transform target, float zoomFactor)
+    {
+        if (!ready || !isActiveAndEnabled || target == null || cutsceneActive) return false;
+        beforeCutscenePosition = desiredPosition;
+        beforeCutsceneLens = desiredLens;
+        cutsceneTarget = target;
+        cutsceneZoomFactor = Mathf.Clamp(zoomFactor, 0.5f, 1f);
+        cutsceneActive = true;
+        EndManualPan();
+        positionVelocity = Vector3.zero;
+        lensVelocity = 0f;
+        return true;
+    }
+
+    public void EndCutscene()
+    {
+        if (!cutsceneActive) return;
+        cutsceneActive = false;
+        cutsceneTarget = null;
+        desiredPosition = beforeCutscenePosition;
+        desiredLens = beforeCutsceneLens;
+        positionVelocity = Vector3.zero;
+        lensVelocity = 0f;
+    }
+
+    public void SetCutsceneTarget(Transform target)
+    {
+        if (cutsceneActive && target != null) cutsceneTarget = target;
+    }
+
     private void LateUpdate()
     {
         if (!ready) return;
+        if (cutsceneActive)
+        {
+            CancelDragInput();
+            if (cutsceneTarget == null) EndCutscene();
+            else
+            {
+                // Cinematic motion does not set PlayerMove.IsMoving().
+                // Follow the actor directly, including outside gameplay pan bounds.
+                desiredPosition = cutsceneTarget.position + Vector3.up * focusHeightOffset;
+                desiredLens = defaultLens * cutsceneZoomFactor;
+                ApplyCamera(walkingSmoothTime);
+                return;
+            }
+        }
+        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying)
+        {
+            CancelDragInput();
+            return;
+        }
 
         if (Time.timeScale == 0f ||
             (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) ||
@@ -157,6 +211,11 @@ public class CameraFocusManager : MonoBehaviour
         float smoothTime = isDragging ? dragSmoothTime
             : walking && !manualPanMode ? walkingSmoothTime : focusSmoothTime;
 
+        ApplyCamera(smoothTime);
+    }
+
+    private void ApplyCamera(float smoothTime)
+    {
         cameraTarget.position = Vector3.SmoothDamp(
             cameraTarget.position,
             desiredPosition,

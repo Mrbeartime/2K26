@@ -13,6 +13,8 @@ public class TurnGameManager : MonoBehaviour
 {
     public static TurnGameManager Instance { get; private set; }
     [SerializeField] private TurnScheduleData turnScheduleData;
+    [SerializeField] private CutSceneCharacter entranceCutscene;
+    public bool IsIntroPlaying { get; private set; }
     public TurnScheduleData ScheduleData => turnScheduleData;
     public int RoundNumber => ElapsedTurn;
 
@@ -113,7 +115,7 @@ public class TurnGameManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!showTestUI) return;
+        if (!showTestUI || IsIntroPlaying) return;
         const float width = 570f;
         GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
         GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
@@ -183,10 +185,15 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        // This manager awakens before the entrance component's OnEnable.
+        // isActiveAndEnabled can still be false at that point.
+        IsIntroPlaying = entranceCutscene != null && entranceCutscene.enabled &&
+            entranceCutscene.gameObject.activeInHierarchy;
+        waitingForMovement = IsIntroPlaying;
         currentTurn = maximumTurns;   // ตั้งใน Awake เพื่อให้ค่าพร้อมก่อน Start ของทุก script
     }
 
-    private void Start()
+    private System.Collections.IEnumerator Start()
     {
         if (turnScheduleData == null) turnScheduleData = GetComponent<TurnScheduleData>();
         if (turnScheduleData == null) turnScheduleData = gameObject.AddComponent<TurnScheduleData>();
@@ -198,6 +205,13 @@ public class TurnGameManager : MonoBehaviour
         if (players.Count != 3)
             Debug.LogWarning("TurnGameManager ต้องการ PlayerMove 3 ตัว: Player1, Player2, Player3", this);
 
+        if (IsIntroPlaying)
+        {
+            status = "Sword entrance...";
+            RaiseStateChanged();
+            yield return entranceCutscene.Play();
+            IsIntroPlaying = false;
+        }
         StartPlayerPhase();
     }
 

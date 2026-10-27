@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) return;
         if (Time.timeScale == 0) return;
         if (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
