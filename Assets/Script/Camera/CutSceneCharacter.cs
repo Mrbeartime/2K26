@@ -16,6 +16,8 @@ public class CutSceneCharacter : MonoBehaviour
 
     [SerializeField, Tooltip("Characters enter one at a time in array order.")]
     private CharacterEntry[] characters;
+    [Header("Before Cutscene Ends")]
+    [SerializeField] private DoorCutScene closingDoor;
 
     // Preserve existing scenes/prefabs when upgrading from the single actor version.
     [SerializeField, HideInInspector] private Transform swordsman;
@@ -79,6 +81,8 @@ public class CutSceneCharacter : MonoBehaviour
                 if (!prepared || !isActiveAndEnabled) yield break;
                 yield return PlayCharacter(entry);
             }
+            if (prepared && isActiveAndEnabled && closingDoor != null && closingDoor.isActiveAndEnabled)
+                yield return closingDoor.Play();
         }
         finally { Restore(); }
         Debug.Log("Character cutscene completed; gameplay UI restored.", this);

@@ -11,9 +11,21 @@ public class DoorController : MonoBehaviour
     private Vector3 closedPosition;
     private Vector3 openPosition;
     private readonly HashSet<string> activeRequests = new();
+    private bool cutsceneClosed;
+    public bool IsFullyClosed => !IsOpen &&
+        (transform.localPosition - closedPosition).sqrMagnitude < 0.000001f;
 
     // ⭐ ถ้าระบบตั้งให้เปิดแต่แรก การมีคนมากดสวิตช์ (activeRequests > 0) จะแปลว่าสั่ง "ปิดประตู"
-    public bool IsOpen => startOpen ? activeRequests.Count == 0 : activeRequests.Count > 0;
+    public bool IsOpen => !cutsceneClosed && (startOpen ? activeRequests.Count == 0 : activeRequests.Count > 0);
+
+    // Keep the entrance shut after the cinematic, without discarding switch requests.
+    public void CloseForCutscene()
+    {
+        cutsceneClosed = true;
+        if (speed <= 0f || !isActiveAndEnabled) transform.localPosition = closedPosition;
+    }
+
+    public void ReleaseCutsceneClose() => cutsceneClosed = false;
 
     void Awake()
     {
