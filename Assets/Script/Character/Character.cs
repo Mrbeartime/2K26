@@ -92,6 +92,9 @@ public class Character : Entity
         if (TryGetComponent(out CharacterFacing facing)) facing.enabled = false;
         if (TryGetComponent(out CharacterAnimationController animationController)) animationController.enabled = false;
         PlayDeathVisuals();
+        PlayerCorpseShatter shatter = GetComponent<PlayerCorpseShatter>();
+        if (shatter == null) shatter = gameObject.AddComponent<PlayerCorpseShatter>();
+        shatter.RegisterDeath(TurnGameManager.Instance);
     }
 
     protected virtual void PlayDeathVisuals()
