@@ -495,6 +495,89 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+--- !u!1 &129169680
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 129169682}
+  - component: {fileID: 129169683}
+  m_Layer: 0
+  m_Name: TurnGameDoc
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &129169682
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129169680}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 759.4262, y: 0.00001, z: 297.55676}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &129169683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129169680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1356dec84ba54fd2a4620574560eb6ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnScheduleData
+  turnSummary: 'Round 1: Arrow Trap - Every 2 Turns = 0
+
+    Round 2: Arrow Trap
+    - Every 2 Turns = 1
+
+    Round 3: Arrow Trap - Every 2 Turns = 0
+
+    Round
+    4: Arrow Trap - Every 2 Turns = 1
+
+    Round 5: Arrow Trap - Every 2 Turns =
+    0
+
+    Round 6: Arrow Trap - Every 2 Turns = 1
+
+    Round 7: Arrow Trap - Every
+    2 Turns = 0'
+  maximumRounds: 7
+  currentRound: 1
+  currentTurnSummary: 'Round 1: Arrow Trap - Every 2 Turns = 0'
+  objects:
+  - id: '/Arrow Trap - Every 2 Turns[12]:TurnArrowTrap[0]'
+    name: Arrow Trap - Every 2 Turns
+    source: {fileID: 1992033478}
+  savedStates:
+  - round: 1
+    values: 00000000
+  - round: 2
+    values: 01000000
+  - round: 3
+    values: 00000000
+  - round: 4
+    values: 01000000
+  - round: 5
+    values: 00000000
+  - round: 6
+    values: 01000000
+  - round: 7
+    values: 00000000
 --- !u!1 &173490770
 GameObject:
   m_ObjectHideFlags: 0
@@ -6094,6 +6177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
+  turnScheduleData: {fileID: 129169683}
   maximumTurns: 7
   enemyPhaseDelay: 0.35
   enableTurnShake: 1
@@ -6278,3 +6362,4 @@ SceneRoots:
   - {fileID: 1643291578}
   - {fileID: 1333650311}
   - {fileID: 1166776204}
+  - {fileID: 129169682}
