@@ -14,7 +14,7 @@ public class CutSceneCharacter : MonoBehaviour
         public Transform destinationFloor;
     }
 
-    [SerializeField, Tooltip("Characters enter one at a time in array order.")]
+    [SerializeField, Tooltip("All characters enter together. The cutscene waits for every character to arrive.")]
     private CharacterEntry[] characters;
     [Header("Before Cutscene Ends")]
     [SerializeField] private DoorCutScene closingDoor;
@@ -30,14 +30,24 @@ public class CutSceneCharacter : MonoBehaviour
     [SerializeField, Range(0.5f, 1f)] private float cameraZoomFactor = 0.85f;
     private CameraFocusManager cutsceneCamera;
 
-    private Vector3 endPosition;
-    private CharacterAnimationController animationController;
-    private Animator animator;
-    private bool animationWasEnabled;
-    private bool rootMotionWasEnabled;
+    private sealed class ActorState
+    {
+        public Transform actor;
+        public Vector3 endPosition;
+        public Vector3 offset;
+        public List<Tile> route;
+        public int nextStep = 1;
+        public CharacterFacing facing;
+        public CharacterAnimationController animationController;
+        public Animator animator;
+        public bool animationWasEnabled;
+        public bool rootMotionWasEnabled;
+        public bool arrived;
+    }
+
+    private readonly List<ActorState> actors = new();
+    private Transform groupCameraTarget;
     private bool prepared;
-    private Transform currentActor;
-    private bool actorPrepared;
     private readonly Dictionary<Transform, List<Renderer>> hiddenRenderers = new();
     private readonly List<CanvasGroup> hiddenUI = new();
     private readonly List<InGameUIManager> disabledUIControllers = new();
@@ -79,7 +89,35 @@ public class CutSceneCharacter : MonoBehaviour
             foreach (CharacterEntry entry in entries)
             {
                 if (!prepared || !isActiveAndEnabled) yield break;
-                yield return PlayCharacter(entry);
+                PrepareCharacter(entry);
+            }
+            if (actors.Count > 0)
+            {
+                groupCameraTarget = new GameObject("Cutscene Group Camera Target").transform;
+                UpdateGroupCameraTarget();
+                CameraFocusManager cameraManager = CameraFocusManager.Instance;
+                if (cameraManager != null && cameraManager.BeginCutscene(groupCameraTarget, cameraZoomFactor))
+                    cutsceneCamera = cameraManager;
+                yield return new WaitForSeconds(openingPause);
+                if (!prepared || !isActiveAndEnabled) yield break;
+
+                foreach (ActorState actor in actors)
+                    if (actor.animator != null) actor.animator.SetBool(Moving, actor.route.Count > 1);
+
+                bool everyoneArrived = false;
+                while (!everyoneArrived)
+                {
+                    if (!prepared || !isActiveAndEnabled) yield break;
+                    everyoneArrived = true;
+                    foreach (ActorState actor in actors)
+                    {
+                        AdvanceActor(actor);
+                        if (!actor.arrived) everyoneArrived = false;
+                    }
+                    UpdateGroupCameraTarget();
+                    if (!everyoneArrived) yield return null;
+                }
+                yield return new WaitForSeconds(arrivalPause);
             }
             if (prepared && isActiveAndEnabled && closingDoor != null && closingDoor.isActiveAndEnabled)
                 yield return closingDoor.Play();
@@ -88,10 +126,10 @@ public class CutSceneCharacter : MonoBehaviour
         Debug.Log("Character cutscene completed; gameplay UI restored.", this);
     }
 
-    private IEnumerator PlayCharacter(CharacterEntry entry)
+    private void PrepareCharacter(CharacterEntry entry)
     {
         Transform actor = entry.character;
-        if (actor == null) yield break;
+        if (actor == null) return;
         Transform startFloor = entry.startFloor;
         Transform destinationFloor = entry.destinationFloor;
         Tile start = startFloor.GetComponent<Tile>();
@@ -102,44 +140,58 @@ public class CutSceneCharacter : MonoBehaviour
         {
             Debug.LogWarning($"Cutscene entry {actor.name} cannot play: start={start?.name}, destination={destination?.name}, current={movement?.GetCurrentTile()?.name}, routeFound={route != null}.", this);
             ShowRenderers(actor);
-            yield break;
+            return;
         }
 
-        currentActor = actor;
-        endPosition = actor.position;
-        actorPrepared = true;
-        animationController = actor.GetComponent<CharacterAnimationController>();
-        animationWasEnabled = animationController != null && animationController.enabled;
-        if (animationController != null) animationController.enabled = false;
-        animator = actor.GetComponentInChildren<Animator>();
-        if (animator != null) { rootMotionWasEnabled = animator.applyRootMotion; animator.applyRootMotion = false; }
-        CharacterFacing facing = actor.GetComponent<CharacterFacing>();
-        Vector3 offset = endPosition - destinationFloor.position;
-        actor.position = startFloor.position + offset;
-        if (route.Count > 1) facing?.FaceTowards(route[1].transform.position + offset, true);
-        CameraFocusManager cameraManager = CameraFocusManager.Instance;
-        if (cutsceneCamera != null) cutsceneCamera.SetCutsceneTarget(actor);
-        else if (cameraManager != null && cameraManager.BeginCutscene(actor, cameraZoomFactor))
-            cutsceneCamera = cameraManager;
+        var state = new ActorState
+        {
+            actor = actor,
+            endPosition = actor.position,
+            offset = actor.position - destinationFloor.position,
+            route = route,
+            facing = actor.GetComponent<CharacterFacing>(),
+            animationController = actor.GetComponent<CharacterAnimationController>(),
+            animator = actor.GetComponentInChildren<Animator>()
+        };
+        state.animationWasEnabled = state.animationController != null && state.animationController.enabled;
+        state.rootMotionWasEnabled = state.animator != null && state.animator.applyRootMotion;
+        actors.Add(state);
+        if (state.animationController != null) state.animationController.enabled = false;
+        if (state.animator != null) state.animator.applyRootMotion = false;
+        actor.position = startFloor.position + state.offset;
+        if (route.Count > 1) state.facing?.FaceTowards(route[1].transform.position + state.offset, true);
         ShowRenderers(actor);
         Debug.Log($"Cutscene {actor.name}: {startFloor.name} -> {destinationFloor.name} ({route.Count - 1} steps).", this);
-        yield return new WaitForSeconds(openingPause);
-        if (!prepared || !isActiveAndEnabled || actor == null) yield break;
-        if (animator != null) animator.SetBool(Moving, true);
+    }
 
-        for (int i = 1; i < route.Count && actor != null && prepared && isActiveAndEnabled; i++)
+    private void AdvanceActor(ActorState state)
+    {
+        if (state.arrived) return;
+        if (state.actor == null) { state.arrived = true; return; }
+        if (state.nextStep < state.route.Count)
         {
-            Vector3 target = route[i].transform.position + offset;
-            facing?.FaceTowards(target);
-            while (actor != null && prepared && isActiveAndEnabled && Vector3.Distance(actor.position, target) > 0.001f)
-            {
-                actor.position = Vector3.MoveTowards(actor.position, target, Mathf.Max(0.1f, walkSpeed) * Time.deltaTime);
-                yield return null;
-            }
+            Vector3 target = state.route[state.nextStep].transform.position + state.offset;
+            state.facing?.FaceTowards(target);
+            state.actor.position = Vector3.MoveTowards(state.actor.position, target, Mathf.Max(0.1f, walkSpeed) * Time.deltaTime);
+            if (Vector3.Distance(state.actor.position, target) <= 0.001f)
+                state.nextStep++;
         }
-        if (animator != null) animator.SetBool(Moving, false);
-        yield return new WaitForSeconds(arrivalPause);
-        RestoreActor();
+        if (state.nextStep >= state.route.Count)
+        {
+            state.actor.position = state.endPosition;
+            state.arrived = true;
+            if (state.animator != null) state.animator.SetBool(Moving, false);
+        }
+    }
+
+    private void UpdateGroupCameraTarget()
+    {
+        if (groupCameraTarget == null) return;
+        Vector3 total = Vector3.zero;
+        int count = 0;
+        foreach (ActorState state in actors)
+            if (state.actor != null) { total += state.actor.position; count++; }
+        if (count > 0) groupCameraTarget.position = total / count;
     }
 
     private List<Tile> FindRoute(Tile start, Tile destination, Character character)
@@ -207,7 +259,19 @@ public class CutSceneCharacter : MonoBehaviour
         prepared = false;
         if (cutsceneCamera != null) cutsceneCamera.EndCutscene();
         cutsceneCamera = null;
-        RestoreActor();
+        foreach (ActorState state in actors)
+        {
+            if (state.actor != null) state.actor.position = state.endPosition;
+            if (state.animator != null)
+            {
+                state.animator.SetBool(Moving, false);
+                state.animator.applyRootMotion = state.rootMotionWasEnabled;
+            }
+            if (state.animationController != null) state.animationController.enabled = state.animationWasEnabled;
+        }
+        actors.Clear();
+        if (groupCameraTarget != null) Destroy(groupCameraTarget.gameObject);
+        groupCameraTarget = null;
         foreach (var renderers in hiddenRenderers.Values)
             foreach (Renderer renderer in renderers) if (renderer != null) renderer.enabled = true;
         hiddenRenderers.Clear();
@@ -225,18 +289,6 @@ public class CutSceneCharacter : MonoBehaviour
     }
 
     private void OnDisable() => Restore();
-
-    private void RestoreActor()
-    {
-        if (!actorPrepared) return;
-        actorPrepared = false;
-        if (currentActor != null) currentActor.position = endPosition;
-        if (animator != null) { animator.SetBool(Moving, false); animator.applyRootMotion = rootMotionWasEnabled; }
-        if (animationController != null) animationController.enabled = animationWasEnabled;
-        currentActor = null;
-        animator = null;
-        animationController = null;
-    }
 
     private void OnValidate() => MigrateLegacyEntry();
 
