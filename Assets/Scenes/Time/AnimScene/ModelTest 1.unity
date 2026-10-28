@@ -4177,7 +4177,7 @@ MonoBehaviour:
   swordsman: {fileID: 0}
   startFloor: {fileID: 0}
   destinationFloor: {fileID: 0}
-  walkSpeed: 2
+  walkSpeed: 4
   arrivalPause: 0.3
   openingPause: 0.6
   cameraZoomFactor: 0.85
