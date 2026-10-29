@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,6 +25,12 @@ public class LevelCompleteUI : MonoBehaviour
     [Header("Messages")]
     [SerializeField] private string completeTitle = "LEVEL COMPLETE!";
     [SerializeField] private string completeMessage = "You reached the exit!";
+
+    [Header("Victory Timing")]
+    [Tooltip("Wait for active treasure chests in this scene to finish opening.")]
+    [SerializeField] private bool waitForChestAnimation = true;
+    [Tooltip("Extra pause after the chest opens, before showing the victory panel (seconds).")]
+    [SerializeField, Min(0f)] private float delayAfterChestOpen = 0.35f;
 
     private TurnGameManager turnManager;
     private bool hasShown;
@@ -81,6 +88,28 @@ public class LevelCompleteUI : MonoBehaviour
         }
 
         hasShown = true;
+        StartCoroutine(ShowAfterChestOpens());
+    }
+
+    private IEnumerator ShowAfterChestOpens()
+    {
+        if (waitForChestAnimation)
+        {
+            var chests = FindObjectsByType<TreasureChestAnimation>();
+            // Start all chests before waiting; event subscriber order must not matter.
+            foreach (var chest in chests)
+                if (chest.isActiveAndEnabled && chest.gameObject.scene == gameObject.scene)
+                    chest.PlayOpen();
+
+            foreach (var chest in chests)
+                if (chest != null && chest.isActiveAndEnabled && chest.gameObject.scene == gameObject.scene)
+                    yield return chest.WaitForOpenCompleted();
+        }
+
+        if (delayAfterChestOpen > 0f)
+            yield return new WaitForSecondsRealtime(delayAfterChestOpen);
+        if (completePanel == null) yield break;
+
         int level = GameSceneManager.ActiveLevel;
 
         if (titleText != null)
