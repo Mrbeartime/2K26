@@ -1435,8 +1435,8 @@ RectTransform:
   m_LocalScale: {x: 1.35, y: 1.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8976018722600099117}
   - {fileID: 4425152950115187866}
+  - {fileID: 8976018722600099117}
   m_Father: {fileID: 81396053170478637}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1673,7 +1673,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.6117647}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.05882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
