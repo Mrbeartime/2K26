@@ -444,8 +444,11 @@ public class InGameUIManager : MonoBehaviour
         float direction = rightAligned ? -1f : 1f;
         rect.anchorMin = new Vector2(side, 1);
         rect.anchorMax = new Vector2(side, 1);
-        rect.pivot = new Vector2(side, 1);
-        rect.anchoredPosition = new Vector2(direction * (30f + index * 130f), -12f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        // Keep the original top/outer edge placement while scaling around the centre.
+        rect.anchoredPosition = new Vector2(
+            direction * (35f + index * 140f + rect.rect.width * 0.5f),
+            -12f - rect.rect.height * 0.5f);
 
         ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
         if (iconScript != null) iconScript.Setup(target, selectable);
