@@ -2232,6 +2232,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 136e625c3bfde924ea9c381f3fbe50d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinBox
+  completionTarget: 0
 --- !u!65 &566181152
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3003,9 +3004,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 952992712}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: dialTickPrefab
+      value: 
+      objectReference: {fileID: 1215554345403011106, guid: d567bc45c8274f5ea8e225bd7ec0cecb, type: 3}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: SignatureAction
       value: 
       objectReference: {fileID: 1701688579}
+    - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
+      propertyPath: dialEventIconPrefab
+      value: 
+      objectReference: {fileID: 1215554345403011106, guid: 9e159b5e583c4c889a6c42daf50af429, type: 3}
     - target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
       propertyPath: HazardList.Array.size
       value: 5
@@ -7880,12 +7889,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
-  logFixedTurnsToConsole: 1
-  saveFixedTurnLogToFile: 1
-  fixedTurnScheduleSummary: 
-  fixedTurnSchedule: []
-  fixedTurnLog: []
-  fixedTurnLogFilePath: 
+  turnScheduleData: {fileID: 0}
+  entranceCutscene: {fileID: 0}
   maximumTurns: 13
   enemyPhaseDelay: 0.35
   enableTurnShake: 0

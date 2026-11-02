@@ -28,6 +28,7 @@ public sealed class TurnScheduleData : MonoBehaviour
         public string id;
         public string name;
         public MonoBehaviour source;
+        public string trapType;
     }
 
     [Serializable]
@@ -40,6 +41,14 @@ public sealed class TurnScheduleData : MonoBehaviour
     private readonly Dictionary<int, IReadOnlyDictionary<string, int>> statesByTurn = new();
     private readonly Dictionary<string, string> objectNames = new();
     private readonly Dictionary<MonoBehaviour, string> sourceIds = new();
+    private readonly Dictionary<int, IReadOnlyList<string>> trapTypesByTurn = new();
+
+    /// <summary>Unique concrete trap type names scheduled on this ascending round.</summary>
+    public IReadOnlyList<string> GetTrapTypes(int round)
+    {
+        EnsureDictionary();
+        return trapTypesByTurn.TryGetValue(round, out var types) ? types : Array.Empty<string>();
+    }
     private ReadOnlyDictionary<int, IReadOnlyDictionary<string, int>> dictionaryView;
     private ReadOnlyDictionary<string, string> namesView;
     private bool initialized;
@@ -98,11 +107,15 @@ public sealed class TurnScheduleData : MonoBehaviour
         statesByTurn.Clear();
         objectNames.Clear();
         sourceIds.Clear();
+        trapTypesByTurn.Clear();
         foreach (var item in objects)
         {
             if (item == null || string.IsNullOrEmpty(item.id)) continue;
             objectNames[item.id] = item.name;
             if (item.source != null) sourceIds[item.source] = item.id;
+            // Populate older serialized schedules without requiring a scene refresh.
+            if (string.IsNullOrEmpty(item.trapType) && item.source is TurnTrap)
+                item.trapType = item.source.GetType().FullName;
         }
         for (int round = 1; round <= Mathf.Max(1, maximumRounds); round++)
         {
@@ -116,6 +129,13 @@ public sealed class TurnScheduleData : MonoBehaviour
                         values[objects[i].id] = row.values[i] > 0 ? 1 : 0;
             }
             statesByTurn.Add(round, new ReadOnlyDictionary<string, int>(values));
+            var types = new List<string>();
+            foreach (var item in objects)
+                if (item != null && !string.IsNullOrEmpty(item.trapType) &&
+                    item.id != null && values.TryGetValue(item.id, out int active) && active == 1 &&
+                    !types.Contains(item.trapType)) types.Add(item.trapType);
+            types.Sort(StringComparer.Ordinal);
+            trapTypesByTurn.Add(round, types.AsReadOnly());
         }
     }
 
@@ -130,7 +150,8 @@ public sealed class TurnScheduleData : MonoBehaviour
         sources.Sort((a, b) => string.CompareOrdinal(ObjectId(a), ObjectId(b)));
         objects.Clear();
         foreach (var source in sources)
-            objects.Add(new ScheduledObject { id = ObjectId(source), name = source.name, source = source });
+            objects.Add(new ScheduledObject { id = ObjectId(source), name = source.name, source = source,
+                trapType = source is TurnTrap ? source.GetType().FullName : null });
         savedStates.Clear();
         for (int round = 1; round <= Mathf.Max(1, maximumRounds); round++)
         {

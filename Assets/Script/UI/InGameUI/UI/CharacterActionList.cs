@@ -21,12 +21,13 @@ public class CharacterActionList : MonoBehaviour
     public Sprite[] sprites;
 
     private Image image;
-    private Color baseColor = Color.white;
+    private Animator focusAnimator;
+    private static readonly int SelectedParameter = Animator.StringToHash("selected");
 
     private void Awake()
     {
         image = GetComponent<Image>();
-        if (image != null) baseColor = image.color;
+        focusAnimator = GetComponent<Animator>();
         if (image != null && sprites != null && sprites.Length > 0)
             image.sprite = sprites[0];
     }
@@ -62,63 +63,30 @@ public class CharacterActionList : MonoBehaviour
     {
         isSelected = false;
     }
+    private void OnEnable()
+    {
+        UpdateFocusVisuals();
+    }
+
     public void Update()
     {
-        if (image == null) return;
+        UpdateFocusVisuals();
+    }
 
-        bool hasArmedSprite = sprites != null && sprites.Length > 2;
+    private void UpdateFocusVisuals()
+    {
+        bool focused = isSelected || isArmed;
+        if (focusAnimator != null && focusAnimator.runtimeAnimatorController != null)
+            focusAnimator.SetBool(SelectedParameter, focused);
 
-        // เลือก sprite: รอยืนยัน (sprites[2]) > โฟกัส (sprites[1]) > ปกติ (sprites[0])
-        if (sprites != null && sprites.Length > 1)
+        if (image != null && sprites != null && sprites.Length > 0)
         {
-            if (isArmed && hasArmedSprite)
-            {
-                image.sprite = sprites[2];
-                image.rectTransform.sizeDelta = new Vector2(86f, 86f);
-                SetPosX(17f);   // ปรับ x ของตอน arm ตามต้องการ
-            }
-            else if (isSelected || isArmed)
-            {
-                image.sprite = sprites[1];
-                image.rectTransform.sizeDelta = new Vector2(86f, 86f);
-                SetPosX(17f);
-            }
-            else
-            {
-                image.sprite = sprites[0];
-                image.rectTransform.sizeDelta = new Vector2(70f, 70f);
-                SetPosX(25f);
-            }
+            int index = isArmed && sprites.Length > 2 ? 2
+                : focused && sprites.Length > 1 ? 1 : 0;
+            image.sprite = sprites[index];
         }
-
-        // --- �Ѵ�������ͧ����ѡ�� ---
         if (actionName != null)
-        {
-            if (isSelected || isArmed)
-            {
-                actionName.fontStyle = FontStyles.Bold;
-                actionName.fontSize = 36;
-                SetPosXText(98f);
-            }
-            else
-            {
-                actionName.fontStyle = FontStyles.Normal;
-                actionName.fontSize = 30;
-                SetPosXText(90f);
-            }
-        }
-    }
-    private void SetPosX(float x)
-    {
-        Vector2 p = image.rectTransform.anchoredPosition;
-        p.x = x;
-        image.rectTransform.anchoredPosition = p;
-    }
-    private void SetPosXText(float x)
-    {
-        Vector2 p = actionName.rectTransform.anchoredPosition;
-        p.x = x;
-        actionName.rectTransform.anchoredPosition = p;
-
+            actionName.fontStyle = focused ? FontStyles.Bold : FontStyles.Normal;
+        // Animator owns size, horizontal offsets and font size. The manager owns Y layout.
     }
 }
