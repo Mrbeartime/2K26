@@ -2075,6 +2075,7 @@ GameObject:
   - component: {fileID: 1221775766}
   - component: {fileID: 1221775765}
   - component: {fileID: 2222222222}
+  - component: {fileID: 1703000101}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -3790,6 +3791,29 @@ MonoBehaviour:
   visualRoot: {fileID: 0}
   rotationSpeed: 540
   modelYawOffset: 0
+--- !u!114 &1703000101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1221775764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4118d831e2d8404ca28aab256d723861, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.AfterFeature.LevelStarRating
+  settings: {fileID: 11400000, guid: bcafba128a7442a58a917ae021fea89d, type: 2}
+  characterSource: 0
+  assignedCharacters: []
+  includeInactiveCharacters: 0
+  saveBestToJson: 1
+  logResults: 1
+  hasResult: 0
+  starsEarned: 0
+  onStarsAwarded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
