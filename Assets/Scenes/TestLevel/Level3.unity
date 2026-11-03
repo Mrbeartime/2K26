@@ -1798,7 +1798,7 @@ PrefabInstance:
     - target: {fileID: 312496942520135650, guid: d4316dbacebac964d812980872e69e9d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1204812708}
+      objectReference: {fileID: 0}
     - target: {fileID: 816866810080854643, guid: d4316dbacebac964d812980872e69e9d, type: 3}
       propertyPath: m_Name
       value: PrototypePauseUI
@@ -3200,17 +3200,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1204812708 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
-  m_PrefabInstance: {fileID: 284887038}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44f84546d19ca2a4a8aa86c2da915381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!4 &1204812709 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6253325749307455320, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
@@ -4854,6 +4843,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.20021284, y: 0.1290605, z: 0.025487913}
   m_Center: {x: 0.0000000037252903, y: -0.0000000037252903, z: 0}
+--- !u!114 &1703000101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1221775764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4118d831e2d8404ca28aab256d723861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.AfterFeature.LevelStarRating
+  settings: {fileID: 11400000, guid: bcafba128a7442a58a917ae021fea89d, type: 2}
+  turnManager: {fileID: 0}
+  characterSource: 0
+  assignedCharacters: []
+  includeInactiveCharacters: 0
+  saveBestToJson: 1
+  logResults: 1
+  hasResult: 0
+  starsEarned: 0
+  turnsRemaining: 0
+  charactersRemaining: 0
+  resultScenePath: 
+  savedToJson: 0
+  onStarsAwarded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1749611519 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7432603356200643643, guid: 1a5e4f9264de7804ebb985c9d5f830d7, type: 3}
@@ -6125,6 +6142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
   turnScheduleData: {fileID: 0}
+  entranceCutscene: {fileID: 0}
   maximumTurns: 7
   enemyPhaseDelay: 0.35
   enableTurnShake: 1
@@ -6289,29 +6307,6 @@ MonoBehaviour:
   visualRoot: {fileID: 0}
   rotationSpeed: 540
   modelYawOffset: 0
---- !u!114 &1703000101
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1221775764}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4118d831e2d8404ca28aab256d723861, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.AfterFeature.LevelStarRating
-  settings: {fileID: 11400000, guid: bcafba128a7442a58a917ae021fea89d, type: 2}
-  characterSource: 0
-  assignedCharacters: []
-  includeInactiveCharacters: 0
-  saveBestToJson: 1
-  logResults: 1
-  hasResult: 0
-  starsEarned: 0
-  onStarsAwarded:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

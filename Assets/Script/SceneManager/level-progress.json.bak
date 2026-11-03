@@ -3,7 +3,7 @@
     "levels": [
         {
             "level": 1,
-            "completed": true,
+            "completed": false,
             "unlocked": true,
             "stars": 0
         },
