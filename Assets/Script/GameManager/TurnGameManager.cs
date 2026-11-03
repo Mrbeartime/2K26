@@ -54,6 +54,7 @@ public class TurnGameManager : MonoBehaviour
     public PlayerMove CurrentPlayer => currentPlayer;
     public bool IsGameComplete => gameComplete;
     public bool PlayerWon => playerWon;
+    public string GameOverReason => gameOverReason;
     public bool IsMoveTargeting => actionMode == ActionMode.MoveTargeting;
     public bool IsSkillTargeting => actionMode == ActionMode.SkillTargeting;
     private bool CanCurrentPlayerReact => !gameComplete && !enemyPhase && CurrentPlayer != null &&
@@ -200,7 +201,9 @@ public class TurnGameManager : MonoBehaviour
         if (turnScheduleData == null) turnScheduleData = gameObject.AddComponent<TurnScheduleData>();
         turnScheduleData.RefreshFromScene(maximumTurns);
         turnScheduleData.SetCurrentRound(RoundNumber);
-        players.AddRange(FindObjectsByType<PlayerMove>(FindObjectsSortMode.None));
+        foreach (var player in FindObjectsByType<PlayerMove>())
+            if (player.isActiveAndEnabled && player.gameObject.scene == gameObject.scene)
+                players.Add(player);
         players.Sort((left, right) => GetPlayerNumber(left).CompareTo(GetPlayerNumber(right)));
 
         if (players.Count != 3)
@@ -439,9 +442,11 @@ public class TurnGameManager : MonoBehaviour
 
     public void NotifyPlayerDefeated(PlayerMove player)
     {
-        if (player == null) return;
+        if (gameComplete || player == null || player.gameObject.scene != gameObject.scene) return;
 
         players.Remove(player);
+        players.RemoveAll(other => other == null ||
+            (other.TryGetComponent(out Character character) && character.IsDead));
         finishedPlayers.Remove(player);
         movedPlayers.Remove(player);
 

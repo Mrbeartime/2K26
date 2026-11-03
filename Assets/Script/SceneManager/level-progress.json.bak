@@ -3,15 +3,15 @@
     "levels": [
         {
             "level": 1,
-            "completed": false,
+            "completed": true,
             "unlocked": true,
-            "stars": 0
+            "stars": 3
         },
         {
             "level": 2,
-            "completed": false,
+            "completed": true,
             "unlocked": true,
-            "stars": 0
+            "stars": 2
         },
         {
             "level": 3,

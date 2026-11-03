@@ -9,9 +9,9 @@
         },
         {
             "level": 2,
-            "completed": false,
+            "completed": true,
             "unlocked": true,
-            "stars": 0
+            "stars": 2
         },
         {
             "level": 3,
