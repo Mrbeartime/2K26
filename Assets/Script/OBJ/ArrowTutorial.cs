@@ -88,6 +88,8 @@ public class ArrowTutorial : Entity
     {
         if (Time.timeScale == 0) return;
         Debug.Log("HIT", this);
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.PlayInteract();
         onArrowHit.Invoke();
         if (IsCompleted) return;
         HitCount++;
@@ -98,6 +100,8 @@ public class ArrowTutorial : Entity
 
     public void ResetTutorial()
     {
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.ResetPose();
         HitCount = 0;
         IsCompleted = false;
         openedByArrow = false;
