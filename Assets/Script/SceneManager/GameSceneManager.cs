@@ -7,6 +7,7 @@ namespace ProjectD.Menus
     {
         public const string StartScene = "Assets/Scenes/Mon/SceneGame/Start.unity";
         public const string SelectScene = "Assets/Scenes/Mon/SceneGame/LevelSelect.unity";
+        public const string GuideScene = "Assets/Scenes/Bom/GuideScene.unity";
         public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
         public static int UnlockedLevel
@@ -59,6 +60,8 @@ namespace ProjectD.Menus
 
         public static void OpenStart() => Load(StartScene);
         public static void OpenLevelSelect() => Load(SelectScene);
+        public static void OpenGuide() => Load(GuideScene);
+        public static void ReloadCurrentScene() => Load(SceneManager.GetActiveScene().path);
         public static void OpenLevel(int level)
         {
             if (IsUnlocked(level)) Load(LevelPath(level));

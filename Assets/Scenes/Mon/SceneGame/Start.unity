@@ -119,57 +119,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1000
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1001}
-  - component: {fileID: 1002}
-  m_Layer: 0
-  m_Name: Start Menu
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1001
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1002
+--- !u!114 &1002 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+  m_PrefabInstance: {fileID: 3656096372893474356}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f073acd2b1b467ab6eac28001969003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.MenuScreen
-  page: 0
-  mainPanel: {fileID: 1398133519}
-  settingsPanel: {fileID: 679319915}
-  soundLabel: {fileID: 1388417609}
-  fullscreenLabel: {fileID: 882743114}
-  levelButtons: []
-  levelLabels: []
 --- !u!1 &123123518
 GameObject:
   m_ObjectHideFlags: 0
@@ -1949,11 +1909,84 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1906101703}
   m_CullTransparentMesh: 1
+--- !u!1001 &3656096372893474356
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: mainPanel
+      value: 
+      objectReference: {fileID: 1398133519}
+    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: soundLabel
+      value: 
+      objectReference: {fileID: 1388417609}
+    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: settingsPanel
+      value: 
+      objectReference: {fileID: 679319915}
+    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: fullscreenLabel
+      value: 
+      objectReference: {fileID: 882743114}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3873604099267932053, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8883914844607403260, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      propertyPath: m_Name
+      value: Start Menu
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1001}
+  - {fileID: 3656096372893474356}
   - {fileID: 1505227199}
   - {fileID: 763934421}
   - {fileID: 1617937375}

@@ -146,6 +146,8 @@ namespace ProjectD.Menus
 
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
         public void OpenStart() => GameSceneManager.OpenStart();
+        public void OpenGuide() => GameSceneManager.OpenGuide();
+        public void ReloadCurrentScene() => GameSceneManager.ReloadCurrentScene();
         public void ExitGame() => GameSceneManager.ExitGame();
         public void OpenLevel1() => ShowLevelDetails(1);
         public void OpenLevel2() => ShowLevelDetails(2);
