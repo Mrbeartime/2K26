@@ -81,7 +81,7 @@ namespace ProjectD.Menus
 
         private void Awake()
         {
-            Time.timeScale = 1f;
+            if (!GameSceneManager.IsInGameSettingsOpen) Time.timeScale = 1f;
             if (mainPanel != null) mainPanel.SetActive(true);
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (paperPanel != null) paperPanel.SetActive(false);
@@ -106,6 +106,7 @@ namespace ProjectD.Menus
             }
             if (page == Page.LevelSelect) ReloadProgressFromJson();
             else RefreshUI();
+            if (gameObject.scene.path == GameSceneManager.SettingsScene) OpenSettings();
         }
 
         private void OnApplicationFocus(bool hasFocus)
@@ -147,6 +148,7 @@ namespace ProjectD.Menus
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
         public void OpenStart() => GameSceneManager.OpenStart();
         public void OpenGuide() => GameSceneManager.OpenGuide();
+        public void OpenInGameSettings() => GameSceneManager.OpenInGameSettings();
         public void ReloadCurrentScene() => GameSceneManager.ReloadCurrentScene();
         public void ExitGame() => GameSceneManager.ExitGame();
         public void OpenLevel1() => ShowLevelDetails(1);
@@ -287,6 +289,11 @@ namespace ProjectD.Menus
 
         public void OpenSettings()
         {
+            if (settingsPanel == null)
+            {
+                GameSceneManager.OpenInGameSettings();
+                return;
+            }
             if (mainPanel != null) mainPanel.SetActive(false);
             if (settingsPanel != null) settingsPanel.SetActive(true);
             RefreshUI();
@@ -294,6 +301,16 @@ namespace ProjectD.Menus
 
         public void CloseSettings()
         {
+            if (GameSceneManager.IsInGameSettingsOpen)
+            {
+                GameSceneManager.CloseInGameSettings();
+                return;
+            }
+            if (gameObject.scene.path == GameSceneManager.SettingsScene)
+            {
+                OpenStart();
+                return;
+            }
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (mainPanel != null) mainPanel.SetActive(true);
         }

@@ -239,9 +239,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
         m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
-        m_MethodName: OpenSettings
+        m_MethodName: OpenInGameSettings
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

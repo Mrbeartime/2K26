@@ -977,6 +977,7 @@ public class InGameUIManager : MonoBehaviour
 
     private void OnShowPauseUI(InputAction.CallbackContext context)
     {
+        if (ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen) return;
         // ถ้าเกมจบแล้ว ห้ามกด ESC เพื่อเปิด Pause
         if (turnGameManager != null && turnGameManager.IsGameComplete)
             return;

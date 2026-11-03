@@ -6,10 +6,67 @@ namespace ProjectD.Menus
     public static class GameSceneManager
     {
         public const string StartScene = "Assets/Scenes/Mon/SceneGame/Start.unity";
+        public const string SettingsScene = "Assets/Scenes/Mon/SceneGame/Setting.unity";
         public const string SelectScene = "Assets/Scenes/Mon/SceneGame/LevelSelect.unity";
         public const string GuideScene = "Assets/Scenes/Bom/GuideScene.unity";
         public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
+        public static bool IsInGameSettingsOpen { get; private set; }
+        private static Scene settingsScene;
+        private static InGameUIManager settingsGameUI;
+        private static float settingsTimeScale;
+
+        public static void OpenInGameSettings()
+        {
+            if (IsInGameSettingsOpen) return;
+            if (!Application.CanStreamedLevelBeLoaded(SettingsScene))
+            {
+                Debug.LogError("Settings scene is missing from Build Settings: " + SettingsScene);
+                return;
+            }
+            // Keep the level loaded so characters, traps and the current turn are preserved.
+            IsInGameSettingsOpen = true;
+            settingsTimeScale = Time.timeScale;
+            settingsGameUI = Object.FindAnyObjectByType<InGameUIManager>();
+            if (settingsGameUI != null) settingsGameUI.SetPaused(true);
+            Time.timeScale = 0f;
+            var operation = SceneManager.LoadSceneAsync(SettingsScene, LoadSceneMode.Additive);
+            operation.completed += _ =>
+            {
+                settingsScene = SceneManager.GetSceneByPath(SettingsScene);
+                MenuScreen menu = null;
+                foreach (var root in settingsScene.GetRootGameObjects())
+                {
+                    foreach (var camera in root.GetComponentsInChildren<Camera>(true)) camera.enabled = false;
+                    foreach (var listener in root.GetComponentsInChildren<AudioListener>(true)) listener.enabled = false;
+                    foreach (var events in root.GetComponentsInChildren<UnityEngine.EventSystems.EventSystem>(true))
+                        events.gameObject.SetActive(false);
+                    foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
+                        canvas.sortingOrder = 1000;
+                    if (menu == null) menu = root.GetComponentInChildren<MenuScreen>(true);
+                }
+                if (menu != null) menu.OpenSettings();
+                else
+                {
+                    Debug.LogError("Settings scene has no MenuScreen.");
+                    CloseInGameSettings();
+                }
+            };
+        }
+
+        public static void CloseInGameSettings()
+        {
+            if (!IsInGameSettingsOpen || !settingsScene.IsValid()) return;
+            var operation = SceneManager.UnloadSceneAsync(settingsScene);
+            operation.completed += _ =>
+            {
+                IsInGameSettingsOpen = false;
+                Time.timeScale = settingsTimeScale;
+                if (settingsGameUI != null) settingsGameUI.SetPaused(false);
+                settingsGameUI = null;
+                settingsScene = default;
+            };
+        }
         public static int UnlockedLevel
         {
             get
