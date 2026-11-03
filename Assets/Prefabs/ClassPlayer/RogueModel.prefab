@@ -97,6 +97,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6900527152724382124}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 890022334455667788}
   m_SourcePrefab: {fileID: 100100000, guid: fae37abfc07c70a4f9622cb90876578f, type: 3}
 --- !u!1 &7432603356200643643 stripped
 GameObject:
@@ -235,3 +238,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationController
   animator: {fileID: 2759402169863461395}
+--- !u!114 &890022334455667788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7432603356200643643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09966c70be54780a8e93def83c850b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCorpseShatter
+  shatterDuration: 2.8
+  fragmentCount: 900
+  explosionForce: 0.63
+  fragmentRotationSpeed: 100
+  crystalColor: {r: 0.2, g: 0.85, b: 1, a: 1}
+  emissionIntensity: 0.35
+  particleLifetime: 0.55
+  glowFlashIntensity: 0.1
+  visualRoot: {fileID: 0}
+  effectScale: 1
+  fragmentSize: 0.05
+  spreadRadius: 0.12
+  diagnosticLogs: 1

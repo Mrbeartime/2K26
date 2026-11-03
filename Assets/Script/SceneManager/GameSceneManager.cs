@@ -75,6 +75,9 @@ namespace ProjectD.Menus
                 return;
             }
             Time.timeScale = 1f;
+
+            // ? ADDED: use the loading screen if its prefab exists; otherwise fall back to the old instant load
+            if (LoadingScreen.TryLoad(path)) return;
             SceneManager.LoadScene(path);
         }
 

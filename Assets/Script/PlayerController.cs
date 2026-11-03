@@ -10,6 +10,19 @@ public class PlayerController : MonoBehaviour
 
     private Enemy selectedEnemy;
     private TurnArrowTrap selectedArrowTrap;
+
+    // Read-only preview selection for UI; this does not select a turn actor or spend an action.
+    public GameObject SelectedHazard
+    {
+        get
+        {
+            if (selectedEnemy != null && !selectedEnemy.IsDead && selectedEnemy.isActiveAndEnabled)
+                return selectedEnemy.gameObject;
+            if (selectedArrowTrap != null && selectedArrowTrap.isActiveAndEnabled)
+                return selectedArrowTrap.gameObject;
+            return null;
+        }
+    }
     private Camera mainCamera;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
@@ -26,6 +39,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) return;
         if (Time.timeScale == 0) return;
         if (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
@@ -183,6 +197,9 @@ public class PlayerController : MonoBehaviour
         if (player == null)
             return;
 
+        // เพิ่ม: เลื่อนกล้องไปหา Player และ Zoom In
+        CameraFocusManager.Instance?.FocusCharacter(player);
+
         Debug.Log("Selected: " + player.name);
     }
 
@@ -243,6 +260,8 @@ public class PlayerController : MonoBehaviour
 
     public void ClearHighlights()
     {
+        selectedEnemy = null;
+        selectedArrowTrap = null;
         foreach (Tile tile in currentHighlightedTiles)
         {
             if (tile != null)
@@ -380,6 +399,8 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        CameraFocusManager.Instance?.FocusObject(enemy.transform); // Camera
+
         // =========================
         // เลือก Enemy ตัวใหม่
         // =========================
@@ -425,5 +446,7 @@ public class PlayerController : MonoBehaviour
             currentHighlightedTiles.Add(tile);
             tile.ShowHighlight(Tile.HighlightType.Enemy);
         }
+
+        CameraFocusManager.Instance?.FocusObject(trap.transform);
     }
 }

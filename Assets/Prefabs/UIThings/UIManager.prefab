@@ -50,13 +50,75 @@ MonoBehaviour:
   HazardUI: {fileID: 0}
   TurnLimitUI: {fileID: 0}
   TurnLimitText: {fileID: 0}
+  TurnCounter: {fileID: 0}
   PauseUI: {fileID: 0}
+  dialTickPrefab: {fileID: 1215554345403011106, guid: d567bc45c8274f5ea8e225bd7ec0cecb, type: 3}
+  dialEventIconPrefab: {fileID: 1215554345403011106, guid: 9e159b5e583c4c889a6c42daf50af429, type: 3}
+  fadeTime: 0.2
+  blackScreen: {fileID: 0}
+  pauseDimAlpha: 0.6
+  turnTextMoveDistance: 80
+  turnTextBackStartOffset: 80
+  turnTextOffDuration: 0.15
+  turnTextBackDuration: 0.2
+  turnTextOffEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  turnTextBackEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   MoveAction: {fileID: 0}
   InteractAction: {fileID: 0}
   SignatureAction: {fileID: 0}
   SignatureText: {fileID: 0}
   CharacterList:
-  - {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+  - character: {fileID: 0}
+    iconPrefab: {fileID: 0}
+    skillName: 
+    signatureIcon: {fileID: 0}
+    signatureIconSelected: {fileID: 0}
   HazardList:
-  - {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
-  IconPrefab: {fileID: 4348206069926055961, guid: abc6c878389d3d349966b2e3ac7e6db6, type: 3}
+  - hazard: {fileID: 0}
+    iconPrefab: {fileID: 0}
