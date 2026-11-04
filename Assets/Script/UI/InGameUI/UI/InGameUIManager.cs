@@ -117,6 +117,13 @@ public class InGameUIManager : MonoBehaviour
     private readonly List<int> availableActions = new();    // Actions usable right now (sorted in display order)
     private int CurrentFocusActionIndex = 0;                // Index into availableActions (not the id)
     private int selectedAction = NoAction;                  // Action that is "chosen/armed" and awaiting confirmation (NoAction = none)
+    // World clicks may confirm Interact only while this action is selected in the HUD.
+    public bool IsInteractMode => isActiveAndEnabled && !changingFocus &&
+        ActionUI != null && ActionUI.activeInHierarchy && selectedAction == ActionInteract &&
+        CurrentFocusActionIndex >= 0 && CurrentFocusActionIndex < availableActions.Count &&
+        availableActions[CurrentFocusActionIndex] == ActionInteract &&
+        turnGameManager != null && turnGameManager.CanChooseReact &&
+        !turnGameManager.IsMoveTargeting && !turnGameManager.IsSkillTargeting;
 
     // ★ ADDED: action layout values (moved out of RefreshActionList so LayoutActions() can share them)
     //   startY    = bottom offset of the lowest action
