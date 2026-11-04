@@ -15,6 +15,14 @@ namespace ProjectD.Menus
             public int level;
             public bool completed;
             public bool unlocked;
+            public int stars;
+        }
+
+        [Serializable]
+        public sealed class SceneStars
+        {
+            public string scenePath;
+            public int stars;
         }
 
         [Serializable]
@@ -24,6 +32,7 @@ namespace ProjectD.Menus
             public List<LevelState> levels;
             public List<string> unlockedSecrets;
             public List<string> completedSecrets;
+            public List<SceneStars> sceneStars;
         }
 
         private static SaveData data;
@@ -119,6 +128,46 @@ namespace ProjectD.Menus
             EnsureLoaded();
             if (!data.unlockedSecrets.Contains(id)) data.unlockedSecrets.Add(id);
             return Save();
+        }
+
+        public static int GetSceneStars(string scenePath)
+        {
+            if (string.IsNullOrWhiteSpace(scenePath)) return 0;
+            ReloadIfFileChanged();
+            EnsureLoaded();
+            int level = FindSceneLevel(scenePath);
+            if (level > 0) return data.levels[level - 1].stars;
+            foreach (var entry in data.sceneStars)
+                if (entry.scenePath == scenePath) return entry.stars;
+            return 0;
+        }
+
+        public static bool RecordSceneStars(string scenePath, int stars)
+        {
+            if (string.IsNullOrWhiteSpace(scenePath) || stars < 1 || stars > 3) return false;
+            ReloadIfFileChanged();
+            EnsureLoaded();
+            int level = FindSceneLevel(scenePath);
+            if (level > 0)
+            {
+                if (data.levels[level - 1].stars >= stars) return true;
+                data.levels[level - 1].stars = stars;
+            }
+            else
+            {
+                SceneStars found = data.sceneStars.Find(entry => entry.scenePath == scenePath);
+                if (found != null && found.stars >= stars) return true;
+                if (found == null) data.sceneStars.Add(new SceneStars { scenePath = scenePath, stars = stars });
+                else found.stars = stars;
+            }
+            return Save();
+        }
+
+        private static int FindSceneLevel(string path)
+        {
+            for (int level = 1; level <= GameSceneManager.LevelCount; level++)
+                if (path == GameSceneManager.LevelPath(level)) return level;
+            return 0;
         }
 
         public static bool CompleteSecret(string id)
@@ -231,6 +280,7 @@ namespace ProjectD.Menus
                 {
                     if (entry == null || entry.level != level) continue;
                     state.completed |= entry.completed;
+                    state.stars = Mathf.Max(state.stars, Mathf.Clamp(entry.stars, 0, 3));
                 }
                 ordered.Add(state);
             }
@@ -240,6 +290,14 @@ namespace ProjectD.Menus
             save.levels = ordered;
             if (save.unlockedSecrets == null) save.unlockedSecrets = new List<string>();
             if (save.completedSecrets == null) save.completedSecrets = new List<string>();
+            var sceneScores = new Dictionary<string, int>();
+            if (save.sceneStars != null)
+                foreach (var entry in save.sceneStars)
+                    if (entry != null && !string.IsNullOrWhiteSpace(entry.scenePath))
+                        sceneScores[entry.scenePath] = Mathf.Max(sceneScores.TryGetValue(entry.scenePath, out int old) ? old : 0,
+                            Mathf.Clamp(entry.stars, 0, 3));
+            save.sceneStars = new List<SceneStars>();
+            foreach (var pair in sceneScores) save.sceneStars.Add(new SceneStars { scenePath = pair.Key, stars = pair.Value });
         }
 
         private static bool Save()

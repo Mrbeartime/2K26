@@ -238,7 +238,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4760883022607822019}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenInGameSettings
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1529413469110229112
 GameObject:
   m_ObjectHideFlags: 0
@@ -635,7 +647,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4757509224696386986}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenGuide
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2372388691894558635
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,7 +781,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
         m_TargetAssemblyTypeName: InGameUIManager, Assembly-CSharp
         m_MethodName: CallPause
         m_Mode: 1
@@ -1028,7 +1052,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3093473068658033119}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: ReloadCurrentScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4954369087101967293
 GameObject:
   m_ObjectHideFlags: 0
@@ -1288,7 +1324,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3681890920460790569}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenLevelSelect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &6565866530274273306
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,7 +1457,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4322319797531010540}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: ExitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7059640659074880351
 GameObject:
   m_ObjectHideFlags: 0
