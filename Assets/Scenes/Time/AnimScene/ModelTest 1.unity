@@ -4729,6 +4729,10 @@ MonoBehaviour:
     startFloor: {fileID: 1886722021}
     destinationFloor: {fileID: 483913342}
   closingDoor: {fileID: 1108631968}
+  showTreasureChest: 1
+  treasureChestTarget: {fileID: 306828206}
+  treasurePanDuration: 1.2
+  treasureHoldDuration: 1.5
   swordsman: {fileID: 0}
   startFloor: {fileID: 0}
   destinationFloor: {fileID: 0}
