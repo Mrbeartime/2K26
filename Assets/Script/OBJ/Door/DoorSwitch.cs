@@ -5,6 +5,7 @@ public class DoorSwitch : MonoBehaviour
 {
     // เปลี่ยนจาก door ตัวเดียวเป็น Array (เพิ่ม [])
     [SerializeField] private DoorController[] doors;
+    [SerializeField] private PropInteractAnimation[] interactionAnimations;
 
     private bool playerNear;
     private bool isOn;
@@ -35,6 +36,10 @@ public class DoorSwitch : MonoBehaviour
     // ฟังก์ชันสั่งเปิด/ปิด ประตูทุกบานที่อยู่ในลิสต์
     private void ToggleAllDoors()
     {
+        if (interactionAnimations != null) foreach (var animation in interactionAnimations)
+            if (animation != null) animation.SetActiveState(isOn);
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.SetActiveState(isOn);
         foreach (DoorController door in doors)
         {
             if (door != null)

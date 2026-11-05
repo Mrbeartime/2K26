@@ -1,12 +1,11 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using ProjectD.Menus;
 
 /// <summary>
-/// Shows a victory-only overlay when TurnGameManager raises GameEnded(true, ...).
+/// Shows the scene-authored victory or defeat overlay after a confirmed game result.
 /// Attach this script to an always-active object, NOT to the panel that it hides.
 /// Level progress is recorded by TurnGameManager.ShowVictory(), not this UI.
 /// </summary>
@@ -16,15 +15,18 @@ public class LevelCompleteUI : MonoBehaviour
     [SerializeField] private GameObject completePanel;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private GameObject clearStamp;
+    [SerializeField] private GameResultController resultController;
 
     [Header("Buttons")]
-    [SerializeField] private Button nextLevelButton;
+    [SerializeField, InspectorName("Return To Guild Button")] private Button nextLevelButton;
     [SerializeField] private Button retryButton;
     [SerializeField] private Button levelSelectButton;
 
     [Header("Messages")]
     [SerializeField] private string completeTitle = "LEVEL COMPLETE!";
     [SerializeField] private string completeMessage = "You reached the exit!";
+    [SerializeField] private string incompleteTitle = "Quest Incomplete";
 
     [Header("Victory Timing")]
     [Tooltip("Wait for active treasure chests in this scene to finish opening.")]
@@ -37,13 +39,16 @@ public class LevelCompleteUI : MonoBehaviour
 
     private void Awake()
     {
+        if (resultController == null) resultController = GetComponent<GameResultController>();
+        if (resultController == null) resultController = gameObject.AddComponent<GameResultController>();
+        BindExistingPanel();
         // Keep the controller object active; hide only its separate panel.
         if (completePanel != null)
             completePanel.SetActive(false);
 
         // Inspector OnClick bindings are unnecessary; this script wires them.
         if (nextLevelButton != null)
-            nextLevelButton.onClick.AddListener(OpenNextLevel);
+            nextLevelButton.onClick.AddListener(ReturnToGuild);
         if (retryButton != null)
             retryButton.onClick.AddListener(RetryLevel);
         if (levelSelectButton != null)
@@ -52,7 +57,7 @@ public class LevelCompleteUI : MonoBehaviour
 
     private void Start()
     {
-        turnManager = TurnGameManager.Instance;
+        turnManager = resultController.TurnManager;
         if (turnManager == null)
         {
             Debug.LogError("LevelCompleteUI: TurnGameManager was not found.", this);
@@ -60,6 +65,8 @@ public class LevelCompleteUI : MonoBehaviour
         }
 
         turnManager.GameEnded += OnGameEnded;
+        if (turnManager.IsGameComplete)
+            OnGameEnded(turnManager.PlayerWon, turnManager.GameOverReason);
     }
 
     private void OnDestroy()
@@ -68,7 +75,7 @@ public class LevelCompleteUI : MonoBehaviour
             turnManager.GameEnded -= OnGameEnded;
 
         if (nextLevelButton != null)
-            nextLevelButton.onClick.RemoveListener(OpenNextLevel);
+            nextLevelButton.onClick.RemoveListener(ReturnToGuild);
         if (retryButton != null)
             retryButton.onClick.RemoveListener(RetryLevel);
         if (levelSelectButton != null)
@@ -77,8 +84,7 @@ public class LevelCompleteUI : MonoBehaviour
 
     private void OnGameEnded(bool won, string reason)
     {
-        // Only show the victory panel; defeat UI can be handled separately.
-        if (!won || hasShown)
+        if (hasShown)
             return;
 
         if (completePanel == null)
@@ -88,7 +94,8 @@ public class LevelCompleteUI : MonoBehaviour
         }
 
         hasShown = true;
-        StartCoroutine(ShowAfterChestOpens());
+        if (won) StartCoroutine(ShowAfterChestOpens());
+        else ShowResult(false, reason);
     }
 
     private IEnumerator ShowAfterChestOpens()
@@ -110,52 +117,42 @@ public class LevelCompleteUI : MonoBehaviour
             yield return new WaitForSecondsRealtime(delayAfterChestOpen);
         if (completePanel == null) yield break;
 
-        int level = GameSceneManager.ActiveLevel;
+        ShowResult(true, string.Empty);
+    }
 
-        if (titleText != null)
-            titleText.text = completeTitle;
-
+    private void ShowResult(bool won, string reason)
+    {
+        if (titleText != null) titleText.text = won ? completeTitle : incompleteTitle;
         if (descriptionText != null)
-            descriptionText.text = level > 0
-                ? $"Level {level} completed!"
-                : completeMessage;
-
-        // The final level and non-standard scenes don't have a Next Level button.
-
-        // TODO: เปิดระบบ Next Level เมื่อ Scene พร้อม
-
-        // bool hasNext = level >= 1 && level < GameSceneManager.LevelCount;
-        // if (nextLevelButton != null)
-        //     nextLevelButton.gameObject.SetActive(hasNext);
-
+            descriptionText.text = won
+                ? (resultController.Level > 0 ? $"Level {resultController.Level} completed!" : completeMessage)
+                : reason;
+        if (clearStamp != null) clearStamp.SetActive(won);
+        if (nextLevelButton != null)
+            nextLevelButton.gameObject.SetActive(won);
+        if (retryButton != null) retryButton.gameObject.SetActive(!won);
         completePanel.SetActive(true);
     }
 
-    public void OpenNextLevel()
+    // Resolve only missing references in older scene instances; keep Inspector assignments.
+    private void BindExistingPanel()
     {
-        // TODO: เปิดด่านถัดไปเมื่อสร้าง Scene เสร็จ เผื่อทำ
-
-        // int level = GameSceneManager.ActiveLevel;
-        // if (level < 1 || level >= GameSceneManager.LevelCount)
-        //     return;
-
-        // GameSceneManager.OpenLevel(level + 1);
-
-        Debug.Log("Next Level - Not implemented yet");
+        if (completePanel == null) return;
+        foreach (var child in completePanel.GetComponentsInChildren<Transform>(true))
+        {
+            if (clearStamp == null && child.name == "ClearStamp") clearStamp = child.gameObject;
+            if (titleText == null && child.name == "Quest Complete") titleText = child.GetComponent<TMP_Text>();
+            if (descriptionText == null && child.name == "descriptionText") descriptionText = child.GetComponent<TMP_Text>();
+            if (nextLevelButton == null && (child.name == "Return to Guild" || child.name == "Next level"))
+                nextLevelButton = child.GetComponent<Button>();
+            if (retryButton == null && child.name == "RETRY") retryButton = child.GetComponent<Button>();
+            if (levelSelectButton == null && child.name == "Abandon") levelSelectButton = child.GetComponent<Button>();
+        }
     }
 
-    public void RetryLevel()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void OpenLevelSelect()
-    {
-        // TODO: กลับหน้าเลือกด่านเมื่อสร้าง Scene เสร็จ
-
-        // GameSceneManager.OpenLevelSelect();
-
-        Debug.Log("Level Select - Not implemented yet");
-    }
+    public void ReturnToGuild() => resultController.ReturnToGuild();
+    // Keep existing Inspector callbacks pointing at this method working.
+    public void OpenNextLevel() => ReturnToGuild();
+    public void RetryLevel() => resultController.RetryLevel();
+    public void OpenLevelSelect() => resultController.OpenLevelSelect();
 }

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System;
 using System.Collections.Generic;
+using ProjectD.AfterFeature;
 
 namespace ProjectD.Menus
 {
@@ -18,6 +19,7 @@ namespace ProjectD.Menus
         [SerializeField] private Text fullscreenLabel;
         [SerializeField] private Button[] levelButtons;
         [SerializeField] private Text[] levelLabels;
+        [SerializeField] private LevelStarsGraphic[] levelStars;
         [Header("Level progress source (runtime)")]
         [SerializeField] private string activeProgressJsonPath;
         [SerializeField] private bool firstLevelCompleted;
@@ -29,6 +31,7 @@ namespace ProjectD.Menus
         [SerializeField] private Button playButton;
         [SerializeField] private Button[] paperLevelButtons;
         [SerializeField] private Text[] paperLevelLabels;
+        [SerializeField] private LevelStarsGraphic[] paperLevelStars;
         [SerializeField] private GameObject previousPageButton;
         [SerializeField] private GameObject nextPageButton;
         [SerializeField] private Text pageLabel;
@@ -78,7 +81,7 @@ namespace ProjectD.Menus
 
         private void Awake()
         {
-            Time.timeScale = 1f;
+            if (!GameSceneManager.IsInGameSettingsOpen) Time.timeScale = 1f;
             if (mainPanel != null) mainPanel.SetActive(true);
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (paperPanel != null) paperPanel.SetActive(false);
@@ -103,6 +106,7 @@ namespace ProjectD.Menus
             }
             if (page == Page.LevelSelect) ReloadProgressFromJson();
             else RefreshUI();
+            if (gameObject.scene.path == GameSceneManager.SettingsScene) OpenSettings();
         }
 
         private void OnApplicationFocus(bool hasFocus)
@@ -143,6 +147,9 @@ namespace ProjectD.Menus
 
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
         public void OpenStart() => GameSceneManager.OpenStart();
+        public void OpenGuide() => GameSceneManager.OpenGuide();
+        public void OpenInGameSettings() => GameSceneManager.OpenInGameSettings();
+        public void ReloadCurrentScene() => GameSceneManager.ReloadCurrentScene();
         public void ExitGame() => GameSceneManager.ExitGame();
         public void OpenLevel1() => ShowLevelDetails(1);
         public void OpenLevel2() => ShowLevelDetails(2);
@@ -245,6 +252,13 @@ namespace ProjectD.Menus
                     paperLevelLabels[i].text = paperView == PaperView.Completed
                         ? "Level " + entries[paperPage * PaperCapacity + i]
                         : secretLevels[entries[paperPage * PaperCapacity + i]].title;
+                if (paperLevelStars != null && i < paperLevelStars.Length && paperLevelStars[i] != null)
+                {
+                    string path = visible ? (paperView == PaperView.Completed
+                        ? GameSceneManager.LevelPath(entries[paperPage * PaperCapacity + i])
+                        : secretLevels[entries[paperPage * PaperCapacity + i]].scenePath) : string.Empty;
+                    paperLevelStars[i].SetStars(LevelProgressStore.GetSceneStars(path));
+                }
             }
             if (previousPageButton != null) previousPageButton.SetActive(paperPage > 0);
             if (nextPageButton != null) nextPageButton.SetActive(paperPage + 1 < pages);
@@ -275,6 +289,11 @@ namespace ProjectD.Menus
 
         public void OpenSettings()
         {
+            if (settingsPanel == null)
+            {
+                GameSceneManager.OpenInGameSettings();
+                return;
+            }
             if (mainPanel != null) mainPanel.SetActive(false);
             if (settingsPanel != null) settingsPanel.SetActive(true);
             RefreshUI();
@@ -282,6 +301,16 @@ namespace ProjectD.Menus
 
         public void CloseSettings()
         {
+            if (GameSceneManager.IsInGameSettingsOpen)
+            {
+                GameSceneManager.CloseInGameSettings();
+                return;
+            }
+            if (gameObject.scene.path == GameSceneManager.SettingsScene)
+            {
+                OpenStart();
+                return;
+            }
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (mainPanel != null) mainPanel.SetActive(true);
         }
@@ -326,6 +355,8 @@ namespace ProjectD.Menus
                     levelLabels[i].text = visible ? "Level " + level + (unlocked ? string.Empty : "\nLocked") : string.Empty;
                     levelLabels[i].color = unlocked ? new Color(0.19f, 0.14f, 0.08f, 1f) : new Color(0.92f, 0.92f, 0.92f, 1f);
                 }
+                if (levelStars != null && i < levelStars.Length && levelStars[i] != null)
+                    levelStars[i].SetStars(LevelProgressStore.GetSceneStars(GameSceneManager.LevelPath(level)));
             }
         }
     }

@@ -10,6 +10,7 @@ using Unity.Cinemachine;
 /// - Hold right mouse button and drag: pan along the world XZ plane, zoom out,
 ///   and detach the camera from its focus without deselecting gameplay actions.
 /// - Optionally clamp the camera TARGET to inspector-configured XZ bounds.
+/// - Mouse wheel zooms temporarily, then smoothly returns to the default view.
 /// - Do not begin a drag on UI or move the camera while hovering UI.
 /// </summary>
 public class CameraFocusManager : MonoBehaviour
@@ -73,6 +74,28 @@ public class CameraFocusManager : MonoBehaviour
     private Vector2 previousMousePosition;
     private Vector2 accumulatedMouseDelta;
 
+    [Header("Mouse Scroll Zoom")]
+    [SerializeField] private bool enableScrollZoom = true;
+
+    [SerializeField, Min(0.01f)]
+    private float scrollZoomSpeed = 0.1f;
+
+    [SerializeField, Range(0.1f, 1f)]
+    private float minZoomFactor = 0.5f;
+
+    [SerializeField, Min(1f)]
+    private float maxZoomFactor = 1.5f;
+
+    [SerializeField] private bool returnToDefaultAfterScroll = true;
+
+    [SerializeField, Min(0f)]
+    private float scrollReturnDelay = 0.8f;
+
+    [SerializeField] private bool blockScrollOverUI = true;
+
+    private bool scrollReturnPending;
+    private float lastScrollTime;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -113,6 +136,7 @@ public class CameraFocusManager : MonoBehaviour
         wasWalking = player.IsMoving();
         desiredPosition = ClampToBounds(player.transform.position + Vector3.up * focusHeightOffset);
         desiredLens = wasWalking ? defaultLens : defaultLens * focusZoomFactor;
+        scrollReturnPending = false;
     }
 
     public void FocusObject(Transform target)
@@ -124,6 +148,7 @@ public class CameraFocusManager : MonoBehaviour
         wasWalking = false;
         desiredPosition = ClampToBounds(target.position + Vector3.up * focusHeightOffset);
         desiredLens = defaultLens * focusZoomFactor;
+        scrollReturnPending = false;
     }
 
     public bool BeginCutscene(Transform target, float zoomFactor)
@@ -134,6 +159,7 @@ public class CameraFocusManager : MonoBehaviour
         cutsceneTarget = target;
         cutsceneZoomFactor = Mathf.Clamp(zoomFactor, 0.5f, 1f);
         cutsceneActive = true;
+        scrollReturnPending = false;
         EndManualPan();
         positionVelocity = Vector3.zero;
         lensVelocity = 0f;
@@ -192,20 +218,22 @@ public class CameraFocusManager : MonoBehaviour
 
         bool walking = trackedPlayer != null && trackedPlayer.IsMoving();
 
-        if (walking && !manualPanMode)
+        if (walking && !manualPanMode && !scrollReturnPending)
         {
             desiredPosition = ClampToBounds(trackedPlayer.transform.position + Vector3.up * focusHeightOffset);
-            desiredLens = defaultLens;
+            if (!scrollReturnPending) desiredLens = defaultLens;
             wasWalking = true;
         }
-        else if (wasWalking)
+        else if (wasWalking && !scrollReturnPending)
         {
             // Character just stopped: leave the camera near the last position, zoomed out.
             if (trackedPlayer != null)
                 desiredPosition = ClampToBounds(trackedPlayer.transform.position + Vector3.up * focusHeightOffset);
-            desiredLens = defaultLens;
+            if (!scrollReturnPending) desiredLens = defaultLens;
             wasWalking = false;
         }
+        // Mouse Scroll Zoom
+        HandleMouseWheelZoom();
 
         desiredPosition = ClampToBounds(desiredPosition);
         float smoothTime = isDragging ? dragSmoothTime
@@ -251,11 +279,11 @@ public class CameraFocusManager : MonoBehaviour
         // the camera DURING that walk, do not immediately steal control back.
         if (walkingPlayer != lastObservedWalkingPlayer)
         {
-            if (walkingPlayer != null && !isDragging && !dragArmed)
+            if (walkingPlayer != null && !isDragging && !dragArmed && !scrollReturnPending)
             {
                 trackedPlayer = walkingPlayer;
                 manualPanMode = false;
-                desiredLens = defaultLens;
+                if (!scrollReturnPending) desiredLens = defaultLens;
             }
 
             lastObservedWalkingPlayer = walkingPlayer;
@@ -343,6 +371,7 @@ public class CameraFocusManager : MonoBehaviour
 
     private void ReturnToDefaultView()
     {
+        scrollReturnPending = false;
         trackedPlayer = null;
         manualPanMode = false;
         wasWalking = false;
@@ -403,8 +432,83 @@ public class CameraFocusManager : MonoBehaviour
         Gizmos.DrawLine(d, a);
     }
 
+    private void HandleMouseWheelZoom()
+    {
+        if (!enableScrollZoom || Mouse.current == null)
+        {
+            scrollReturnPending = false;
+            return;
+        }
+
+        // ไม่ให้ระบบ Zoom ชนกับการลากกล้อง
+        if (isDragging || dragArmed)
+        {
+            scrollReturnPending = false;
+            return;
+        }
+
+        float scroll = Mouse.current.scroll.ReadValue().y;
+
+        // Current Input System normalizes wheel steps already. Only legacy
+        // Windows platform-specific input needs conversion from 120 units.
+        if (InputSystem.settings.scrollDeltaBehavior == InputSettings.ScrollDeltaBehavior.KeepPlatformSpecificInputRange &&
+            (Application.platform == RuntimePlatform.WindowsEditor ||
+             Application.platform == RuntimePlatform.WindowsPlayer))
+            scroll /= 120f;
+
+        if (Mathf.Abs(scroll) > 0.01f &&
+            (!blockScrollOverUI || !IsPointerOverUI()))
+        {
+            // หมุนขึ้น = Zoom In
+            // หมุนลง = Zoom Out
+            float zoomChange =
+                scroll * defaultLens * scrollZoomSpeed;
+
+            float previousLens = desiredLens;
+            desiredLens = Mathf.Clamp(
+                desiredLens - zoomChange,
+                defaultLens * minZoomFactor,
+                defaultLens * maxZoomFactor
+            );
+
+            ZoomTowardsPointer(Mouse.current.position.ReadValue(), previousLens, desiredLens);
+
+            lastScrollTime = Time.unscaledTime;
+            scrollReturnPending = true;
+        }
+
+        // หลังหยุดหมุนเมาส์ กลับกล้อง Default
+        if (scrollReturnPending && returnToDefaultAfterScroll &&
+            Time.unscaledTime - lastScrollTime >= scrollReturnDelay)
+        {
+            ReturnToDefaultView();
+        }
+    }
+
+    private void ZoomTowardsPointer(Vector2 screenPosition, float previousLens, float nextLens)
+    {
+        if (Mathf.Approximately(previousLens, nextLens)) return;
+
+        // Use the same horizontal map plane as camera panning. Comparing the
+        // cursor with the view centre also works with the isometric camera tilt.
+        Plane mapPlane = new Plane(Vector3.up, new Vector3(0f, cameraTarget.position.y, 0f));
+        Ray pointerRay = mainCamera.ScreenPointToRay(screenPosition);
+        Ray centreRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        if (!mapPlane.Raycast(pointerRay, out float pointerDistance) ||
+            !mapPlane.Raycast(centreRay, out float centreDistance)) return;
+
+        float ratio = orthographic
+            ? nextLens / Mathf.Max(0.01f, previousLens)
+            : Mathf.Tan(Mathf.Clamp(nextLens, 1f, 179f) * Mathf.Deg2Rad * 0.5f) /
+              Mathf.Tan(Mathf.Clamp(previousLens, 1f, 179f) * Mathf.Deg2Rad * 0.5f);
+        Vector3 shift = (pointerRay.GetPoint(pointerDistance) - centreRay.GetPoint(centreDistance)) * (1f - ratio);
+        shift.y = 0f;
+        desiredPosition = ClampToBounds(desiredPosition + shift);
+    }
+
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
     }
+
 }

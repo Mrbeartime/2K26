@@ -30,6 +30,12 @@ public class InGameUIManager : MonoBehaviour
     public UITurnCounter TurnCounter;
     public Canvas PauseUI;
 
+    [Header("Schedule Dial Prefabs")]
+    [Tooltip("Tick prefab with an Image on its root. Empty uses the default DialTick prefab.")]
+    [SerializeField] private Image dialTickPrefab;
+    [Tooltip("Event icon prefab with an Image on its root. Empty uses the default DialEventIcon prefab.")]
+    [SerializeField] private Image dialEventIconPrefab;
+
     [Header("Pause Manager")]
     [SerializeField] private float fadeTime = 0.2f;
     [Tooltip("Full-screen black Image. Fades to Pause Dim Alpha while paused.")]
@@ -93,6 +99,9 @@ public class InGameUIManager : MonoBehaviour
     // ---- External systems ----
     private ProjectDInputAction _inputAction;
     private TurnGameManager turnGameManager;
+    private TurnScheduleData hazardSchedule;
+    private bool dialDirty = true;
+    private readonly List<(HazardEntry entry, RectTransform icon, int order)> hazardIcons = new();
     private HoldButton turnLimitButton;
 
     // ---- Character focus ----
@@ -108,6 +117,13 @@ public class InGameUIManager : MonoBehaviour
     private readonly List<int> availableActions = new();    // Actions usable right now (sorted in display order)
     private int CurrentFocusActionIndex = 0;                // Index into availableActions (not the id)
     private int selectedAction = NoAction;                  // Action that is "chosen/armed" and awaiting confirmation (NoAction = none)
+    // World clicks may confirm Interact only while this action is selected in the HUD.
+    public bool IsInteractMode => isActiveAndEnabled && !changingFocus &&
+        ActionUI != null && ActionUI.activeInHierarchy && selectedAction == ActionInteract &&
+        CurrentFocusActionIndex >= 0 && CurrentFocusActionIndex < availableActions.Count &&
+        availableActions[CurrentFocusActionIndex] == ActionInteract &&
+        turnGameManager != null && turnGameManager.CanChooseReact &&
+        !turnGameManager.IsMoveTargeting && !turnGameManager.IsSkillTargeting;
 
     // ★ ADDED: action layout values (moved out of RefreshActionList so LayoutActions() can share them)
     //   startY    = bottom offset of the lowest action
@@ -190,6 +206,7 @@ public class InGameUIManager : MonoBehaviour
             if (binding.button != null) binding.button.onClick.RemoveListener(binding.callback);
         actionButtons.Clear();
         if (turnGameManager == null) return;
+        if (hazardSchedule != null) hazardSchedule.ScheduleChanged -= OnHazardScheduleChanged;
         turnGameManager.StateChanged -= RefreshFromTurnManager;
         turnGameManager.GameEnded -= OnGameEnded;
     }
@@ -286,6 +303,7 @@ public class InGameUIManager : MonoBehaviour
         }
 
         UpdateTurnCounter();
+        RefreshHazardSchedule();
 
         PlayerMove current = turnGameManager.CurrentPlayer;
         if (current != previousCharacter)
@@ -428,14 +446,15 @@ public class InGameUIManager : MonoBehaviour
                 Debug.LogWarning($"HazardList[{i}] ({entry.hazard.name}) has no iconPrefab assigned.", this);
                 continue;
             }
-            SpawnIcon(entry.iconPrefab, entry.hazard, HazardUI.transform, true, hazardSlot++, false);
+            var icon = SpawnIcon(entry.iconPrefab, entry.hazard, HazardUI.transform, true, hazardSlot++, false);
+            hazardIcons.Add((entry, icon, i));
         }
     }
 
     // Adjust icon layout here: 30 = offset from the edge, 130 = spacing between icons, -12 = offset from the top
-    private void SpawnIcon(GameObject prefab, GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
+    private RectTransform SpawnIcon(GameObject prefab, GameObject target, Transform parent, bool rightAligned, int index, bool selectable)
     {
-        if (prefab == null || target == null) return;
+        if (prefab == null || target == null) return null;
 
         GameObject newIcon = Instantiate(prefab, parent);
         RectTransform rect = newIcon.GetComponent<RectTransform>();
@@ -444,12 +463,72 @@ public class InGameUIManager : MonoBehaviour
         float direction = rightAligned ? -1f : 1f;
         rect.anchorMin = new Vector2(side, 1);
         rect.anchorMax = new Vector2(side, 1);
-        rect.pivot = new Vector2(side, 1);
-        rect.anchoredPosition = new Vector2(direction * (30f + index * 130f), -12f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        // Keep the original top/outer edge placement while scaling around the centre.
+        rect.anchoredPosition = new Vector2(
+            direction * (35f + index * 140f + rect.rect.width * 0.5f),
+            -12f - rect.rect.height * 0.5f);
 
         ObjectIcon iconScript = newIcon.GetComponent<ObjectIcon>();
         if (iconScript != null) iconScript.Setup(target, selectable);
         else Debug.LogWarning($"{prefab.name} has no ObjectIcon component.", newIcon);
+        return rect;
+    }
+
+    private void OnHazardScheduleChanged()
+    {
+        dialDirty = true;
+        RefreshHazardSchedule();
+    }
+
+    private int NextHazardRound(HazardEntry entry)
+    {
+        if (entry.hazard == null) return int.MaxValue;
+        var trap = entry.hazard.GetComponent<TurnTrap>();
+        if (trap == null) return int.MaxValue;
+        if (hazardSchedule != null && !turnGameManager.IsGameComplete)
+            for (int round = turnGameManager.RoundNumber; round <= hazardSchedule.MaximumRounds; round++)
+                if (hazardSchedule.GetState(round, trap) == 1) return round;
+        return int.MaxValue - 1; // Exhausted traps still precede enemies.
+    }
+
+    private void RefreshHazardSchedule()
+    {
+        if (turnGameManager == null) return;
+        if (hazardSchedule != turnGameManager.ScheduleData)
+        {
+            if (hazardSchedule != null) hazardSchedule.ScheduleChanged -= OnHazardScheduleChanged;
+            hazardSchedule = turnGameManager.ScheduleData;
+            if (hazardSchedule != null) hazardSchedule.ScheduleChanged += OnHazardScheduleChanged;
+            dialDirty = true;
+        }
+        hazardIcons.Sort((a, b) =>
+        {
+            int comparison = NextHazardRound(a.entry).CompareTo(NextHazardRound(b.entry));
+            return comparison != 0 ? comparison : a.order.CompareTo(b.order);
+        });
+        int slot = 0;
+        int visibleCount = hazardIcons.FindAll(item => item.icon != null && item.entry.hazard != null).Count;
+        foreach (var item in hazardIcons)
+        {
+            if (item.icon == null) continue;
+            item.icon.gameObject.SetActive(item.entry.hazard != null);
+            if (item.entry.hazard == null) continue;
+            item.icon.SetSiblingIndex(slot);
+            // This row is anchored on the right; reverse the position index so
+            // the earliest trap is visually first when reading left to right.
+            int positionIndex = visibleCount - 1 - slot++;
+            item.icon.anchoredPosition = new Vector2(
+                -(35f + positionIndex * 140f + item.icon.rect.width * 0.5f),
+                -12f - item.icon.rect.height * 0.5f);
+        }
+        if (TurnCounter == null || hazardSchedule == null) return;
+        if (dialDirty)
+        {
+            TurnCounter.BuildScheduleDial(hazardSchedule, dialTickPrefab, dialEventIconPrefab);
+            dialDirty = false;
+        }
+        TurnCounter.HighlightScheduleRound(turnGameManager.RoundNumber, turnGameManager.IsGameComplete);
     }
 
     // Updates each character icon: highlights the current character, and greys out characters that are finished / dead / unavailable
@@ -905,6 +984,7 @@ public class InGameUIManager : MonoBehaviour
 
     private void OnShowPauseUI(InputAction.CallbackContext context)
     {
+        if (ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen) return;
         // ถ้าเกมจบแล้ว ห้ามกด ESC เพื่อเปิด Pause
         if (turnGameManager != null && turnGameManager.IsGameComplete)
             return;

@@ -19,6 +19,12 @@ public class CutSceneCharacter : MonoBehaviour
     [Header("Before Cutscene Ends")]
     [SerializeField] private DoorCutScene closingDoor;
 
+    [Header("Treasure Chest Preview")]
+    [SerializeField] private bool showTreasureChest = true;
+    [SerializeField] private Transform treasureChestTarget;
+    [SerializeField, Min(0.01f)] private float treasurePanDuration = 1.2f;
+    [SerializeField, Min(0f)] private float treasureHoldDuration = 1.5f;
+
     // Preserve existing scenes/prefabs when upgrading from the single actor version.
     [SerializeField, HideInInspector] private Transform swordsman;
     [SerializeField, HideInInspector] private Transform startFloor;
@@ -121,9 +127,48 @@ public class CutSceneCharacter : MonoBehaviour
             }
             if (prepared && isActiveAndEnabled && closingDoor != null && closingDoor.isActiveAndEnabled)
                 yield return closingDoor.Play();
+            if (prepared && isActiveAndEnabled && showTreasureChest)
+                yield return PreviewTreasureChest();
         }
         finally { Restore(); }
         Debug.Log("Character cutscene completed; gameplay UI restored.", this);
+    }
+
+    private IEnumerator PreviewTreasureChest()
+    {
+        if (cutsceneCamera == null || groupCameraTarget == null) yield break;
+        Transform target = treasureChestTarget;
+        if (target == null)
+        {
+            foreach (var chest in FindObjectsByType<TreasureChestAnimation>())
+            {
+                if (chest.gameObject.scene != gameObject.scene) continue;
+                target = chest.transform;
+                break;
+            }
+        }
+        if (target == null || !target.gameObject.activeInHierarchy) yield break;
+
+        // Reuse the cinematic target so UI and player input remain locked and
+        // the camera retains the gameplay view saved before the entrance.
+        Vector3 start = groupCameraTarget.position;
+        float elapsed = 0f;
+        while (elapsed < treasurePanDuration)
+        {
+            if (!prepared || !isActiveAndEnabled || target == null || groupCameraTarget == null) yield break;
+            elapsed += Time.deltaTime;
+            float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / Mathf.Max(0.01f, treasurePanDuration)));
+            groupCameraTarget.position = Vector3.Lerp(start, target.position, progress);
+            yield return null;
+        }
+        elapsed = 0f;
+        while (elapsed < treasureHoldDuration)
+        {
+            if (!prepared || !isActiveAndEnabled || target == null || groupCameraTarget == null) yield break;
+            groupCameraTarget.position = target.position;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
     }
 
     private void PrepareCharacter(CharacterEntry entry)

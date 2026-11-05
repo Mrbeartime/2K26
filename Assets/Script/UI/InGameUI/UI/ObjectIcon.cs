@@ -18,10 +18,13 @@ public class ObjectIcon : MonoBehaviour
     private bool isSelected;
     private bool isDisabled;
     private bool selectable = true;
+    private bool isHazardIcon;
 
     private CanvasGroup canvasGroup;
     private Button button;
     private Vector3 originalScale;
+    private Animator selectionAnimator;
+    private static readonly int SelectedParameter = Animator.StringToHash("selected");
 
     // every image that should be tinted when disabled (everything except the glow)
     private readonly List<Image> tintImages = new();
@@ -30,6 +33,7 @@ public class ObjectIcon : MonoBehaviour
     private void Awake()
     {
         originalScale = transform.localScale;
+        selectionAnimator = GetComponent<Animator>();
 
         // Find images anywhere in the prefab, not just on the root
         foreach (Image img in GetComponentsInChildren<Image>(true))
@@ -64,11 +68,26 @@ public class ObjectIcon : MonoBehaviour
         ApplyVisual();
     }
 
+    private void OnEnable()
+    {
+        ApplyVisual();
+    }
+
     public void Setup(GameObject target, bool selectable = true)
     {
         TargetObject = target;
+        isHazardIcon = target != null && (target.GetComponent<Enemy>() != null || target.GetComponent<TurnArrowTrap>() != null);
         this.selectable = selectable;
         ApplyVisual();
+    }
+
+    private void LateUpdate()
+    {
+        if (!isHazardIcon) return;
+        var controller = PlayerController.Instance;
+        bool selected = TargetObject != null && controller != null && controller.SelectedHazard == TargetObject;
+        if (selected) Selected();
+        else Unselected();
     }
 
     public void OnIconClicked()
@@ -117,7 +136,10 @@ public class ObjectIcon : MonoBehaviour
         if (bgEffectImage != null)
             bgEffectImage.enabled = showSelected;
 
-        transform.localScale = isDisabled ? originalScale * 0.9f : originalScale;
+        if (selectionAnimator != null && selectionAnimator.runtimeAnimatorController != null)
+            selectionAnimator.SetBool(SelectedParameter, showSelected);
+        else
+            transform.localScale = isDisabled ? originalScale * 0.9f : originalScale;
 
         for (int i = 0; i < tintImages.Count; i++)
             tintImages[i].color = isDisabled ? Color.gray : tintOriginals[i];

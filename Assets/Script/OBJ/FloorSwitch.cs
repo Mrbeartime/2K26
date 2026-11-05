@@ -3,6 +3,7 @@ using UnityEngine.Events;
 public class FloorSwitch : MonoBehaviour
 {
     [SerializeField] private DoorController door;
+    [SerializeField] private PropInteractAnimation[] interactionAnimations;
     public bool IsOn { get; private set; }
     public UnityEvent onActivated = new UnityEvent();
 
@@ -12,6 +13,10 @@ public class FloorSwitch : MonoBehaviour
     {
         if (character == null || IsOn) return false;
         IsOn = true;
+        if (interactionAnimations != null) foreach (var animation in interactionAnimations)
+            if (animation != null) animation.SetActiveState(true);
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.SetActiveState(true);
         if (door != null) door.SetOpen(gameObject.name, true);
         onActivated.Invoke();
         return true;

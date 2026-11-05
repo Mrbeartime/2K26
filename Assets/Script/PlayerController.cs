@@ -10,7 +10,24 @@ public class PlayerController : MonoBehaviour
 
     private Enemy selectedEnemy;
     private TurnArrowTrap selectedArrowTrap;
+
+    // Read-only preview selection for UI; this does not select a turn actor or spend an action.
+    public GameObject SelectedHazard
+    {
+        get
+        {
+            if (selectedEnemy != null && !selectedEnemy.IsDead && selectedEnemy.isActiveAndEnabled)
+                return selectedEnemy.gameObject;
+            if (selectedArrowTrap != null && selectedArrowTrap.isActiveAndEnabled)
+                return selectedArrowTrap.gameObject;
+            return null;
+        }
+    }
     private Camera mainCamera;
+    [SerializeField, Min(0.05f)] private float interactDoubleClickInterval = 0.3f;
+    private Tile pendingInteractTile;
+    private PlayerMove pendingInteractPlayer;
+    private float lastInteractClickTime;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
 
@@ -26,10 +43,14 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) return;
-        if (Time.timeScale == 0) return;
-        if (UnityEngine.EventSystems.EventSystem.current != null &&
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+        if ((TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) ||
+            Time.timeScale == 0 ||
+            (UnityEngine.EventSystems.EventSystem.current != null &&
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()))
+        {
+            ResetInteractClick();
+            return;
+        }
         if (TurnGameManager.Instance != null)
         {
             HandleTurnInput(TurnGameManager.Instance);
@@ -42,14 +63,24 @@ public class PlayerController : MonoBehaviour
 
     private void HandleTurnInput(TurnGameManager turnManager)
     {
+        if (!CanInteractFromWorld(turnManager) ||
+            pendingInteractPlayer != turnManager.CurrentPlayer)
+            ResetInteractClick();
+
         if (Mouse.current == null || mainCamera == null ||
             !Mouse.current.leftButton.wasPressedThisFrame) return;
 
-        if (turnManager.IsPointerOverTurnUI(Mouse.current.position.ReadValue())) return;
+        if (turnManager.IsPointerOverTurnUI(Mouse.current.position.ReadValue()))
+        {
+            ResetInteractClick();
+            return;
+        }
 
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        if (HandleInteractClick(turnManager, hits)) return;
 
         foreach (RaycastHit hit in hits)
         {
@@ -135,6 +166,77 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    private bool CanInteractFromWorld(TurnGameManager turnManager)
+    {
+        return turnManager.CanChooseReact && InGameUIManager.Instance != null &&
+            InGameUIManager.Instance.IsInteractMode;
+    }
+
+    private bool HandleInteractClick(TurnGameManager turnManager, RaycastHit[] hits)
+    {
+        Tile target = null;
+        if (CanInteractFromWorld(turnManager) &&
+            GridManager.Instance != null)
+        {
+            foreach (RaycastHit hit in hits)
+            {
+                Collider collider = hit.collider;
+                // Preserve enemy/trap previews and selection of other characters.
+                if (collider.GetComponentInParent<Enemy>() != null ||
+                    collider.GetComponentInParent<TurnArrowTrap>() != null) break;
+
+                PlayerMove player = collider.GetComponentInParent<PlayerMove>();
+                if (player != null)
+                {
+                    if (player == turnManager.CurrentPlayer) target = player.GetCurrentTile();
+                    break;
+                }
+
+                Component prop = collider.GetComponentInParent<DoorSwitch>();
+                if (prop == null) prop = collider.GetComponentInParent<FloorSwitch>();
+                // Some lever models are separate scene objects on the switch's tile.
+                if (prop == null) prop = collider.GetComponentInParent<PropInteractAnimation>();
+                if (prop != null)
+                {
+                    target = GridManager.Instance.GetTile(
+                        GridManager.Instance.WorldToGrid(prop.transform.position));
+                    break;
+                }
+
+                target = collider.GetComponentInParent<Tile>();
+                if (target != null) break;
+            }
+        }
+
+        if (target == null || target != turnManager.CurrentPlayer?.GetCurrentTile())
+        {
+            ResetInteractClick();
+            return false;
+        }
+
+        if (pendingInteractTile == target && pendingInteractPlayer == turnManager.CurrentPlayer &&
+            Time.unscaledTime - lastInteractClickTime <= interactDoubleClickInterval)
+        {
+            ResetInteractClick();
+            turnManager.ChooseReact();
+        }
+        else
+        {
+            pendingInteractTile = target;
+            pendingInteractPlayer = turnManager.CurrentPlayer;
+            lastInteractClickTime = Time.unscaledTime;
+        }
+        return true;
+    }
+
+    private void ResetInteractClick()
+    {
+        pendingInteractTile = null;
+        pendingInteractPlayer = null;
+    }
+
+    private void OnDisable() => ResetInteractClick();
 
     private void HandleClick()
     {
@@ -247,6 +349,8 @@ public class PlayerController : MonoBehaviour
 
     public void ClearHighlights()
     {
+        selectedEnemy = null;
+        selectedArrowTrap = null;
         foreach (Tile tile in currentHighlightedTiles)
         {
             if (tile != null)

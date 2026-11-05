@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3698521957532104860}
   - component: {fileID: 1568651796416052043}
   - component: {fileID: 4649412271471820103}
+  - component: {fileID: 2452503392008153710}
   m_Layer: 5
   m_Name: PrototypePauseUI
   m_TagString: Untagged
@@ -104,6 +105,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &2452503392008153710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 816866810080854643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97d86a1e80d69d241b3ef75203302e7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  animator: {fileID: 3301507744982339363}
 --- !u!1 &824138885582268069
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +238,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4760883022607822019}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenInGameSettings
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1529413469110229112
 GameObject:
   m_ObjectHideFlags: 0
@@ -621,7 +647,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4757509224696386986}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenGuide
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2372388691894558635
 GameObject:
   m_ObjectHideFlags: 0
@@ -743,7 +781,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 5028922547288590456, guid: bfa183c9d31b9794da7e446af0bde113, type: 3}
         m_TargetAssemblyTypeName: InGameUIManager, Assembly-CSharp
         m_MethodName: CallPause
         m_Mode: 1
@@ -1014,7 +1052,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3093473068658033119}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: ReloadCurrentScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4954369087101967293
 GameObject:
   m_ObjectHideFlags: 0
@@ -1274,7 +1324,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3681890920460790569}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: OpenLevelSelect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &6565866530274273306
 GameObject:
   m_ObjectHideFlags: 0
@@ -1395,7 +1457,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4322319797531010540}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+        m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
+        m_MethodName: ExitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7059640659074880351
 GameObject:
   m_ObjectHideFlags: 0
@@ -1824,6 +1898,7 @@ GameObject:
   - component: {fileID: 5576513893849911437}
   - component: {fileID: 738172787084732708}
   - component: {fileID: 8553946663395848008}
+  - component: {fileID: 3301507744982339363}
   m_Layer: 5
   m_Name: Paper
   m_TagString: Untagged
@@ -1878,7 +1953,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.91194963, g: 0.70992845, b: 0.45023924, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1895,6 +1970,28 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!95 &3301507744982339363
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8113442410856277752}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dadc38e66a5e7874599b90ac62ec4241, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 1
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8457305820856610134
 GameObject:
   m_ObjectHideFlags: 0
