@@ -9,6 +9,103 @@ using Object = UnityEngine.Object;
 /// <summary>Opt-in Play Mode smoke test; never saves scene changes.</summary>
 public static class TurnAndSlashVerification
 {
+    [MenuItem("Tools/Sword Trail/Verify Neon Rendering")]
+    public static void VerifyNeon()
+    {
+        if (!EditorApplication.isPlaying || EditorApplication.isPaused) return;
+        TurnGameManager.Instance.StartCoroutine(NeonCapture());
+    }
+
+    private static IEnumerator NeonCapture()
+    {
+        var sword = Object.FindAnyObjectByType<SwordMan>();
+        var lights = Object.FindObjectsByType<Light>();
+        var states = Array.ConvertAll(lights, light => light.enabled);
+        var ambient = RenderSettings.ambientLight;
+        var ambientMode = RenderSettings.ambientMode;
+        float reflection = RenderSettings.reflectionIntensity;
+        var volume = Object.FindAnyObjectByType<UnityEngine.Rendering.Volume>();
+        volume.profile.TryGet(out UnityEngine.Rendering.Universal.Bloom bloom);
+        float bloomIntensity = bloom.intensity.value;
+        var lines = new List<string>();
+        try
+        {
+            foreach (string shaderName in new[] { "RedSwordTrail", "CorpseCrystal" })
+                lines.Add(shaderName + " shaderError=" + ShaderUtil.ShaderHasError(Resources.Load<Shader>(shaderName)));
+            lines.Add($"CameraHDR={Camera.main.allowHDR}; Bloom intensity={bloomIntensity}, threshold={bloom.threshold.value}, scatter={bloom.scatter.value}");
+            for (int repeat = 0; repeat < 3; repeat++)
+            {
+                sword.GetComponent<CharacterAnimationController>().PlaySkill();
+                yield return new WaitForSeconds(.29f);
+                if (repeat == 0)
+                {
+                    Time.timeScale = 0;
+                    yield return new WaitForEndOfFrame();
+                    SaveNeonFrame("SwordBright");
+                    foreach (Light light in lights) light.enabled = false;
+                    RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+                    RenderSettings.ambientLight = Color.black; RenderSettings.reflectionIntensity = 0;
+                    yield return new WaitForEndOfFrame(); SaveNeonFrame("SwordDark");
+                    bloom.intensity.value = 0;
+                    yield return new WaitForEndOfFrame(); SaveNeonFrame("SwordDarkNoBloom");
+                    bloom.intensity.value = bloomIntensity;
+                    var trail = sword.GetComponent<SwordSlashTrail>();
+                    var tick = (Action)Delegate.CreateDelegate(typeof(Action), trail, typeof(SwordSlashTrail).GetMethod("LateUpdate", Private));
+                    for (int warm = 0; warm < 10; warm++) tick();
+                    long allocated = GC.GetAllocatedBytesForCurrentThread();
+                    for (int frame = 0; frame < 200; frame++) tick();
+                    lines.Add("Trail steady-state managed bytes/200 updates=" + (GC.GetAllocatedBytesForCurrentThread() - allocated));
+                    for (int i = 0; i < lights.Length; i++) lights[i].enabled = states[i];
+                    RenderSettings.ambientMode = ambientMode; RenderSettings.ambientLight = ambient;
+                    RenderSettings.reflectionIntensity = reflection;
+                    Time.timeScale = 1;
+                }
+                yield return new WaitForSeconds(2f);
+            }
+            int ribbons = 0;
+            foreach (MeshFilter filter in Object.FindObjectsByType<MeshFilter>()) if (filter.name == "Red Sword Trail") ribbons++;
+            lines.Add("Ribbon objects after 3 skills=" + ribbons);
+            var rogue = Object.FindAnyObjectByType<Rogue>();
+            rogue.OnDeath();
+            yield return new WaitForSeconds(2f);
+            typeof(PlayerCorpseShatter).GetMethod("Preview", Private).Invoke(rogue.GetComponent<PlayerCorpseShatter>(), null);
+            yield return new WaitForSeconds(1.2f);
+            Time.timeScale = 0;
+            yield return new WaitForEndOfFrame(); SaveNeonFrame("ShatterBright");
+            foreach (Light light in lights) light.enabled = false;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = Color.black; RenderSettings.reflectionIntensity = 0;
+            yield return new WaitForEndOfFrame(); SaveNeonFrame("ShatterDark");
+            bloom.intensity.value = 0;
+            yield return new WaitForEndOfFrame(); SaveNeonFrame("ShatterDarkNoBloom");
+            bloom.intensity.value = bloomIntensity;
+            var effect = Object.FindAnyObjectByType<CrystalShatterVisual>();
+            var shardTick = (Action)Delegate.CreateDelegate(typeof(Action), effect, typeof(CrystalShatterVisual).GetMethod("Update", Private));
+            for (int warm = 0; warm < 10; warm++) shardTick();
+            long shardBytes = GC.GetAllocatedBytesForCurrentThread();
+            for (int frame = 0; frame < 200; frame++) shardTick();
+            lines.Add("Shatter steady-state managed bytes/200 updates=" + (GC.GetAllocatedBytesForCurrentThread() - shardBytes));
+            Time.timeScale = 1;
+            yield return new WaitForSeconds(2f);
+            lines.Add("Shatter objects after completion=" + Object.FindObjectsByType<CrystalShatterVisual>().Length);
+        }
+        finally
+        {
+            Time.timeScale = 1; bloom.intensity.value = bloomIntensity;
+            for (int i = 0; i < lights.Length; i++) if (lights[i] != null) lights[i].enabled = states[i];
+            RenderSettings.ambientMode = ambientMode; RenderSettings.ambientLight = ambient;
+            RenderSettings.reflectionIntensity = reflection;
+            System.IO.File.WriteAllLines("Temp/NeonVerification.txt", lines);
+            Debug.Log("NEON VERIFICATION FINISHED: Temp/NeonVerification.txt");
+        }
+    }
+
+    private static void SaveNeonFrame(string name)
+    {
+        var texture = ScreenCapture.CaptureScreenshotAsTexture();
+        System.IO.File.WriteAllBytes("Temp/Neon" + name + ".png", texture.EncodeToPNG());
+        Object.Destroy(texture);
+    }
     private static double previewDeadline;
     [MenuItem("Tools/Sword Trail/Preview and Pause Trail")]
     public static void Preview()

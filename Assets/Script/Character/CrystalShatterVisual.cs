@@ -49,7 +49,8 @@ public sealed class CrystalShatterVisual : MonoBehaviour
         float effectScale = 1f,
         float fragmentSize = .05f,
         float spreadRadius = .12f,
-        bool diagnosticLogs = true)
+        bool diagnosticLogs = true,
+        float neonIntensity = 4f)
     {
         Shader shader = Resources.Load<Shader>("CorpseCrystal");
 
@@ -95,15 +96,16 @@ public sealed class CrystalShatterVisual : MonoBehaviour
         visual.material.SetColor(
             "_CrystalColor",
             new Color(
-                Mathf.Clamp01(color.r),
-                Mathf.Clamp01(color.g),
-                Mathf.Clamp01(color.b),
+                Mathf.Max(0f, color.r),
+                Mathf.Max(0f, color.g),
+                Mathf.Max(0f, color.b),
                 1f
             )
         );
         visual.material.SetFloat(
-            "_Emission", Mathf.Clamp(emission, 0f, .6f)
+            "_Emission", Mathf.Max(0f, emission)
         );
+        visual.material.SetFloat("_NeonIntensity", Mathf.Clamp(neonIntensity, 0f, 16f));
 
         visual.silhouetteMaterial = new Material(visual.material);
         visual.silhouetteMaterial.SetFloat("_EdgeStrength", 0f);
@@ -503,7 +505,10 @@ public sealed class CrystalShatterVisual : MonoBehaviour
         shards.colors = colors;
         shards.uv = uv;
         shards.triangles = indicesOut;
-        shards.RecalculateBounds();
+        // All centers stay in bodyBounds; rotation is bounded by maxEdge and drift by maxDrift.
+        Bounds animationBounds = bodyBounds;
+        animationBounds.Expand(2f * (maxDrift + maxEdge));
+        shards.bounds = animationBounds;
 
         gameObject.AddComponent<MeshFilter>().sharedMesh = shards;
 
@@ -773,7 +778,6 @@ public sealed class CrystalShatterVisual : MonoBehaviour
 
         shards.colors = colors;
         shards.vertices = vertices;
-        shards.RecalculateBounds();
 
         if (!peakLogged && elapsed >= duration * .5f)
         {

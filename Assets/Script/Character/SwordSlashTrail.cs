@@ -8,7 +8,8 @@ public sealed class SwordSlashTrail : MonoBehaviour
 {
     [SerializeField] private Transform swordTip;
     [SerializeField] private Transform swordBase;
-    [SerializeField, ColorUsage(true, true)] private Color trailColor = new Color(1f, .025f, .04f, .85f);
+    [SerializeField, InspectorName("Sword Neon Color"), ColorUsage(true, true)] private Color trailColor = new Color(1f, 0f, 0f, .85f);
+    [SerializeField, InspectorName("Sword Emission Intensity (HDR)"), Range(0f, 16f)] private float emissionIntensity = 6f;
     [SerializeField, Range(.05f, 1.5f)] private float trailWidth = .8f;
     [SerializeField, Min(.01f)] private float trailLifetime = .12f;
     [SerializeField, Min(.01f)] private float trailFadeDuration = .25f;
@@ -19,11 +20,11 @@ public sealed class SwordSlashTrail : MonoBehaviour
     [SerializeField, Min(0f)] private float minimumSwingSpeed = .5f;
     [SerializeField, Range(0, 16)] private int sparkCount;
     private struct Sample { public Vector3 root, tip; public float time; public int stroke; }
-    private readonly List<Sample> samples = new();
-    private readonly List<Vector3> vertices = new();
-    private readonly List<Color> colors = new();
-    private readonly List<Vector2> uvs = new();
-    private readonly List<int> indices = new();
+    private readonly List<Sample> samples = new(130);
+    private readonly List<Vector3> vertices = new(256);
+    private readonly List<Color> colors = new(256);
+    private readonly List<Vector2> uvs = new(256);
+    private readonly List<int> indices = new(762);
     private Animator animator;
     private SwordMan owner;
     private GameObject effect;
@@ -37,6 +38,8 @@ public sealed class SwordSlashTrail : MonoBehaviour
     private bool tracking, emitting;
     private int stroke;
     private static readonly int Skill = Animator.StringToHash("Skill");
+    private static readonly int GlowProperty = Shader.PropertyToID("_Glow");
+    private static readonly int EmissionProperty = Shader.PropertyToID("_Emission");
 
     private void Awake()
     {
@@ -163,14 +166,18 @@ public sealed class SwordSlashTrail : MonoBehaviour
         lastBase = swordBase.position;
         lastNormalized = normalized;
         float life = Mathf.Max(.01f, trailLifetime) + Mathf.Max(.01f, trailFadeDuration);
-        samples.RemoveAll(sample => Time.time - sample.time >= life);
+        int expired = 0;
+        while (expired < samples.Count && Time.time - samples[expired].time >= life) expired++;
+        if (expired > 0) samples.RemoveRange(0, expired);
         if (samples.Count > 128) samples.RemoveRange(0, samples.Count - 128);
         DrawRibbon();
     }
 
     private void DrawRibbon()
     {
+        if (samples.Count == 0 && mesh.vertexCount == 0) return;
         vertices.Clear(); colors.Clear(); uvs.Clear(); indices.Clear();
+        Bounds bounds = samples.Count > 0 ? new Bounds(samples[0].tip, Vector3.zero) : new Bounds();
         for (int i = 0; i < samples.Count; i++)
         {
             Sample sample = samples[i];
@@ -179,6 +186,7 @@ public sealed class SwordSlashTrail : MonoBehaviour
             Vector3 center = (sample.root + sample.tip) * .5f;
             vertices.Add(Vector3.Lerp(center, sample.root, taper));
             vertices.Add(Vector3.Lerp(center, sample.tip, taper));
+            bounds.Encapsulate(sample.root); bounds.Encapsulate(sample.tip);
             Color color = trailColor; color.a *= fade * fade * (3f - 2f * fade);
             colors.Add(color); colors.Add(color);
             uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0));
@@ -189,8 +197,9 @@ public sealed class SwordSlashTrail : MonoBehaviour
         }
         mesh.Clear();
         mesh.SetVertices(vertices); mesh.SetColors(colors); mesh.SetUVs(0, uvs);
-        mesh.SetTriangles(indices, 0); mesh.RecalculateBounds();
-        material.SetFloat("_Glow", glowIntensity);
+        mesh.SetTriangles(indices, 0, false); mesh.bounds = bounds;
+        material.SetFloat(GlowProperty, glowIntensity);
+        material.SetFloat(EmissionProperty, emissionIntensity);
     }
 
     private void OnDisable()

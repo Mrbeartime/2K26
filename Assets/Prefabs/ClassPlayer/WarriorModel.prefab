@@ -340,7 +340,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SwordSlashTrail
   swordTip: {fileID: 7662219211027163428}
   swordBase: {fileID: 1895328344080349890}
-  trailColor: {r: 1, g: 0.025, b: 0.04, a: 0.85}
+  trailColor: {r: 1, g: 0, b: 0, a: 0.85}
   trailWidth: 0.8
   trailLifetime: 0.12
   trailFadeDuration: 0.25

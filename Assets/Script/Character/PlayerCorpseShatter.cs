@@ -8,7 +8,8 @@ public sealed class PlayerCorpseShatter : MonoBehaviour
     [SerializeField, Range(12, 1500)] private int fragmentCount = 900;
     [SerializeField, Min(0)] private float explosionForce = 0.63f;
     [SerializeField, Min(0)] private float fragmentRotationSpeed = 100f;
-    [SerializeField, ColorUsage(true, true)] private Color crystalColor = new Color(0.2f, 0.85f, 1f, 1f);
+    [SerializeField, InspectorName("Shatter Neon Color"), ColorUsage(true, true)] private Color crystalColor = new Color(0.2f, 0.85f, 1f, 1f);
+    [SerializeField, InspectorName("Shatter Emission Intensity (HDR)"), Range(0f, 16f)] private float neonEmissionIntensity = 4f;
     [SerializeField, InspectorName("Glow Intensity"), Range(0f, 0.6f)] private float emissionIntensity = 0.35f;
     [SerializeField, Min(0.05f)] private float particleLifetime = 0.55f;
     [SerializeField, Min(0)] private float glowFlashIntensity = 0.1f;
@@ -62,7 +63,7 @@ public sealed class PlayerCorpseShatter : MonoBehaviour
         return CrystalShatterVisual.Create(visualRoot != null ? visualRoot : transform,
             Mathf.Max(0.1f, shatterDuration), Mathf.Clamp(fragmentCount, 12, 1500),
             explosionForce, fragmentRotationSpeed, crystalColor, emissionIntensity,
-            particleLifetime, glowFlashIntensity, effectScale, fragmentSize, spreadRadius, diagnosticLogs);
+            particleLifetime, glowFlashIntensity, effectScale, fragmentSize, spreadRadius, diagnosticLogs, neonEmissionIntensity);
     }
 
     [ContextMenu("Preview Shatter (Play Mode, dead player only)")]
