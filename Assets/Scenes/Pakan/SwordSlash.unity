@@ -5403,6 +5403,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1221775766}
     m_Modifications:
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: sparkCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: trailWidth
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: trailColor.b
+      value: 0.764151
+      objectReference: {fileID: 0}
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: trailColor.g
+      value: 0.764151
+      objectReference: {fileID: 0}
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: trailColor.r
+      value: 0.764151
+      objectReference: {fileID: 0}
+    - target: {fileID: 857443595482324296, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
+      propertyPath: emissionIntensity
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 890022334455667788, guid: d03d15cda553e7949968a75713e4e15b, type: 3}
       propertyPath: m_Enabled
       value: 1
