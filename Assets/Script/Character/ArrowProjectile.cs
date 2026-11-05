@@ -73,7 +73,13 @@ public class ArrowProjectile : MonoBehaviour
             return true;
         }
         if (entity is ArrowTutorial target) target.ReceiveArrowFrom(owner);
-        else entity.ReceiveArrowHit();
+        else
+        {
+            // The guard above guarantees the target was alive before this hit.
+            entity.ReceiveArrowHit();
+            if (owner is RangedEnemy shooter && entity is Character player && player.IsDead)
+                shooter.RecordProjectileKill(player);
+        }
         Finish();
         return true;
     }

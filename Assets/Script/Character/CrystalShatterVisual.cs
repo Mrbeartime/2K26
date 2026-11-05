@@ -36,7 +36,7 @@ public sealed class CrystalShatterVisual : MonoBehaviour
     public float MeasuredMaximumShardEdge { get; private set; }
     public float AllowedMaximumShardEdge => maxEdge;
 
-    public static void Create(
+    public static CrystalShatterVisual Create(
         Transform root,
         float duration,
         int count,
@@ -59,7 +59,7 @@ public sealed class CrystalShatterVisual : MonoBehaviour
                 "CorpseCrystal shader missing; retaining corpse visuals.",
                 root
             );
-            return;
+            return null;
         }
 
         GameObject effect = new GameObject(
@@ -125,6 +125,7 @@ public sealed class CrystalShatterVisual : MonoBehaviour
             Debug.LogException(error, root);
             Destroy(effect);
         }
+        return visual;
     }
 
     private void Build(

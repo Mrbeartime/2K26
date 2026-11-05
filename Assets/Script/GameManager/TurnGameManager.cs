@@ -596,9 +596,10 @@ public class TurnGameManager : MonoBehaviour
     {
         if (gameComplete || enemyPhase) return;
         // Both manual End Turn and automatic completion pass this boundary.
-        PlayerCorpseShatter.CompletePlayerPhase(this, RoundNumber);
         enemyPhase = true;
-        status = "Enemy Phase...";
+        actionMode = ActionMode.None;
+        PlayerController.Instance?.ClearHighlights();
+        status = "Resolving turn...";
         StartCoroutine(RunEnemyPhase());
         RaiseStateChanged();
     }
@@ -609,14 +610,9 @@ public class TurnGameManager : MonoBehaviour
         // Finish the last player's shot before enemies decide whether they are alive.
         while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
-        Enemy.RunEnemyPhase();
-        yield return null;
-        // Both enemy types act in the same frame; only the phase transition waits.
-        while (!gameComplete && HasFlyingArrows()) yield return null;
-        if (gameComplete) yield break;
-
         trapPhase = true;
         status = "Trap Phase: resolving turn " + ElapsedTurn + "...";
+        RaiseStateChanged();
         // Resolve the current round number, not the next one. Waiting on each
         // trap keeps input locked until spikes retract and arrows finish flying.
         foreach (TurnTrap trap in FindObjectsByType<TurnTrap>())
@@ -627,6 +623,22 @@ public class TurnGameManager : MonoBehaviour
         }
         if (gameComplete) yield break;
         trapPhase = false;
+        while (!gameComplete && HasFlyingArrows()) yield return null;
+        if (gameComplete) yield break;
+        status = "Enemy Phase...";
+        RaiseStateChanged();
+        // React and Patrol are synchronous; the spawned arrows resolve asynchronously.
+        Enemy.RunEnemyPhase();
+        yield return null;
+        while (!gameComplete && HasFlyingArrows()) yield return null;
+        if (gameComplete) yield break;
+
+        status = "Player Corpse Cleanup...";
+        RaiseStateChanged();
+        var effects = PlayerCorpseShatter.BeginCleanup(this, RoundNumber);
+        while (!gameComplete && effects.Exists(effect => effect != null && effect.isActiveAndEnabled))
+            yield return null;
+        if (gameComplete) yield break;
         enemyPhase = false;
         currentTurn--;
         if (currentTurn <= 0)

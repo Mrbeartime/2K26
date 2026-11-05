@@ -3,6 +3,13 @@ using UnityEngine;
 
 public class RangedEnemy : Enemy
 {
+    // Per-shooter ownership; retained corpses remain safe Unity object references.
+    private readonly HashSet<Character> killedPlayers = new();
+
+    public void RecordProjectileKill(Character player)
+    {
+        if (player != null && player.IsDead) killedPlayers.Add(player);
+    }
     [Header("Arrow")]
     [SerializeField] private GameObject arrowPrefab;
     [Tooltip("Like TurnArrowTrap: aim blue +Z down the firing lane. If empty, use this enemy's transform.")]
@@ -49,7 +56,8 @@ public class RangedEnemy : Enemy
         Ray ray = new Ray(muzzle.position, muzzle.forward);
         foreach (Character character in FindObjectsByType<Character>())
         {
-            if (!character.IsDead || !character.IsFreshCorpse || character.gameObject.scene != gameObject.scene) continue;
+            if (!character.IsDead || !character.IsFreshCorpse || killedPlayers.Contains(character) ||
+                character.gameObject.scene != gameObject.scene) continue;
             Bounds bounds = character.CorpseSightBounds;
             bounds.Expand(radius * 2f);
             if (bounds.IntersectRay(ray, out float distance)) target = Mathf.Min(target, distance);
