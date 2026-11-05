@@ -18,9 +18,6 @@ public abstract class TurnTrap : MonoBehaviour, IFixedTurnScheduledObject
     {
         if (!isActiveAndEnabled || !IsDue(turn) || LastTriggeredTurn == turn) yield break;
         LastTriggeredTurn = turn;
-        if (TurnGameManager.Instance == null || !TurnGameManager.Instance.RecordFixedTurnExecution(
-            this, turn, "Trap resolution started (effect depends on trap state)"))
-            Debug.Log($"Turn {turn}: {name} activated.", this);
         IsResolving = true;
         try
         {

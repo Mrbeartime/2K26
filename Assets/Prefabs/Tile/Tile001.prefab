@@ -229,3 +229,9 @@ MonoBehaviour:
   moveHighlightColor: {r: 0, g: 1, b: 1, a: 1}
   skillHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   enemyHighlightColor: {r: 1, g: 0, b: 0, a: 1}
+  moveHighlightOpacity: 0.8
+  skillHighlightOpacity: 0.2
+  enemyHighlightOpacity: 1
+  moveGlow: 1.5
+  skillGlow: 2
+  enemyGlow: 3

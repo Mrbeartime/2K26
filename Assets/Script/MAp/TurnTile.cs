@@ -82,8 +82,6 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
     private void StartRise()
     {
         isRising = true;
-        TurnGameManager manager = TurnGameManager.Instance;
-        if (manager != null) manager.RecordFixedTurnExecution(this, manager.RoundNumber, "Tile appearance started");
 
         // เปิด Collider ตอนเริ่มขึ้น
         SetColliders(true);

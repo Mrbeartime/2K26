@@ -2802,6 +2802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 136e625c3bfde924ea9c381f3fbe50d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinBox
+  completionTarget: 3
 --- !u!65 &1069307814
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6122,6 +6123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
+  turnScheduleData: {fileID: 0}
   maximumTurns: 7
   enemyPhaseDelay: 0.35
   enableTurnShake: 1

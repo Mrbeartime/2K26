@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) return;
         if (Time.timeScale == 0) return;
         if (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
@@ -182,6 +183,9 @@ public class PlayerController : MonoBehaviour
 
         if (player == null)
             return;
+
+        // เพิ่ม: เลื่อนกล้องไปหา Player และ Zoom In
+        CameraFocusManager.Instance?.FocusCharacter(player);
 
         Debug.Log("Selected: " + player.name);
     }
@@ -380,6 +384,8 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        CameraFocusManager.Instance?.FocusObject(enemy.transform); // Camera
+
         // =========================
         // เลือก Enemy ตัวใหม่
         // =========================
@@ -425,5 +431,7 @@ public class PlayerController : MonoBehaviour
             currentHighlightedTiles.Add(tile);
             tile.ShowHighlight(Tile.HighlightType.Enemy);
         }
+
+        CameraFocusManager.Instance?.FocusObject(trap.transform);
     }
 }

@@ -9,9 +9,14 @@ using UnityEngine.EventSystems;//DO NOT REMOVE
 /// Each player can be selected in any order, once per round.
 /// </summary>
 [DefaultExecutionOrder(-100)]
-public partial class TurnGameManager : MonoBehaviour
+public class TurnGameManager : MonoBehaviour
 {
     public static TurnGameManager Instance { get; private set; }
+    [SerializeField] private TurnScheduleData turnScheduleData;
+    [SerializeField] private CutSceneCharacter entranceCutscene;
+    public bool IsIntroPlaying { get; private set; }
+    public TurnScheduleData ScheduleData => turnScheduleData;
+    public int RoundNumber => ElapsedTurn;
 
     private enum ActionMode { None, MoveTargeting, SkillTargeting }
 
@@ -73,7 +78,11 @@ public partial class TurnGameManager : MonoBehaviour
     public bool CanChooseReact => CanCurrentPlayerReact;
     public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
 
-    private void RaiseStateChanged() => StateChanged?.Invoke();
+    private void RaiseStateChanged()
+    {
+        turnScheduleData?.SetCurrentRound(RoundNumber);
+        StateChanged?.Invoke();
+    }
     #endregion
 
     #region tempUI
@@ -106,7 +115,7 @@ public partial class TurnGameManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!showTestUI) return;
+        if (!showTestUI || IsIntroPlaying) return;
         const float width = 570f;
         GUI.Box(new Rect(16, 16, width, 180), "TURN MANAGER");
         GUI.Label(new Rect(Screen.width - 230f, 16f, 210f, 32f),
@@ -176,18 +185,33 @@ public partial class TurnGameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        // This manager awakens before the entrance component's OnEnable.
+        // isActiveAndEnabled can still be false at that point.
+        IsIntroPlaying = entranceCutscene != null && entranceCutscene.enabled &&
+            entranceCutscene.gameObject.activeInHierarchy;
+        waitingForMovement = IsIntroPlaying;
         currentTurn = maximumTurns;   // ตั้งใน Awake เพื่อให้ค่าพร้อมก่อน Start ของทุก script
     }
 
-    private void Start()
+    private System.Collections.IEnumerator Start()
     {
-        InitializeFixedTurnLogging();
+        if (turnScheduleData == null) turnScheduleData = GetComponent<TurnScheduleData>();
+        if (turnScheduleData == null) turnScheduleData = gameObject.AddComponent<TurnScheduleData>();
+        turnScheduleData.RefreshFromScene(maximumTurns);
+        turnScheduleData.SetCurrentRound(RoundNumber);
         players.AddRange(FindObjectsByType<PlayerMove>(FindObjectsSortMode.None));
         players.Sort((left, right) => GetPlayerNumber(left).CompareTo(GetPlayerNumber(right)));
 
         if (players.Count != 3)
             Debug.LogWarning("TurnGameManager ต้องการ PlayerMove 3 ตัว: Player1, Player2, Player3", this);
 
+        if (IsIntroPlaying)
+        {
+            status = "Sword entrance...";
+            RaiseStateChanged();
+            yield return entranceCutscene.Play();
+            IsIntroPlaying = false;
+        }
         StartPlayerPhase();
     }
 
@@ -625,7 +649,6 @@ public partial class TurnGameManager : MonoBehaviour
         waitingForMovement = false;
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
-        LogFixedTurnRoundStart();
         RaiseStateChanged();
     }
 
@@ -666,6 +689,10 @@ public partial class TurnGameManager : MonoBehaviour
         status = "VICTORY: the exit was reached.";
         PlayerController.Instance?.ClearHighlights();
 
+        //เพื่อบันทึกว่าผ่านด่านแล้ว
+        ProjectD.Menus.GameSceneManager.CompleteActiveLevel();
+
+        // แจ้งให้LevelCompleteUI แสดงหน้าจอชนะ
         GameEnded?.Invoke(true, gameOverReason);
         RaiseStateChanged();
     }
