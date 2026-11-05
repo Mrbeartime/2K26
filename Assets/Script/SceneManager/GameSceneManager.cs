@@ -5,10 +5,10 @@ namespace ProjectD.Menus
 {
     public static class GameSceneManager
     {
-        public const string StartScene = "Assets/Scenes/Mon/SceneGame/Start.unity";
-        public const string SettingsScene = "Assets/Scenes/Mon/SceneGame/Setting.unity";
-        public const string SelectScene = "Assets/Scenes/Mon/SceneGame/LevelSelect.unity";
-        public const string GuideScene = "Assets/Scenes/Bom/GuideScene.unity";
+        public const string StartScene = "Assets/Scenes/MainScene/Menus/Start.unity";
+        public const string SettingsScene = "Assets/Scenes/MainScene/Menus/Setting.unity";
+        public const string SelectScene = "Assets/Scenes/MainScene/Menus/LevelSelecUI.unity";
+        public const string GuideScene = "Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity";
         public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
         public static bool IsInGameSettingsOpen { get; private set; }
@@ -76,7 +76,7 @@ namespace ProjectD.Menus
                 return 1;
             }
         }
-        public static string LevelPath(int level) => $"Assets/Scenes/TestLevel/Level{level}.unity";
+        public static string LevelPath(int level) => $"Assets/Scenes/MainScene/Level/Level{level}.unity";
         public static bool IsUnlocked(int level) => LevelProgressStore.IsUnlocked(level);
         public static bool IsCompleted(int level) => LevelProgressStore.IsCompleted(level);
         public static bool IsSecretUnlocked(string id) => LevelProgressStore.IsSecretUnlocked(id);
