@@ -303,19 +303,19 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+    - target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
       propertyPath: mainPanel
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+    - target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
       propertyPath: soundLabel
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+    - target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
       propertyPath: settingsPanel
       value: 
       objectReference: {fileID: 679319915}
-    - target: {fileID: 1888733501419423122, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
+    - target: {fileID: 2808290409857273437, guid: 304d7efcc3a382a4188b64fc7253569d, type: 3}
       propertyPath: fullscreenLabel
       value: 
       objectReference: {fileID: 0}
