@@ -295,7 +295,9 @@ namespace ProjectD.Menus
                 return;
             }
             if (mainPanel != null) mainPanel.SetActive(false);
-            if (settingsPanel != null) settingsPanel.SetActive(true);
+            // The settings panel lives inside a Canvas that OverlayUI hides in Awake.
+            settingsPanel.GetComponentInParent<OverlayUI>(true)?.ActivateOverlay();
+            settingsPanel.SetActive(true);
             RefreshUI();
         }
 
