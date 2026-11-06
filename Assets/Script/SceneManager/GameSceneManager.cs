@@ -7,7 +7,7 @@ namespace ProjectD.Menus
     {
         public const string StartScene = "Assets/Scenes/MainScene/Menus/Start.unity";
         public const string SettingsScene = "Assets/Scenes/MainScene/Menus/Setting.unity";
-        public const string SelectScene = "Assets/Scenes/MainScene/Menus/LevelSelecUI.unity";
+        public const string SelectScene = "Assets/Scenes/MainScene/Menus/LevelSelec.unity";
         public const string GuideScene = "Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity";
         public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
         public const int LevelCount = 5;
