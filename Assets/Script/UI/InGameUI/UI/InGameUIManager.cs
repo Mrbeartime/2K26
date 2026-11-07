@@ -29,6 +29,8 @@ public class InGameUIManager : MonoBehaviour
     public TextMeshProUGUI TurnLimitText;
     public UITurnCounter TurnCounter;
     public Canvas PauseUI;
+    [SerializeField] private OverlayUI guideOverlay;
+    [SerializeField] private OverlayUI settingsOverlay;
 
     [Header("Schedule Dial Prefabs")]
     [Tooltip("Tick prefab with an Image on its root. Empty uses the default DialTick prefab.")]
@@ -989,7 +991,27 @@ public class InGameUIManager : MonoBehaviour
         if (turnGameManager != null && turnGameManager.IsGameComplete)
             return;
 
+        // Escape closes the overlay first; Pause stays open until the next press.
+        if (TryClosePauseOverlay(settingsOverlay) || TryClosePauseOverlay(guideOverlay))
+            return;
+
         SetPaused(!IsPaused);
+    }
+
+    private bool TryClosePauseOverlay(OverlayUI target)
+    {
+        if (target == null || !target.gameObject.activeInHierarchy) return false;
+        target.DeactivateOverlay();
+        if (IsPaused && PauseUI != null)
+        {
+            foreach (Selectable control in PauseUI.GetComponentsInChildren<Selectable>())
+            {
+                if (!control.isActiveAndEnabled || !control.IsInteractable()) continue;
+                control.Select();
+                break;
+            }
+        }
+        return true;
     }
 
     // Pause/resume: the in-game UI is blocked via CanvasGroup (blocksRaycasts) instead of SetActive(false), so its state is kept

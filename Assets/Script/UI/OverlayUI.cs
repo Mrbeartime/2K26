@@ -17,6 +17,9 @@ public class OverlayUI : MonoBehaviour
     private ProjectDInputAction input;
     private InputSystemUIInputModule uiModule;
     private InputActionAsset previousActions;
+    private bool verticalNavigationHeld;
+
+    public bool CancelPressedThisFrame => input != null && input.UI.Cancel.WasPressedThisFrame();
 
     private void Awake()
     {
@@ -41,6 +44,7 @@ public class OverlayUI : MonoBehaviour
 
     private void OnDisable()
     {
+        verticalNavigationHeld = false;
         StopAllCoroutines();
         if (overlay != null) overlay.enabled = true;
         if (uiModule != null && uiModule.actionsAsset == input.asset)
@@ -53,6 +57,24 @@ public class OverlayUI : MonoBehaviour
     private void OnDestroy()
     {
         input?.Dispose();
+    }
+
+    private void LateUpdate()
+    {
+        if (input == null) return;
+
+        bool navigatingVertically = Mathf.Abs(input.UI.Navigate.ReadValue<Vector2>().y) > 0.5f;
+        bool startedNavigation = navigatingVertically && !verticalNavigationHeld;
+        verticalNavigationHeld = navigatingVertically;
+
+        // Restore focus after the EventSystem has processed this frame, so the
+        // first direction press selects the first control without also moving past it.
+        if (!startedNavigation || CancelPressedThisFrame || !overlay.enabled ||
+            uiModule == null || uiModule.actionsAsset != input.asset ||
+            EventSystem.current == null || EventSystem.current.currentSelectedGameObject != null)
+            return;
+
+        SelectFirstControl();
     }
 
     public void ActivateOverlay()
@@ -108,12 +130,18 @@ public class OverlayUI : MonoBehaviour
             }
         }
 
+        SelectFirstControl();
+    }
+
+    private void SelectFirstControl()
+    {
         Selectable control = firstSelectedControl;
-        if (control == null || !control.isActiveAndEnabled || !control.interactable)
+        if (control == null || !control.isActiveAndEnabled || !control.IsInteractable())
         {
+            control = null;
             foreach (Selectable candidate in GetComponentsInChildren<Selectable>(true))
             {
-                if (candidate.isActiveAndEnabled && candidate.interactable)
+                if (candidate.isActiveAndEnabled && candidate.IsInteractable())
                 {
                     control = candidate;
                     break;

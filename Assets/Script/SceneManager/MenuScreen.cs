@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
 using ProjectD.AfterFeature;
@@ -66,6 +67,25 @@ namespace ProjectD.Menus
                 if (LevelProgressStore.ReloadIfFileChanged() || appliedProgressRevision != LevelProgressStore.Revision)
                     ApplyProgressToUI();
             }
+            if (settingsPanel != null && settingsPanel.activeInHierarchy)
+            {
+                var settingsOverlay = settingsPanel.GetComponentInParent<OverlayUI>();
+                bool cancelPressed = settingsOverlay != null
+                    ? settingsOverlay.CancelPressedThisFrame
+                    : Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+                if (!cancelPressed) return;
+
+                var eventSystem = EventSystem.current;
+                var selected = eventSystem != null ? eventSystem.currentSelectedGameObject : null;
+                if (selected != null && selected.transform.IsChildOf(settingsPanel.transform))
+                {
+                    eventSystem.SetSelectedGameObject(null);
+                    return;
+                }
+
+                CloseSettings();
+                return;
+            }
             if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
             GoBack();
         }
@@ -83,7 +103,11 @@ namespace ProjectD.Menus
         {
             if (!GameSceneManager.IsInGameSettingsOpen) Time.timeScale = 1f;
             if (mainPanel != null) mainPanel.SetActive(true);
-            if (settingsPanel != null) settingsPanel.SetActive(false);
+            if (settingsPanel != null)
+            {
+                settingsPanel.GetComponentInParent<OverlayUI>(true)?.DeactivateOverlay();
+                settingsPanel.SetActive(false);
+            }
             if (paperPanel != null) paperPanel.SetActive(false);
             if (playButton != null) playButton.onClick.AddListener(PlaySelectedLevel);
             if (page == Page.LevelSelect)
