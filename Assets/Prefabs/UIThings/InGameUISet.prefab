@@ -525,14 +525,6 @@ PrefabInstance:
       propertyPath: m_Colors.m_PressedColor.r
       value: 0.91823894
       objectReference: {fileID: 0}
-    - target: {fileID: 5551958219760559892, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 3885397014996208040}
-    - target: {fileID: 5551958219760559892, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SetPaused
-      objectReference: {fileID: 0}
     - target: {fileID: 6501871139510241178, guid: a7154dc14c26bb44c9b60b1ef92be5d6, type: 3}
       propertyPath: sprites.Array.size
       value: 2
