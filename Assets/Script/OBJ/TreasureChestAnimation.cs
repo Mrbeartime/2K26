@@ -13,6 +13,13 @@ public class TreasureChestAnimation : MonoBehaviour
     [Tooltip("Safety timeout if the Animator cannot finish the opening state.")]
     [SerializeField, Min(1f)] private float maximumOpenWait = 30f;
     private bool opened;
+    private bool openSoundPlayed;
+    public void PlayOpenSoundOnce()
+    {
+        if (openSoundPlayed) return;
+        openSoundPlayed = true;
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.ChestOpen, transform.position);
+    }
 
     private void Awake()
     {
@@ -44,6 +51,7 @@ public class TreasureChestAnimation : MonoBehaviour
         if (!Application.isPlaying || opened || animator == null ||
             animator.runtimeAnimatorController == null) return;
         opened = true;
+        PlayOpenSoundOnce();
         animator.SetTrigger(openTrigger);
     }
 

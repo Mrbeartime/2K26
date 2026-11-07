@@ -2,6 +2,8 @@ using System.Collections;
 using ProjectD.Menus;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace ProjectD.Audio
 {
@@ -9,11 +11,11 @@ namespace ProjectD.Audio
     public sealed class GameAudioManager : MonoBehaviour
     {
         public static GameAudioManager Instance { get; private set; }
-        [Header("Mixer routing: Master, Music, SFX, UI, Ambient")]
+        [Header("Mixer routing: Master, Music, SFX, UI")]
         [SerializeField] private AudioMixer mixer;
-        [SerializeField] private AudioMixerGroup[] groups = new AudioMixerGroup[5];
+        [SerializeField] private AudioMixerGroup[] groups = new AudioMixerGroup[4];
         [Header("Default volume percentages")]
-        [SerializeField] private float[] defaultVolumes = { 100f, 80f, 100f, 100f, 70f };
+        [SerializeField] private float[] defaultVolumes = { 100f, 80f, 100f, 100f };
         [SerializeField, Range(1, 64)] private int poolSize = 24;
         [SerializeField, Min(0f)] private float musicFadeSeconds = .8f;
         [SerializeField] private AudioCueSlot[] cues = {
@@ -22,15 +24,15 @@ namespace ProjectD.Audio
             new(AudioCue.ChestOpen, AudioBus.SFX), new(AudioCue.Death, AudioBus.SFX),
             new(AudioCue.LevelBGM, AudioBus.Music), new(AudioCue.MenuBGM, AudioBus.Music),
             new(AudioCue.ButtonClick, AudioBus.UI), new(AudioCue.ButtonHover, AudioBus.UI),
-            new(AudioCue.Pause, AudioBus.UI), new(AudioCue.CharacterSelect, AudioBus.UI),
-            new(AudioCue.Ambient, AudioBus.Ambient) };
-        private static readonly string[] Parameters = { "MasterVolume", "MusicVolume", "SFXVolume", "UIVolume", "AmbientVolume" };
-        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; }
+            new(AudioCue.Pause, AudioBus.UI), new(AudioCue.CharacterSelect, AudioBus.UI)};
+        private static readonly string[] Parameters = { "MasterVolume", "MusicVolume", "SFXVolume", "UIVolume" };
+        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; public Object owner; }
         private Voice[] voices;
         private AudioSource[] music;
-        private AudioSource ambient;
         private Coroutine fade;
         private bool started;
+        private AudioCue? currentMusic;
+        private int specialUIFrame = -1;
         public int PoolCapacity => voices == null ? 0 : voices.Length;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -54,8 +56,24 @@ namespace ProjectD.Audio
             voices = new Voice[Mathf.Clamp(poolSize, 1, 64)];
             for (int i = 0; i < voices.Length; i++) voices[i].source = CreateSource("SFX Voice " + i, AudioBus.SFX);
             music = new[] { CreateSource("Music A", AudioBus.Music), CreateSource("Music B", AudioBus.Music) };
-            ambient = CreateSource("Ambient", AudioBus.Ambient);
             GameSettings.AudioChanged += ApplySettings;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            bool level = false, menu = false;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                level |= root.GetComponentInChildren<TurnGameManager>(true) != null;
+                menu |= root.GetComponentInChildren<ProjectD.Menus.MenuScreen>(true) != null;
+                foreach (var button in root.GetComponentsInChildren<Button>(true))
+                    if (button.GetComponent<ButtonAudioFeedback>() == null) button.gameObject.AddComponent<ButtonAudioFeedback>();
+            }
+            // Settings and other additive overlays inherit the current score.
+            if (mode == LoadSceneMode.Additive && currentMusic.HasValue) return;
+            if (level) PlayMusic(AudioCue.LevelBGM);
+            else if (menu) PlayMusic(AudioCue.MenuBGM);
         }
 
         private void Start() { started = true; ApplySettings(); }
@@ -80,13 +98,13 @@ namespace ProjectD.Audio
             if (mixer != null) for (int i = 0; i < Parameters.Length; i++) mixer.SetFloat(Parameters[i], PercentToDecibels(GameSettings.GetVolume((AudioBus)i)));
             for (int i = 0; i < voices.Length; i++) voices[i].source.mute = Muted(voices[i].bus);
             for (int i = 0; i < music.Length; i++) music[i].mute = Muted(AudioBus.Music);
-            ambient.mute = Muted(AudioBus.Ambient);
         }
         private void Configure(AudioSource source, AudioCueSlot slot, AudioClip clip, Vector3? position, bool loop)
         {
             source.Stop(); source.clip = clip; source.loop = loop;
             source.outputAudioMixerGroup = Group(slot.bus);
-            source.volume = Mathf.Clamp01(Random.Range(Mathf.Min(slot.volume.x, slot.volume.y), Mathf.Max(slot.volume.x, slot.volume.y)));
+            source.volume = Mathf.Clamp01(slot.cue == AudioCue.Footstep ? slot.volume.x :
+                Random.Range(Mathf.Min(slot.volume.x, slot.volume.y), Mathf.Max(slot.volume.x, slot.volume.y)));
             source.pitch = Mathf.Clamp(Random.Range(Mathf.Min(slot.pitch.x, slot.pitch.y), Mathf.Max(slot.pitch.x, slot.pitch.y)), .1f, 3f);
             source.spatialBlend = position.HasValue ? 1f : 0f;
             source.transform.position = position.GetValueOrDefault(transform.position);
@@ -98,29 +116,72 @@ namespace ProjectD.Audio
         }
         public bool PlaySFX(AudioCue cue) => PlayPooled(cue, AudioBus.SFX, null);
         public bool PlaySFXAtPosition(AudioCue cue, Vector3 position) => PlayPooled(cue, AudioBus.SFX, position);
-        public bool PlayUI(AudioCue cue) => PlayPooled(cue, AudioBus.UI, null);
-        private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position)
+        public bool PlayUI(AudioCue cue)
+        {
+            if (cue == AudioCue.ButtonClick && specialUIFrame == Time.frameCount) return false;
+            if (cue == AudioCue.Pause || cue == AudioCue.CharacterSelect)
+            {
+                if (specialUIFrame == Time.frameCount) return false;
+                specialUIFrame = Time.frameCount;
+            }
+            return PlayPooled(cue, AudioBus.UI, null);
+        }
+        public bool PlayFootstep(Object owner, Vector3 position)
+        {
+            if (owner == null || voices == null) return false;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].owner == owner && voices[i].cue == AudioCue.Footstep && voices[i].source.isPlaying) return false;
+            return PlayPooled(AudioCue.Footstep, AudioBus.SFX, position, owner);
+        }
+        public void StopFootstep(Object owner)
+        {
+            if (owner == null || voices == null) return;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].owner == owner && voices[i].cue == AudioCue.Footstep)
+                { voices[i].source.Stop(); voices[i].owner = null; }
+        }
+        public bool PlayLevelHover() => PlayPooled(AudioCue.Pause, AudioBus.UI, null, null, true);
+        public bool PlayLevelClick()
+        {
+            // Replace the same-click paper-open sound; keep other menus' special cue rules intact.
+            if (specialUIFrame == Time.frameCount && voices != null)
+                for (int i = 0; i < voices.Length; i++)
+                    if (voices[i].cue == AudioCue.Pause) voices[i].source.Stop();
+            return PlayPooled(AudioCue.ButtonClick, AudioBus.UI, null);
+        }
+        private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position, Object owner = null, bool restart = false)
         {
             if (Instance != this || voices == null) return false;
             var slot = Find(cue);
             if (slot == null || slot.bus != bus) return false;
+            bool replaceHover = restart || (cue == AudioCue.ButtonHover && bus == AudioBus.UI);
+            if (!replaceHover && Time.unscaledTime < slot.nextPlayTime) return false;
             var clip = slot.PickClip(); if (clip == null) return false;
             int free = -1, overlapping = 0;
             for (int i = 0; i < voices.Length; i++)
             {
                 if (!voices[i].source.isPlaying) { if (free < 0) free = i; }
-                else if (voices[i].cue == cue) overlapping++;
+                else if (voices[i].cue == cue)
+                {
+                    if (replaceHover) { voices[i].source.Stop(); free = i; }
+                    else overlapping++;
+                }
             }
             if (free < 0 || overlapping >= Mathf.Max(1, slot.maxSimultaneous)) return false;
             voices[free].cue = cue; voices[free].bus = bus;
+            voices[free].owner = owner;
             Configure(voices[free].source, slot, clip, position, false);
-            voices[free].source.Play(); return true;
+            voices[free].source.Play();
+            slot.nextPlayTime = Time.unscaledTime + Mathf.Max(0f, slot.minimumInterval);
+            return true;
         }
         public bool PlayMusic(AudioCue cue)
         {
             if (Instance != this || music == null) return false;
+            if (currentMusic == cue) return true;
             var slot = Find(cue); if (slot == null || slot.bus != AudioBus.Music) return false;
             var clip = slot.PickClip(); if (clip == null) return false;
+            currentMusic = cue;
             if (fade != null) StopCoroutine(fade);
             int old = music[0].isPlaying && (!music[1].isPlaying || music[0].volume >= music[1].volume) ? 0 : 1;
             var next = music[1 - old];
@@ -130,6 +191,7 @@ namespace ProjectD.Audio
         }
         public void StopMusic()
         {
+            currentMusic = null;
             if (Instance != this || music == null) return;
             if (fade != null) StopCoroutine(fade);
             fade = StartCoroutine(FadeMusic(music[0], music[1], 0f));
@@ -150,19 +212,12 @@ namespace ProjectD.Audio
             if (target <= 0) { next.Stop(); next.clip = null; }
             fade = null;
         }
-        public bool PlayAmbient(AudioCue cue, Vector3? position = null)
-        {
-            if (Instance != this || ambient == null) return false;
-            var slot = Find(cue); if (slot == null || slot.bus != AudioBus.Ambient) return false;
-            var clip = slot.PickClip(); if (clip == null) return false;
-            Configure(ambient, slot, clip, position, true); ambient.Play(); return true;
-        }
-        public void StopAmbient() { if (ambient != null) { ambient.Stop(); ambient.clip = null; } }
         private void OnApplicationPause(bool paused) { if (paused && Instance == this) GameSettings.SaveAudioSettings(); }
         private void OnApplicationQuit() { if (Instance == this) GameSettings.SaveAudioSettings(); }
         private void OnDestroy()
         {
             if (Instance != this) return;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
             GameSettings.AudioChanged -= ApplySettings; Instance = null;
         }
     }

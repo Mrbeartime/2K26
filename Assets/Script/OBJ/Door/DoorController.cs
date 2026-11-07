@@ -12,6 +12,7 @@ public class DoorController : MonoBehaviour
     private Vector3 openPosition;
     private readonly HashSet<string> activeRequests = new();
     private bool cutsceneClosed;
+    private bool audioWasOpen;
     public bool IsFullyClosed => !IsOpen &&
         (transform.localPosition - closedPosition).sqrMagnitude < 0.000001f;
 
@@ -32,6 +33,7 @@ public class DoorController : MonoBehaviour
         // ยึดตำแหน่งที่คุณจัดวางโมเดลไว้ใน Scene เป็น "ตำแหน่งตอนปิดทึบ" เสมอ (จะได้กะระยะวางกำแพงง่ายๆ)
         closedPosition = transform.localPosition;
         openPosition = transform.localPosition + openOffset;
+        audioWasOpen = IsOpen;
 
         // ถ้าตั้งให้ Start Open พอเริ่มเกมปุ๊บ ให้ประตูเด้งขึ้นไปอยู่ตำแหน่งเปิด (เลื่อนไปตาม openOffset) ทันที
         if (startOpen)
@@ -42,6 +44,12 @@ public class DoorController : MonoBehaviour
 
     void Update()
     {
+        if (Time.deltaTime > 0f && speed > 0f)
+        {
+            if (IsOpen && !audioWasOpen && transform.localPosition != openPosition)
+                ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.DoorOpen, transform.position);
+            audioWasOpen = IsOpen;
+        }
         Vector3 target = IsOpen ? openPosition : closedPosition;
 
         transform.localPosition = Vector3.MoveTowards(

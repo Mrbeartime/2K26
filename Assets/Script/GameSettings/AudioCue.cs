@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace ProjectD.Audio
 {
-    public enum AudioBus { Master, Music, SFX, UI, Ambient }
-    public enum AudioCue { Footstep, SwordSlash, BowShot, DoorOpen, ChestOpen, Death, LevelBGM, MenuBGM, ButtonClick, ButtonHover, Pause, CharacterSelect, Ambient }
+    public enum AudioBus { Master, Music, SFX, UI }
+    public enum AudioCue { Footstep, SwordSlash, BowShot, DoorOpen, ChestOpen, Death, LevelBGM, MenuBGM, ButtonClick, ButtonHover, Pause, CharacterSelect }
 
     [Serializable]
     public sealed class AudioCueSlot
@@ -15,13 +15,15 @@ namespace ProjectD.Audio
         public Vector2 volume = new Vector2(.9f, 1f);
         public Vector2 pitch = new Vector2(.95f, 1.05f);
         [Min(1)] public int maxSimultaneous = 3;
+        [Min(0f)] public float minimumInterval;
+        [NonSerialized] internal float nextPlayTime;
         [Min(.01f)] public float minDistance = 1f;
         [Min(.01f)] public float maxDistance = 20f;
 
         public AudioCueSlot(AudioCue cue, AudioBus bus)
         {
             this.cue = cue; this.bus = bus;
-            if (bus == AudioBus.Music || bus == AudioBus.Ambient) pitch = Vector2.one;
+            if (bus == AudioBus.Music) pitch = Vector2.one;
         }
 
         public AudioClip PickClip()

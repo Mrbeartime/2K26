@@ -6,14 +6,14 @@ namespace ProjectD.Menus
     public static class GameSettings
     {
         public static event System.Action AudioChanged;
-        private static readonly string[] VolumeKeys = { "Settings.Audio.Master", "Settings.Audio.Music", "Settings.Audio.SFX", "Settings.Audio.UI", "Settings.Audio.Ambient" };
-        private static float[] audioDefaults = { 100f, 80f, 100f, 100f, 70f };
+        private static readonly string[] VolumeKeys = { "Settings.Audio.Master", "Settings.Audio.Music", "Settings.Audio.SFX", "Settings.Audio.UI" };
+        private static float[] audioDefaults = { 100f, 80f, 100f, 100f };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetAudioState()
         {
             AudioChanged = null;
-            audioDefaults = new[] { 100f, 80f, 100f, 100f, 70f };
+            audioDefaults = new[] { 100f, 80f, 100f, 100f };
         }
 
         public static void ConfigureAudioDefaults(float[] values)

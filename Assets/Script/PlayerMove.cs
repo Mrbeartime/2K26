@@ -12,6 +12,8 @@ public class PlayerMove : MonoBehaviour
     private Tile currentTile;
 
     private bool isMoving;
+    private int lastWalkFrame = -1;
+    public bool MovedAlongPathThisFrame => lastWalkFrame == Time.frameCount;
 
     private CharacterFacing facing;
 
@@ -195,12 +197,14 @@ public class PlayerMove : MonoBehaviour
         // หันไปทาง Tile ที่กำลังเดินไป
         facing?.FaceTowards(targetPosition);
 
+        Vector3 beforeWalk = transform.position;
         transform.position =
             Vector3.MoveTowards(
                 transform.position,
                 targetPosition,
                 moveSpeed * Time.deltaTime
             );
+        if ((transform.position - beforeWalk).sqrMagnitude > 0f) lastWalkFrame = Time.frameCount;
 
         // ถึง Tile แล้ว
         if (Vector3.Distance(

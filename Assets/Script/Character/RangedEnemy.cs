@@ -37,6 +37,7 @@ public class RangedEnemy : Enemy
         projectile.Initialize(this, muzzle.forward, arrowSpeed,
             Mathf.Max(1, rangeTiles) * GridManager.Instance.TileSize);
         arrow.SetActive(true);
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.BowShot, muzzle.position);
         onAttack.Invoke();
     }
 
