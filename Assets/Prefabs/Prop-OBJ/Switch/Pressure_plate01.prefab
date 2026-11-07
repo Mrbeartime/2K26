@@ -181,6 +181,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c0d4f663ea6a4ed4d899034c02bcef91, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2211703396304919554}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c0d4f663ea6a4ed4d899034c02bcef91, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2315487400190334637}
   m_SourcePrefab: {fileID: 100100000, guid: c0d4f663ea6a4ed4d899034c02bcef91, type: 3}
 --- !u!4 &1381550718049495117 stripped
 Transform:
@@ -251,3 +254,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.020493, y: 0.25700969, z: 1}
   m_Center: {x: -0.010246515, y: -0.12763861, z: 0}
+--- !u!114 &2315487400190334637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1758534306465510135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13079c327ee2f184093c0e217dd0c873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorSwitchHoverBlink
+  hoverType: 0
+  hoverTile: {fileID: 7722922371429810083}
+  hoverCollider: {fileID: 0}
+  targetDoors:
+  - {fileID: 0}
+  enableBlink: 1
+  blinkColor: {r: 0, g: 1, b: 0, a: 1}
+  blinkInterval: 0.3

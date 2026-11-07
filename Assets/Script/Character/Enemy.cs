@@ -13,6 +13,26 @@ public class Enemy : Entity
     private Tile occupiedTile;
     private int patrolIndex;
 
+    protected override void RemoveAfterDeath()
+    {
+        // Release gameplay collisions immediately, even while the death visual remains.
+        foreach (Collider col in GetComponentsInChildren<Collider>()) col.enabled = false;
+        foreach (Rigidbody body in GetComponentsInChildren<Rigidbody>())
+        {
+            body.isKinematic = true;
+            body.useGravity = false;
+        }
+
+        EnemyAnimationController animationController = GetComponent<EnemyAnimationController>();
+        if (animationController != null && animationController.TryPlayDeath(FinishDeath)) return;
+        FinishDeath();
+    }
+
+    private void FinishDeath()
+    {
+        base.RemoveAfterDeath();
+    }
+
     protected virtual void Start()
     {
         if (GridManager.Instance == null) return;
