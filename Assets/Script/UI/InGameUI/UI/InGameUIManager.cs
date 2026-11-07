@@ -31,6 +31,7 @@ public class InGameUIManager : MonoBehaviour
     public Canvas PauseUI;
     [SerializeField] private OverlayUI guideOverlay;
     [SerializeField] private OverlayUI settingsOverlay;
+    private OverlayUI pauseOverlay;
 
     [Header("Schedule Dial Prefabs")]
     [Tooltip("Tick prefab with an Image on its root. Empty uses the default DialTick prefab.")]
@@ -982,6 +983,16 @@ public class InGameUIManager : MonoBehaviour
 
     #region Pause
 
+    private void LateUpdate()
+    {
+        if (!IsPaused || pauseGroup == null) return;
+        bool childOverlayOpen =
+            (guideOverlay != null && guideOverlay.gameObject.activeInHierarchy) ||
+            (settingsOverlay != null && settingsOverlay.gameObject.activeInHierarchy);
+        pauseGroup.interactable = !childOverlayOpen;
+        pauseGroup.blocksRaycasts = !childOverlayOpen;
+    }
+
     public void CallPause() => SetPaused(!IsPaused);
 
     private void OnShowPauseUI(InputAction.CallbackContext context)
@@ -1004,6 +1015,11 @@ public class InGameUIManager : MonoBehaviour
         target.DeactivateOverlay();
         if (IsPaused && PauseUI != null)
         {
+            if (pauseGroup != null)
+            {
+                pauseGroup.interactable = true;
+                pauseGroup.blocksRaycasts = true;
+            }
             foreach (Selectable control in PauseUI.GetComponentsInChildren<Selectable>())
             {
                 if (!control.isActiveAndEnabled || !control.IsInteractable()) continue;
@@ -1030,6 +1046,28 @@ public class InGameUIManager : MonoBehaviour
         if (paused && TurnCounter != null) TurnCounter.ReleaseButton();
 
         if (pauseRoutine != null) StopCoroutine(pauseRoutine);
+        if (pauseOverlay != null)
+        {
+            pauseRoutine = null;
+            if (inGameGroup != null) inGameGroup.blocksRaycasts = !paused;
+            if (pauseGroup != null)
+            {
+                pauseGroup.interactable = paused;
+                pauseGroup.blocksRaycasts = paused;
+            }
+            if (paused)
+                pauseOverlay.ActivateOverlay();
+            else
+            {
+                // Unwind child overlays before restoring the gameplay UI actions.
+                if (settingsOverlay != null && settingsOverlay.gameObject.activeSelf)
+                    settingsOverlay.DeactivateOverlay();
+                if (guideOverlay != null && guideOverlay.gameObject.activeSelf)
+                    guideOverlay.DeactivateOverlay();
+                pauseOverlay.DeactivateOverlay();
+            }
+            return;
+        }
         pauseRoutine = StartCoroutine(PauseFade(paused));
     }
 
@@ -1039,13 +1077,15 @@ public class InGameUIManager : MonoBehaviour
 
         if (PauseUI != null)
         {
+            pauseOverlay = PauseUI.GetComponent<OverlayUI>();
             pauseGroup = GetOrAddCanvasGroup(PauseUI.gameObject);
-            pauseGroup.alpha = 0f;
+            pauseGroup.alpha = pauseOverlay != null ? 1f : 0f;
             PauseUI.gameObject.SetActive(false);
         }
         else Debug.LogWarning("PauseUI is not assigned.", this);
 
-        if (blackScreen != null)
+        // OverlayUI owns the background in the shared-overlay version of Pause.
+        if (blackScreen != null && pauseOverlay == null)
         {
             SetBlackScreenAlpha(0f);
             blackScreen.gameObject.SetActive(false);

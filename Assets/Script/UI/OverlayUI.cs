@@ -9,6 +9,7 @@ public class OverlayUI : MonoBehaviour
 {
     [SerializeField] private Canvas overlay;
     [SerializeField] private Image background;
+    [SerializeField] private int sortingOrder = 30000;
     [Tooltip("UI control to receive keyboard/gamepad navigation when this overlay opens. If empty, the first active interactable control inside the overlay is used.")]
     [SerializeField] private Selectable firstSelectedControl;
     private bool opening;
@@ -25,7 +26,7 @@ public class OverlayUI : MonoBehaviour
     {
         input = new ProjectDInputAction();
         overlay.overrideSorting = true;
-        overlay.sortingOrder = Mathf.Max(overlay.sortingOrder, 30000);
+        overlay.sortingOrder = sortingOrder;
         if (background == null || background.transform.parent != transform)
         {
             Debug.LogWarning("Overlay have no bg");
