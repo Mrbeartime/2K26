@@ -25,6 +25,7 @@ public class RogueDoor : MonoBehaviour
         if (isOpen) return true;
         if (rogue == null || !CheckCharacter(rogue)) return false;
         isOpen = true;
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.DoorOpen, transform.position);
         HideDoor();
         onOpened.Invoke();
         return true;

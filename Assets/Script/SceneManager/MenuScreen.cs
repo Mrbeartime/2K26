@@ -18,6 +18,7 @@ namespace ProjectD.Menus
         [SerializeField] private Text soundLabel;
         [SerializeField] private Text fullscreenLabel;
         [SerializeField] private Button[] levelButtons;
+        [SerializeField] private Button[] boardHoverButtons;
         [SerializeField] private Text[] levelLabels;
         [SerializeField] private LevelStarsGraphic[] levelStars;
         [Header("Level progress source (runtime)")]
@@ -81,6 +82,7 @@ namespace ProjectD.Menus
 
         private void Awake()
         {
+            ProjectD.Audio.ButtonAudioFeedback.BindMenu(settingsPanel);
             if (!GameSceneManager.IsInGameSettingsOpen) Time.timeScale = 1f;
             if (mainPanel != null) mainPanel.SetActive(true);
             if (settingsPanel != null) settingsPanel.SetActive(false);
@@ -88,6 +90,8 @@ namespace ProjectD.Menus
             if (playButton != null) playButton.onClick.AddListener(PlaySelectedLevel);
             if (page == Page.LevelSelect)
             {
+                if (boardHoverButtons != null)
+                    foreach (var button in boardHoverButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button);
                 for (int i = 0; levelButtons != null && i < levelButtons.Length; i++)
                 {
                     int slot = i;
@@ -95,6 +99,7 @@ namespace ProjectD.Menus
                     {
                         levelButtons[i].onClick.RemoveAllListeners();
                         levelButtons[i].onClick.AddListener(() => OpenLevelSlot(slot));
+                        ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(levelButtons[i]);
                     }
                 }
                 for (int i = 0; paperLevelButtons != null && i < paperLevelButtons.Length; i++)
@@ -146,7 +151,15 @@ namespace ProjectD.Menus
         }
 
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
-        public void OpenStart() => GameSceneManager.OpenStart();
+        public void OpenStart()
+        {
+            if (page == Page.LevelSelect) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+            GameSceneManager.OpenStart();
+        }
+        private void Start()
+        {
+            if (page == Page.LevelSelect) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+        }
         public void OpenGuide() => GameSceneManager.OpenGuide();
         public void OpenInGameSettings() => GameSceneManager.OpenInGameSettings();
         public void ReloadCurrentScene() => GameSceneManager.ReloadCurrentScene();
@@ -164,6 +177,8 @@ namespace ProjectD.Menus
 
         public void ClosePaper()
         {
+            if (paperPanel != null && paperPanel.activeSelf)
+                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
             paperView = PaperView.Closed;
             if (paperPanel != null) paperPanel.SetActive(false);
             if (mainPanel != null) mainPanel.SetActive(true);
@@ -199,8 +214,16 @@ namespace ProjectD.Menus
         private void PlaySelectedLevel()
         {
             if (paperView != PaperView.Details) return;
-            if (selectedSecret == null) GameSceneManager.OpenLevel(selectedLevel);
-            else if (IsSecretUnlocked(selectedSecret)) GameSceneManager.OpenSecretLevel(selectedSecret.scenePath);
+            if (selectedSecret == null)
+            {
+                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+                GameSceneManager.OpenLevel(selectedLevel);
+            }
+            else if (IsSecretUnlocked(selectedSecret))
+            {
+                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+                GameSceneManager.OpenSecretLevel(selectedSecret.scenePath);
+            }
         }
 
         private bool IsSecretUnlocked(SecretLevel level) => level != null &&
@@ -209,12 +232,17 @@ namespace ProjectD.Menus
 
         private void SetPaperVisible()
         {
+            if (paperPanel != null && !paperPanel.activeSelf)
+                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
             if (mainPanel != null) mainPanel.SetActive(false);
             if (paperPanel != null) paperPanel.SetActive(true);
         }
 
         private void OpenCollection(PaperView view, bool resetPage)
         {
+            if (paperLevelButtons != null)
+                foreach (var button in paperLevelButtons)
+                    ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button, view == PaperView.Completed);
             paperView = view;
             if (resetPage) paperPage = 0;
             entries.Clear();

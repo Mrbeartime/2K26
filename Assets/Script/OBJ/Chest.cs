@@ -11,6 +11,9 @@ public class Chest : MonoBehaviour
     {
         if (character == null || isOpen || Time.timeScale == 0) return;
         isOpen = true;
+        var visual = GetComponentInChildren<TreasureChestAnimation>(true);
+        if (visual != null) visual.PlayOpenSoundOnce();
+        else ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.ChestOpen, transform.position);
         previousTimeScale = Time.timeScale;
         showWin = true;
         Time.timeScale = 0;

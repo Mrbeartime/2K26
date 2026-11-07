@@ -16,6 +16,7 @@ public class Entity : MonoBehaviour
 
         // ถือว่าตายทันที
         IsDead = true;
+        if (this is Character || this is Enemy) ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.Death, transform.position);
 
         // คืนช่อง Tile
         if (GridManager.Instance != null)

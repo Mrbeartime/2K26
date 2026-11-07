@@ -53,6 +53,8 @@ public class ObjectIcon : MonoBehaviour
         // The Button needs a Graphic on its own object to receive clicks
         button = GetComponent<Button>();
         if (button == null) button = gameObject.AddComponent<Button>();
+        if (GetComponent<ProjectD.Audio.ButtonAudioFeedback>() == null)
+            gameObject.AddComponent<ProjectD.Audio.ButtonAudioFeedback>();
 
         if (GetComponent<Graphic>() == null)
         {

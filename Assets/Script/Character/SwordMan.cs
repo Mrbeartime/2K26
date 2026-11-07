@@ -1,6 +1,10 @@
 using UnityEngine;
 public class SwordMan : Character
 {
+    private void OnEnable()
+    {
+        if (GetComponent<SwordSlashTrail>() == null) gameObject.AddComponent<SwordSlashTrail>();
+    }
     public override void Attack(Tile target) => Slash(target);
     public void Slash(Tile target)
     {
@@ -12,12 +16,6 @@ public class SwordMan : Character
             GridManager.Instance.IsBlockedByWall(origin, target)) return;
         foreach (Entity entity in FindObjectsByType<Entity>())
             if (entity != this && entity.CurrentLocation == target.gridPosition) entity.ReceiveHit();
-        GameObject effect = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        effect.name = "Sword Slash";
-        effect.transform.position = target.transform.position + Vector3.up * 0.6f;
-        effect.transform.localScale = new Vector3(0.7f, 0.08f, 0.7f);
-        effect.GetComponent<Collider>().enabled = false;
-        Destroy(effect, 0.15f);
     }
 
     public override void ShowSkillRange()

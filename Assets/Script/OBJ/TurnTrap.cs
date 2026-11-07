@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>Resolved by TurnGameManager after enemies, before the round advances.</summary>
+/// <summary>Resolved by TurnGameManager before enemies, before the round advances.</summary>
 public abstract class TurnTrap : MonoBehaviour, IFixedTurnScheduledObject
 {
     public abstract int IntervalTurns { get; }

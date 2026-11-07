@@ -8,7 +8,8 @@ public sealed class PlayerCorpseShatter : MonoBehaviour
     [SerializeField, Range(12, 1500)] private int fragmentCount = 900;
     [SerializeField, Min(0)] private float explosionForce = 0.63f;
     [SerializeField, Min(0)] private float fragmentRotationSpeed = 100f;
-    [SerializeField, ColorUsage(true, true)] private Color crystalColor = new Color(0.2f, 0.85f, 1f, 1f);
+    [SerializeField, InspectorName("Shatter Neon Color"), ColorUsage(true, true)] private Color crystalColor = new Color(0.2f, 0.85f, 1f, 1f);
+    [SerializeField, InspectorName("Shatter Emission Intensity (HDR)"), Range(0f, 16f)] private float neonEmissionIntensity = 4f;
     [SerializeField, InspectorName("Glow Intensity"), Range(0f, 0.6f)] private float emissionIntensity = 0.35f;
     [SerializeField, Min(0.05f)] private float particleLifetime = 0.55f;
     [SerializeField, Min(0)] private float glowFlashIntensity = 0.1f;
@@ -42,25 +43,27 @@ public sealed class PlayerCorpseShatter : MonoBehaviour
 
     public static bool IsDue(int deathRound, int completedRound) => completedRound >= deathRound + 1;
 
-    public static void CompletePlayerPhase(TurnGameManager source, int completedRound)
+    public static List<CrystalShatterVisual> BeginCleanup(TurnGameManager source, int completedRound)
     {
+        var effects = new List<CrystalShatterVisual>();
         foreach (PlayerCorpseShatter corpse in new List<PlayerCorpseShatter>(corpses))
         {
             if (corpse == null) { corpses.Remove(corpse); continue; }
             if (corpse.manager != source || corpse.HasShattered || !IsDue(corpse.DeathRound, completedRound)) continue;
             corpse.HasShattered = true;
             corpses.Remove(corpse);
-            try { corpse.PlayVisual(); }
+            try { effects.Add(corpse.PlayVisual()); }
             catch (System.Exception error) { Debug.LogException(error, corpse); }
         }
+        return effects;
     }
 
-    private void PlayVisual()
+    private CrystalShatterVisual PlayVisual()
     {
-        CrystalShatterVisual.Create(visualRoot != null ? visualRoot : transform,
+        return CrystalShatterVisual.Create(visualRoot != null ? visualRoot : transform,
             Mathf.Max(0.1f, shatterDuration), Mathf.Clamp(fragmentCount, 12, 1500),
             explosionForce, fragmentRotationSpeed, crystalColor, emissionIntensity,
-            particleLifetime, glowFlashIntensity, effectScale, fragmentSize, spreadRadius, diagnosticLogs);
+            particleLifetime, glowFlashIntensity, effectScale, fragmentSize, spreadRadius, diagnosticLogs, neonEmissionIntensity);
     }
 
     [ContextMenu("Preview Shatter (Play Mode, dead player only)")]

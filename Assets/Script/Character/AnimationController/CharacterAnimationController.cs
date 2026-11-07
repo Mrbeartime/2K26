@@ -29,6 +29,8 @@ public class CharacterAnimationController : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+        if (animator != null && animator.GetComponent<ProjectD.Audio.CharacterAudioEvents>() == null)
+            animator.gameObject.AddComponent<ProjectD.Audio.CharacterAudioEvents>();
     }
 
     private void Update()

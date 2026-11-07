@@ -1,0 +1,180 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8050546808560576186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8734081247743936923}
+  - component: {fileID: 503409495944266647}
+  m_Layer: 0
+  m_Name: GameAudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8734081247743936923
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8050546808560576186}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &503409495944266647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8050546808560576186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f0f0034f37d9314a86681ec8af01e82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Audio.GameAudioManager
+  mixer: {fileID: 24100000, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
+  groups:
+  - {fileID: 24300000, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
+  - {fileID: 24300001, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
+  - {fileID: 24300002, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
+  - {fileID: 24300003, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
+  defaultVolumes:
+  - 100
+  - 80
+  - 100
+  - 100
+  poolSize: 24
+  musicFadeSeconds: 0.8
+  cues:
+  - cue: 0
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 186e9e56938ecdc498349d837cdc55ac, type: 3}
+    volume: {x: 0.45, y: 0.45}
+    pitch: {x: 0.95, y: 1.05}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 1
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: d62a1019632662d41bcbae3c528ca1fd, type: 3}
+    volume: {x: 0.8, y: 0.8}
+    pitch: {x: 0.95, y: 1.05}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 2
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 606e07bd0ce4a434aa63c0c0819abf25, type: 3}
+    volume: {x: 0.75, y: 0.75}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 3
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: a5fd9e4e1b625944596d9cc2fb832478, type: 3}
+    volume: {x: 0.65, y: 0.65}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 4
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: ae3dd9de9f78a4b4aa624cf139fce1fd, type: 3}
+    volume: {x: 0.65, y: 0.65}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 5
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 67e15f63950305146bb806ea112499d7, type: 3}
+    volume: {x: 0.85, y: 0.85}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 6
+    bus: 1
+    clips:
+    - {fileID: 8300000, guid: e64a6879964f40a448c50e1316450581, type: 3}
+    volume: {x: 0.3, y: 0.3}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 7
+    bus: 1
+    clips:
+    - {fileID: 8300000, guid: 282893b7a5542d045a82caf5d8e76a07, type: 3}
+    volume: {x: 0.3, y: 0.3}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 8
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: e99f263f65887a74cb80a13ab06e3497, type: 3}
+    volume: {x: 0.65, y: 0.65}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 9
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: 03395b12518558b4292fa16be7165850, type: 3}
+    volume: {x: 0.25, y: 0.25}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 1
+    minimumInterval: 0.12
+    minDistance: 1
+    maxDistance: 20
+  - cue: 10
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: 4da99400e5cabe449a884b316b397f7b, type: 3}
+    volume: {x: 0.9, y: 1}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 11
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: 04f6f06031257ca49a059b488284ec6d, type: 3}
+    volume: {x: 0.9, y: 1}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 3
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20

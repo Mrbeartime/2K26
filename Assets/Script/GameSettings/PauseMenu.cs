@@ -15,6 +15,8 @@ public class PauseMenu : MonoBehaviour
 
     private void Awake()
     {
+        ProjectD.Audio.ButtonAudioFeedback.BindMenu(pausePanel);
+        ProjectD.Audio.ButtonAudioFeedback.BindMenu(settingsPanel);
         if (pauseButton != null) pauseButton.SetActive(true);
         if (pausePanel != null) pausePanel.SetActive(false);
         if (settingsPanel != null) settingsPanel.SetActive(false);
@@ -32,6 +34,7 @@ public class PauseMenu : MonoBehaviour
     public void PauseGame()
     {
         if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) return;
+        if (!isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
         isPaused = true;
         Time.timeScale = 0f;
         if (pauseButton != null) pauseButton.SetActive(false);
@@ -41,6 +44,7 @@ public class PauseMenu : MonoBehaviour
 
     public void ResumeGame()
     {
+        if (isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
         isPaused = false;
         Time.timeScale = 1f;
         if (pausePanel != null) pausePanel.SetActive(false);

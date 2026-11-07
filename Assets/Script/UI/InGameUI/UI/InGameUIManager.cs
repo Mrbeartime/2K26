@@ -1002,6 +1002,7 @@ public class InGameUIManager : MonoBehaviour
             return;
 
         if (IsPaused == paused) return;
+        ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
         IsPaused = paused;
 
         // Release any skip hold that is still showing its press animation
@@ -1017,6 +1018,7 @@ public class InGameUIManager : MonoBehaviour
 
         if (PauseUI != null)
         {
+            ProjectD.Audio.ButtonAudioFeedback.BindMenu(PauseUI.gameObject);
             pauseGroup = GetOrAddCanvasGroup(PauseUI.gameObject);
             pauseGroup.alpha = 0f;
             PauseUI.gameObject.SetActive(false);
