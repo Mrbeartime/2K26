@@ -3,17 +3,25 @@ using UnityEngine;
 public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
 {
     [Header("Turn Settings")]
-    [SerializeField] private int appearTurn = 4;
-    public string ScheduledActionName => "Appearance when TurnsLeft >= " + appearTurn +
-        " (existing countdown rule; starts in round 1 if initially enabled)";
+    [Tooltip("Round number when the tile starts rising (1 = first round).")]
+    [SerializeField, Min(1)] private int appearTurn = 4;
+    private int AppearanceRound => Mathf.Max(1, appearTurn);
+    public string ScheduledActionName => "Appearance in round " + AppearanceRound;
 
-    // Match the existing Update condition without changing gameplay semantics.
+    // Record the one-time appearance, not every round the tile stays visible.
     public bool IsScheduledOnTurn(int roundNumber, int maximumRounds) =>
-        roundNumber == 1 && maximumRounds >= 1 && maximumRounds >= appearTurn;
+        roundNumber == AppearanceRound && roundNumber <= maximumRounds;
 
     [Header("Rise Settings")]
     [SerializeField] private float hiddenHeight = 2f;
     [SerializeField] private float riseSpeed = 3f;
+
+    [Header("After Rising")]
+    [Tooltip("Allow walking on this Tile after it finishes rising.")]
+    [SerializeField] private bool walkableAfterRise = true;
+
+    [Tooltip("Switch this object and its collider objects to the Wall layer after rising. When disabled, keep their existing layers.")]
+    [SerializeField] private bool blockArrowsAfterRise = false;
 
     private Tile tile;
     private Collider[] colliders;
@@ -57,7 +65,7 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
 
         // ถึง Turn ที่กำหนดแล้ว
         if (!isRising &&
-            TurnGameManager.Instance.CurrentTurn >= appearTurn)
+            TurnGameManager.Instance.RoundNumber >= AppearanceRound)
         {
             StartRise();
         }
@@ -94,10 +102,27 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
 
         transform.position = targetPosition;
 
-        // เปิดให้เดินได้
+        if (blockArrowsAfterRise)
+        {
+            int wallLayer = LayerMask.NameToLayer("Wall");
+            if (wallLayer >= 0)
+            {
+                gameObject.layer = wallLayer;
+                foreach (Collider col in colliders)
+                {
+                    if (col != null) col.gameObject.layer = wallLayer;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("TurnTile cannot block arrows because the Wall layer is missing.", this);
+            }
+        }
+
+        // Apply the configured walkability after reaching the final position.
         if (tile != null)
         {
-            tile.isWalkable = true;
+            tile.isWalkable = walkableAfterRise;
         }
     }
 
