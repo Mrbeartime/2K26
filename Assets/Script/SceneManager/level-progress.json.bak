@@ -8,12 +8,12 @@
         },
         {
             "level": 2,
-            "completed": true,
+            "completed": false,
             "unlocked": true
         },
         {
             "level": 3,
-            "completed": true,
+            "completed": false,
             "unlocked": true
         },
         {
