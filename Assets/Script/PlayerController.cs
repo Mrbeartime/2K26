@@ -351,6 +351,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public bool IsSkillTileHighlighted(Tile tile) =>
+        tile != null && currentHighlightedTiles.Contains(tile) &&
+        tile.IsHighlightShown(Tile.HighlightType.Skill);
+
     public void ClearHighlights()
     {
         selectedEnemy = null;

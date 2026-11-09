@@ -42,6 +42,10 @@ public class Tile : MonoBehaviour
         Enemy
     }
 
+    private HighlightType currentHighlightType;
+
+    public bool IsHighlightShown(HighlightType type) =>
+        highlightObject != null && highlightObject.activeInHierarchy && currentHighlightType == type;
 
     // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
     public void ShowHighlight(HighlightType type)
@@ -49,6 +53,7 @@ public class Tile : MonoBehaviour
         if (highlightObject == null)
             return;
 
+        currentHighlightType = type;
         highlightObject.SetActive(true);
 
         Color targetColor = moveHighlightColor;

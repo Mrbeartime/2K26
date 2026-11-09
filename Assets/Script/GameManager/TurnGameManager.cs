@@ -238,10 +238,9 @@ public class TurnGameManager : MonoBehaviour
         !players.Contains(player))
         return false;
 
-    if (actionMode == ActionMode.MoveTargeting)
-        CancelMoveTargeting();
-    else if (actionMode == ActionMode.SkillTargeting)
-        CancelSkill();
+    // Finish selection before notifying the UI. Cancel* would raise StateChanged
+    // here and let the UI re-enter targeting before SelectPlayer clears its highlights.
+    actionMode = ActionMode.None;
 
     currentPlayer = player;
     currentPlayerSelected = true;
@@ -473,6 +472,10 @@ public class TurnGameManager : MonoBehaviour
     public void UseSkillOn(Tile target)
     {
         if (!IsSkillTargeting || CurrentPlayer == null || target == null) return;
+        // Every character must target a tile whose skill highlight is currently visible.
+        if (PlayerController.Instance == null || !PlayerController.Instance.IsSkillTileHighlighted(target))
+            return;
+
         Character character = CurrentPlayer.GetComponent<Character>();
         if (character == null || !character.CanUseSkill)
         {
@@ -512,6 +515,11 @@ public class TurnGameManager : MonoBehaviour
     public void UseSkillOn(RogueDoor door)
     {
         if (!IsSkillTargeting || CurrentPlayer == null || door == null) return;
+        if (GridManager.Instance == null || PlayerController.Instance == null) return;
+        Tile target = GridManager.Instance.GetTile(
+            GridManager.Instance.WorldToGrid(door.transform.position));
+        if (!PlayerController.Instance.IsSkillTileHighlighted(target)) return;
+
         if (CurrentPlayer.GetComponent<Rogue>() is not Rogue rogue)
         {
             status = "Only Rogue can unlock a door.";
