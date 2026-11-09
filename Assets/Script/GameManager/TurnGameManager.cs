@@ -251,9 +251,6 @@ public class TurnGameManager : MonoBehaviour
 
     PlayerController.Instance?.SelectPlayer(player);
 
-    Character character =
-        player.GetComponent<Character>();
-
     // =========================
     // ยังไม่เดิน
     // =========================
@@ -272,7 +269,6 @@ public class TurnGameManager : MonoBehaviour
     else
     {
         if (SkipExhaustedSkill()) return true;
-        character?.ShowSkillRange();
 
         status =
             player.name +
@@ -427,12 +423,8 @@ public class TurnGameManager : MonoBehaviour
             return;
         }
 
-        // เดินเสร็จแล้ว -> โชว์ Skill Range
+        // Skill range is shown by ChooseSkill when that action is selected.
         if (SkipExhaustedSkill()) return;
-        Character character =
-            player.GetComponent<Character>();
-
-        character?.ShowSkillRange();
 
         status =
             "Move complete. Choose Skill, React, or Skip.";
