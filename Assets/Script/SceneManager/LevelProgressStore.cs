@@ -15,14 +15,6 @@ namespace ProjectD.Menus
             public int level;
             public bool completed;
             public bool unlocked;
-            public int stars;
-        }
-
-        [Serializable]
-        public sealed class SceneStars
-        {
-            public string scenePath;
-            public int stars;
         }
 
         [Serializable]
@@ -32,7 +24,6 @@ namespace ProjectD.Menus
             public List<LevelState> levels;
             public List<string> unlockedSecrets;
             public List<string> completedSecrets;
-            public List<SceneStars> sceneStars;
         }
 
         private static SaveData data;
@@ -89,15 +80,16 @@ namespace ProjectD.Menus
         {
             ReloadIfFileChanged();
             EnsureLoaded();
-            return ValidLevel(level) && data.levels[level - 1].completed;
+            return ValidLevel(level) && FindState(level).completed;
         }
 
         public static bool IsUnlocked(int level)
         {
             ReloadIfFileChanged();
             EnsureLoaded();
-            // Never trust a leftover unlocked:true flag for levels 2-5.
-            return ValidLevel(level) && (level == 1 || data.levels[0].completed);
+            var catalog = GameSceneManager.Catalog;
+            return ValidLevel(level) && (!catalog.requireFirstLevelCompletion ||
+                level == catalog.firstLevelId || FindState(catalog.firstLevelId)?.completed == true);
         }
 
         public static bool IsSecretUnlocked(string id)
@@ -117,7 +109,7 @@ namespace ProjectD.Menus
             if (!ValidLevel(level)) return false;
             ReloadIfFileChanged();
             EnsureLoaded();
-            data.levels[level - 1].completed = true;
+            FindState(level).completed = true;
             Normalize(data);
             return Save();
         }
@@ -130,46 +122,6 @@ namespace ProjectD.Menus
             return Save();
         }
 
-        public static int GetSceneStars(string scenePath)
-        {
-            if (string.IsNullOrWhiteSpace(scenePath)) return 0;
-            ReloadIfFileChanged();
-            EnsureLoaded();
-            int level = FindSceneLevel(scenePath);
-            if (level > 0) return data.levels[level - 1].stars;
-            foreach (var entry in data.sceneStars)
-                if (entry.scenePath == scenePath) return entry.stars;
-            return 0;
-        }
-
-        public static bool RecordSceneStars(string scenePath, int stars)
-        {
-            if (string.IsNullOrWhiteSpace(scenePath) || stars < 1 || stars > 3) return false;
-            ReloadIfFileChanged();
-            EnsureLoaded();
-            int level = FindSceneLevel(scenePath);
-            if (level > 0)
-            {
-                if (data.levels[level - 1].stars >= stars) return true;
-                data.levels[level - 1].stars = stars;
-            }
-            else
-            {
-                SceneStars found = data.sceneStars.Find(entry => entry.scenePath == scenePath);
-                if (found != null && found.stars >= stars) return true;
-                if (found == null) data.sceneStars.Add(new SceneStars { scenePath = scenePath, stars = stars });
-                else found.stars = stars;
-            }
-            return Save();
-        }
-
-        private static int FindSceneLevel(string path)
-        {
-            for (int level = 1; level <= GameSceneManager.LevelCount; level++)
-                if (path == GameSceneManager.LevelPath(level)) return level;
-            return 0;
-        }
-
         public static bool CompleteSecret(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return false;
@@ -179,7 +131,15 @@ namespace ProjectD.Menus
             return Save();
         }
 
-        private static bool ValidLevel(int level) => level >= 1 && level <= GameSceneManager.LevelCount;
+        private static bool ValidLevel(int level) => GameSceneManager.Catalog != null && GameSceneManager.Catalog.FindLevel(level) != null;
+        private static LevelState FindState(int id)
+        {
+            var found = data.levels.Find(state => state.level == id);
+            if (found != null || !ValidLevel(id)) return found;
+            found = new LevelState { level = id };
+            data.levels.Add(found);
+            return found;
+        }
 
         private static SaveData NewData() => new SaveData
         {
@@ -231,13 +191,16 @@ namespace ProjectD.Menus
 
             data = NewData();
             int oldUnlocked = Mathf.Clamp(PlayerPrefs.GetInt("Progress.UnlockedLevel", 1), 1, GameSceneManager.LevelCount);
-            for (int level = 1; level <= GameSceneManager.LevelCount; level++)
+            foreach (var definition in GameSceneManager.Catalog.Levels)
+            {
+                int level = definition.id;
                 data.levels.Add(new LevelState
                 {
                     level = level,
                     completed = PlayerPrefs.GetInt($"Progress.Level{level}.Complete", 0) == 1,
                     unlocked = level <= oldUnlocked
                 });
+            }
             const string secret = "SecretLevel1";
             if (PlayerPrefs.GetInt("Progress.Secret." + secret + ".Unlocked", 0) == 1)
                 data.unlockedSecrets.Add(secret);
@@ -272,32 +235,29 @@ namespace ProjectD.Menus
 
         private static void Normalize(SaveData save)
         {
-            var ordered = new List<LevelState>();
-            for (int level = 1; level <= GameSceneManager.LevelCount; level++)
+            // Merge by permanent ID, never by array index. Keep entries absent from the
+            // current catalog so temporarily removing a level cannot erase its save.
+            var states = new Dictionary<int, LevelState>();
+            foreach (var entry in save.levels)
             {
-                var state = new LevelState { level = level };
-                foreach (var entry in save.levels)
-                {
-                    if (entry == null || entry.level != level) continue;
-                    state.completed |= entry.completed;
-                    state.stars = Mathf.Max(state.stars, Mathf.Clamp(entry.stars, 0, 3));
-                }
-                ordered.Add(state);
+                if (entry == null || entry.level < 1) continue;
+                if (!states.TryGetValue(entry.level, out var state))
+                    states.Add(entry.level, state = new LevelState { level = entry.level });
+                state.completed |= entry.completed;
             }
-            // Level 1 is the only gate, including when loading an older JSON save.
-            bool passedFirstLevel = ordered[0].completed;
-            foreach (var state in ordered) state.unlocked = state.level == 1 || passedFirstLevel;
-            save.levels = ordered;
+            var catalog = GameSceneManager.Catalog;
+            if (catalog != null)
+            {
+                foreach (var level in catalog.Levels)
+                    if (!states.ContainsKey(level.id)) states.Add(level.id, new LevelState { level = level.id });
+                bool passedFirst = states.TryGetValue(catalog.firstLevelId, out var first) && first.completed;
+                foreach (var state in states.Values)
+                    state.unlocked = !catalog.requireFirstLevelCompletion || state.level == catalog.firstLevelId || passedFirst;
+            }
+            save.levels = new List<LevelState>(states.Values);
+            save.levels.Sort((left, right) => left.level.CompareTo(right.level));
             if (save.unlockedSecrets == null) save.unlockedSecrets = new List<string>();
             if (save.completedSecrets == null) save.completedSecrets = new List<string>();
-            var sceneScores = new Dictionary<string, int>();
-            if (save.sceneStars != null)
-                foreach (var entry in save.sceneStars)
-                    if (entry != null && !string.IsNullOrWhiteSpace(entry.scenePath))
-                        sceneScores[entry.scenePath] = Mathf.Max(sceneScores.TryGetValue(entry.scenePath, out int old) ? old : 0,
-                            Mathf.Clamp(entry.stars, 0, 3));
-            save.sceneStars = new List<SceneStars>();
-            foreach (var pair in sceneScores) save.sceneStars.Add(new SceneStars { scenePath = pair.Key, stars = pair.Value });
         }
 
         private static bool Save()

@@ -51,7 +51,6 @@ MonoBehaviour:
   fullscreenLabel: {fileID: 0}
   levelButtons: []
   levelLabels: []
-  levelStars: []
   activeProgressJsonPath: 
   firstLevelCompleted: 0
   levelDescriptions:
@@ -66,7 +65,6 @@ MonoBehaviour:
   playButton: {fileID: 0}
   paperLevelButtons: []
   paperLevelLabels: []
-  paperLevelStars: []
   previousPageButton: {fileID: 0}
   nextPageButton: {fileID: 0}
   pageLabel: {fileID: 0}
