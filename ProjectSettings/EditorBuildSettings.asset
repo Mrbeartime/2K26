@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/MainScene/Menus/Setting.unity
     guid: 1e25674cc09f14d4a81b1a87e1be6d93
   - enabled: 1
-    path: Assets/Scenes/MainScene/Menus/LevelSelec.unity
+    path: Assets/Scenes/MainScene/Menus/LevelSelect.unity
     guid: 687fabe3fbd90e145bf834827b863bca
   - enabled: 1
     path: Assets/Scenes/MainScene/Level/Level1.unity
@@ -35,5 +35,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity
     guid: be8301216cb42ca4fb1729b15674f6a8
+  - enabled: 1
+    path: Assets/Scenes/MainScene/Menus/Loading.unity
+    guid: 45a2c1c427324126a36b7bba1d2e2d75
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

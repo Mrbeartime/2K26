@@ -1,141 +1,123 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace ProjectD.Menus
 {
+    /// <summary>Public navigation API. SceneCatalog owns paths, IDs and level order.</summary>
     public static class GameSceneManager
     {
-        public const string StartScene = "Assets/Scenes/MainScene/Menus/Start.unity";
-        public const string SettingsScene = "Assets/Scenes/MainScene/Menus/Setting.unity";
-        public const string SelectScene = "Assets/Scenes/MainScene/Menus/LevelSelec.unity";
-        public const string GuideScene = "Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity";
-        public const string SecretScene = "Assets/Scenes/Mon/SceneGame/SecretLevel1.unity";
-        public const int LevelCount = 5;
-        public static bool IsInGameSettingsOpen { get; private set; }
-        private static Scene settingsScene;
-        private static InGameUIManager settingsGameUI;
-        private static float settingsTimeScale;
-
-        public static void OpenInGameSettings()
+        private static SceneCatalog catalog;
+        private static bool reportedMissingCatalog;
+        private static AsyncOperation pendingNavigation;
+        public static SceneCatalog Catalog
         {
-            if (IsInGameSettingsOpen) return;
-            if (!Application.CanStreamedLevelBeLoaded(SettingsScene))
+            get
             {
-                Debug.LogError("Settings scene is missing from Build Settings: " + SettingsScene);
-                return;
+                if (catalog == null)
+                {
+                    catalog = FindPreloadedCatalog();
+                    if (catalog == null && !reportedMissingCatalog)
+                    {
+                        reportedMissingCatalog = true;
+                        Debug.LogError("SceneCatalog is not configured. Select the catalog asset and click Sync Scenes To Build Settings. Keep exactly one catalog in Preloaded Assets.");
+                    }
+                }
+                return catalog;
             }
-            // Keep the level loaded so characters, traps and the current turn are preserved.
-            IsInGameSettingsOpen = true;
-            settingsTimeScale = Time.timeScale;
-            settingsGameUI = Object.FindAnyObjectByType<InGameUIManager>();
-            if (settingsGameUI != null) settingsGameUI.SetPaused(true);
-            Time.timeScale = 0f;
-            var operation = SceneManager.LoadSceneAsync(SettingsScene, LoadSceneMode.Additive);
-            operation.completed += _ =>
-            {
-                settingsScene = SceneManager.GetSceneByPath(SettingsScene);
-                MenuScreen menu = null;
-                foreach (var root in settingsScene.GetRootGameObjects())
-                {
-                    foreach (var camera in root.GetComponentsInChildren<Camera>(true)) camera.enabled = false;
-                    foreach (var listener in root.GetComponentsInChildren<AudioListener>(true)) listener.enabled = false;
-                    foreach (var events in root.GetComponentsInChildren<UnityEngine.EventSystems.EventSystem>(true))
-                        events.gameObject.SetActive(false);
-                    foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
-                        canvas.sortingOrder = 1000;
-                    if (menu == null) menu = root.GetComponentInChildren<MenuScreen>(true);
-                }
-                if (menu != null) menu.OpenSettings();
-                else
-                {
-                    Debug.LogError("Settings scene has no MenuScreen.");
-                    CloseInGameSettings();
-                }
-            };
         }
 
-        public static void CloseInGameSettings()
+        // Preloaded Assets reference the asset by GUID, so its folder can change safely.
+        private static SceneCatalog FindPreloadedCatalog()
         {
-            if (!IsInGameSettingsOpen || !settingsScene.IsValid()) return;
-            var operation = SceneManager.UnloadSceneAsync(settingsScene);
-            operation.completed += _ =>
-            {
-                IsInGameSettingsOpen = false;
-                Time.timeScale = settingsTimeScale;
-                if (settingsGameUI != null) settingsGameUI.SetPaused(false);
-                settingsGameUI = null;
-                settingsScene = default;
-            };
+#if UNITY_EDITOR
+            var assets = UnityEditor.PlayerSettings.GetPreloadedAssets();
+#else
+            var assets = Resources.FindObjectsOfTypeAll<SceneCatalog>();
+#endif
+            SceneCatalog found = null;
+            foreach (var asset in assets)
+                if (asset is SceneCatalog candidate)
+                {
+                    if (found != null) return null;
+                    found = candidate;
+                }
+            return found;
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void InitializeCatalog() { _ = Catalog; }
+        public static string StartScene => Catalog != null ? Catalog.startScene.Path : string.Empty;
+        public static string SettingsScene => Catalog != null ? Catalog.settingsScene.Path : string.Empty;
+        public static string SelectScene => Catalog != null ? Catalog.levelSelectScene.Path : string.Empty;
+        public static string GuideScene => Catalog != null ? Catalog.guideScene.Path : string.Empty;
+        public static string LoadingScene => Catalog != null ? Catalog.loadingScene.Path : string.Empty;
+        public static int LevelCount => Catalog != null ? Catalog.Levels.Count : 0;
+        public static bool IsInGameSettingsOpen => InGameSettingsSession.IsOpen;
+        public static bool IsChangingScene => LoadingScreen.IsLoading || (pendingNavigation != null && !pendingNavigation.isDone);
+        public static int ActiveLevel => Catalog != null ? Catalog.FindLevelByScene(SceneManager.GetActiveScene().path)?.id ?? 0 : 0;
+        public static string LevelPath(int id) => Catalog != null ? Catalog.FindLevel(id)?.scene.Path ?? string.Empty : string.Empty;
+        public static bool IsUnlocked(int id) => LevelProgressStore.IsUnlocked(id);
+        public static bool IsCompleted(int id) => LevelProgressStore.IsCompleted(id);
+        public static bool IsSecretUnlocked(string id) => LevelProgressStore.IsSecretUnlocked(id);
+        public static void UnlockSecret(string id) => LevelProgressStore.UnlockSecret(id);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetCache() { catalog = null; pendingNavigation = null; reportedMissingCatalog = false; }
+
         public static int UnlockedLevel
         {
             get
             {
-                for (int level = LevelCount; level >= 1; level--)
-                    if (IsUnlocked(level)) return level;
-                return 1;
-            }
-        }
-        public static string LevelPath(int level) => $"Assets/Scenes/MainScene/Level/Level{level}.unity";
-        public static bool IsUnlocked(int level) => LevelProgressStore.IsUnlocked(level);
-        public static bool IsCompleted(int level) => LevelProgressStore.IsCompleted(level);
-        public static bool IsSecretUnlocked(string id) => LevelProgressStore.IsSecretUnlocked(id);
-        public static void UnlockSecret(string id)
-        {
-            LevelProgressStore.UnlockSecret(id);
-        }
-        public static void OpenSecretLevel(string path) => Load(path);
-
-        public static int ActiveLevel
-        {
-            get
-            {
-                string path = SceneManager.GetActiveScene().path;
-                for (int i = 1; i <= LevelCount; i++)
-                    if (path == LevelPath(i)) return i;
-                return 0;
+                if (Catalog == null) return 0;
+                for (int i = Catalog.Levels.Count - 1; i >= 0; i--)
+                    if (IsUnlocked(Catalog.Levels[i].id)) return Catalog.Levels[i].id;
+                return Catalog.firstLevelId;
             }
         }
 
-        // Called only by the game's confirmed victory path, never by opening a menu.
-        public static void CompleteActiveLevel()
+        public static void OpenInGameSettings() => InGameSettingsSession.Open();
+        public static void CloseInGameSettings() => InGameSettingsSession.Close();
+        public static void CompleteActiveLevel() => CompleteLevelForScene(SceneManager.GetActiveScene().path);
+        public static bool CompleteLevelForScene(string path)
         {
-            CompleteLevelForScene(SceneManager.GetActiveScene().path);
-        }
-
-        // Use the goal object's own scene, including when scenes are loaded additively.
-        public static bool CompleteLevelForScene(string scenePath)
-        {
-            for (int level = 1; level <= LevelCount; level++)
-                if (scenePath == LevelPath(level))
-                {
-                    return LevelProgressStore.CompleteLevel(level);
-                }
-            if (scenePath == SecretScene) return LevelProgressStore.CompleteSecret("SecretLevel1");
+            if (Catalog == null) return false;
+            var level = Catalog.FindLevelByScene(path);
+            if (level != null) return LevelProgressStore.CompleteLevel(level.id);
+            foreach (var secret in Catalog.SecretLevels)
+                if (!string.IsNullOrEmpty(path) && secret.scene.Path == path)
+                    return LevelProgressStore.CompleteSecret(secret.id);
             return false;
         }
 
         public static void OpenStart() => Load(StartScene);
         public static void OpenLevelSelect() => Load(SelectScene);
         public static void OpenGuide() => Load(GuideScene);
+        public static void OpenSecretLevel(string path) => Load(path);
         public static void ReloadCurrentScene() => Load(SceneManager.GetActiveScene().path);
-        public static void OpenLevel(int level)
-        {
-            if (IsUnlocked(level)) Load(LevelPath(level));
-        }
+        public static void OpenLevel(int id) { if (IsUnlocked(id)) Load(LevelPath(id)); }
+        // Only the LevelSelect Play button uses the Loading scene.
+        public static bool OpenLevelFromSelect(int id) => IsUnlocked(id) && Load(LevelPath(id), true);
+        public static bool OpenSecretFromSelect(string path) => Load(path, true);
 
-        private static void Load(string path)
+        public static bool Load(string path, bool showLoading = false)
         {
-            if (!Application.CanStreamedLevelBeLoaded(path))
+            if (Catalog == null) return false;
+            if (IsChangingScene) return false;
+            if (string.IsNullOrEmpty(path) || !Application.CanStreamedLevelBeLoaded(path))
             {
-                Debug.LogError("Scene is missing from Build Settings: " + path);
-                return;
+                Debug.LogError("Cannot load scene. Check SceneCatalog and Build Settings: " + path);
+                return false;
             }
+            if (showLoading) return LoadingScreen.TryLoad(path);
+            InGameSettingsSession.LeaveForSceneChange();
             Time.timeScale = 1f;
-
-            // ? ADDED: use the loading screen if its prefab exists; otherwise fall back to the old instant load
-            if (LoadingScreen.TryLoad(path)) return;
-            SceneManager.LoadScene(path);
+            try
+            {
+                pendingNavigation = SceneManager.LoadSceneAsync(path, LoadSceneMode.Single);
+                return pendingNavigation != null;
+            }
+            catch (Exception error) { pendingNavigation = null; Debug.LogException(error); return false; }
         }
 
         public static void ExitGame()

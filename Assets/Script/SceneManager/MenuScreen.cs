@@ -1,141 +1,83 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-using System;
+using UnityEngine.Events;
 using System.Collections.Generic;
-using ProjectD.AfterFeature;
 
 namespace ProjectD.Menus
 {
-    /// <summary>Controls menu UI objects stored in the scene Hierarchy.</summary>
-    public class MenuScreen : MonoBehaviour
+    /// <summary>
+    /// Menu entry points and screen lifecycle.
+    /// Settings are in MenuScreen.Settings.cs; level cards are in MenuScreen.LevelSelect.cs.
+    /// Keep this component on an always-active object outside the panels it opens.
+    /// </summary>
+    public partial class MenuScreen : MonoBehaviour
     {
         public enum Page { Start, LevelSelect }
-
         [SerializeField] private Page page;
         [SerializeField] private GameObject mainPanel;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private Text soundLabel;
         [SerializeField] private Text fullscreenLabel;
-        [SerializeField] private Button[] levelButtons;
-        [SerializeField] private Button[] boardHoverButtons;
-        [SerializeField] private Text[] levelLabels;
-        [SerializeField] private LevelStarsGraphic[] levelStars;
-        [Header("Level progress source (runtime)")]
-        [SerializeField] private string activeProgressJsonPath;
-        [SerializeField] private bool firstLevelCompleted;
-        [Header("Level details (scene objects)")]
-        [SerializeField] private string[] levelDescriptions = new string[5];
-        [SerializeField] private GameObject paperPanel;
-        [SerializeField] private Text paperTitle;
-        [SerializeField] private Text paperDescription;
-        [SerializeField] private Button playButton;
-        [SerializeField] private Button[] paperLevelButtons;
-        [SerializeField] private Text[] paperLevelLabels;
-        [SerializeField] private LevelStarsGraphic[] paperLevelStars;
-        [SerializeField] private GameObject previousPageButton;
-        [SerializeField] private GameObject nextPageButton;
-        [SerializeField] private Text pageLabel;
-        [SerializeField] private SecretLevel[] secretLevels = new SecretLevel[0];
 
-        [Serializable]
-        public class SecretLevel
+        private readonly List<KeyValuePair<Button, UnityAction>> bindings = new List<KeyValuePair<Button, UnityAction>>();
+
+        private void Awake()
         {
-            public string id = "SecretLevel1";
-            public string title = "Secret Level";
-            [TextArea] public string description;
-            public string scenePath;
-            [Min(0)] public int requiredCompletedLevel = 5;
+            // The old Settings scene has a temporary script that loads Start on Esc.
+            // MenuScreen now owns closing this screen and restoring the previous input.
+            if (gameObject.scene.path == GameSceneManager.SettingsScene)
+                foreach (var root in gameObject.scene.GetRootGameObjects())
+                    foreach (var legacy in root.GetComponentsInChildren<TEMPORARYMENUFIXER>(true))
+                        legacy.enabled = false;
+            if (!GameSceneManager.IsInGameSettingsOpen && TurnGameManager.Instance == null) Time.timeScale = 1f;
+            if (mainPanel != null) mainPanel.SetActive(true);
+            HideSettingsPanel();
+            if (paperPanel != null) paperPanel.SetActive(false);
+            ProjectD.Audio.ButtonAudioFeedback.BindMenu(settingsPanel);
+            if (page == Page.LevelSelect) SetupLevelSelection();
+            RefreshSettingsLabels();
+            if (gameObject.scene.path == GameSceneManager.SettingsScene) OpenSettings();
         }
 
-        private enum PaperView { Closed, Completed, Secret, Details }
-        private PaperView paperView;
-        private PaperView detailReturnView;
-        private readonly List<int> entries = new List<int>();
-        private readonly int[] visibleLevels = new int[GameSceneManager.LevelCount];
-        private int paperPage;
-        private int selectedLevel;
-        private SecretLevel selectedSecret;
-        private float nextProgressCheck;
-        private int appliedProgressRevision = -1;
+        private void Start()
+        {
+            if (page == Page.LevelSelect) PlayMenuSound();
+        }
 
         private void Update()
         {
-            if (page == Page.LevelSelect && Time.unscaledTime >= nextProgressCheck)
-            {
-                nextProgressCheck = Time.unscaledTime + 0.25f;
-                if (LevelProgressStore.ReloadIfFileChanged() || appliedProgressRevision != LevelProgressStore.Revision)
-                    ApplyProgressToUI();
-            }
-            if (settingsPanel != null && settingsPanel.activeInHierarchy)
-            {
-                var settingsOverlay = settingsPanel.GetComponentInParent<OverlayUI>();
-                bool cancelPressed = settingsOverlay != null
-                    ? settingsOverlay.CancelPressedThisFrame
-                    : Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
-                if (!cancelPressed) return;
-
-                var eventSystem = EventSystem.current;
-                var selected = eventSystem != null ? eventSystem.currentSelectedGameObject : null;
-                if (selected != null && selected.transform.IsChildOf(settingsPanel.transform))
-                {
-                    eventSystem.SetSelectedGameObject(null);
-                    return;
-                }
-
-                CloseSettings();
-                return;
-            }
-            if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
-            GoBack();
+            if (GameSceneManager.IsChangingScene) return;
+            // The menu behind additive Settings must not consume Escape first.
+            if (GameSceneManager.IsInGameSettingsOpen && gameObject.scene.path != GameSceneManager.SettingsScene) return;
+            if (page == Page.LevelSelect) CheckProgressChanges();
+            var overlay = settingsPanel != null ? settingsPanel.GetComponentInParent<OverlayUI>(true) : null;
+            bool backPressed = (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) ||
+                (IsSettingsVisible && overlay != null && overlay.CancelPressedThisFrame);
+            if (backPressed && MenuInput.ConsumeBack()) GoBack();
         }
 
         public void GoBack()
         {
-            if (settingsPanel != null && settingsPanel.activeSelf) CloseSettings();
-            else if (paperView == PaperView.Details && detailReturnView != PaperView.Closed)
+            if (IsSettingsVisible || gameObject.scene.path == GameSceneManager.SettingsScene) { CloseSettings(); return; }
+            if (GameSceneManager.IsInGameSettingsOpen) return;
+            if (paperView == PaperView.Details && detailReturnView != PaperView.Closed)
                 OpenCollection(detailReturnView, false);
             else if (paperView != PaperView.Closed) ClosePaper();
             else if (page == Page.LevelSelect) OpenStart();
         }
 
-        private void Awake()
+        private void BindButton(Button button, UnityAction action)
         {
-            ProjectD.Audio.ButtonAudioFeedback.BindMenu(settingsPanel);
-            if (!GameSceneManager.IsInGameSettingsOpen) Time.timeScale = 1f;
-            if (mainPanel != null) mainPanel.SetActive(true);
-            if (settingsPanel != null)
-            {
-                settingsPanel.GetComponentInParent<OverlayUI>(true)?.DeactivateOverlay();
-                settingsPanel.SetActive(false);
-            }
-            if (paperPanel != null) paperPanel.SetActive(false);
-            if (playButton != null) playButton.onClick.AddListener(PlaySelectedLevel);
-            if (page == Page.LevelSelect)
-            {
-                if (boardHoverButtons != null)
-                    foreach (var button in boardHoverButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button);
-                for (int i = 0; levelButtons != null && i < levelButtons.Length; i++)
-                {
-                    int slot = i;
-                    if (levelButtons[i] != null)
-                    {
-                        levelButtons[i].onClick.RemoveAllListeners();
-                        levelButtons[i].onClick.AddListener(() => OpenLevelSlot(slot));
-                        ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(levelButtons[i]);
-                    }
-                }
-                for (int i = 0; paperLevelButtons != null && i < paperLevelButtons.Length; i++)
-                {
-                    int slot = i;
-                    if (paperLevelButtons[i] != null)
-                        paperLevelButtons[i].onClick.AddListener(() => OpenPaperSlot(slot));
-                }
-            }
-            if (page == Page.LevelSelect) ReloadProgressFromJson();
-            else RefreshUI();
-            if (gameObject.scene.path == GameSceneManager.SettingsScene) OpenSettings();
+            if (button == null) return;
+            button.onClick.AddListener(action);
+            bindings.Add(new KeyValuePair<Button, UnityAction>(button, action));
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var binding in bindings)
+                if (binding.Key != null) binding.Key.onClick.RemoveListener(binding.Value);
         }
 
         private void OnApplicationFocus(bool hasFocus)
@@ -143,275 +85,21 @@ namespace ProjectD.Menus
             if (hasFocus && page == Page.LevelSelect) ReloadProgressFromJson();
         }
 
-        [ContextMenu("Progress/Reload From JSON")]
-        public void ReloadProgressFromJson()
-        {
-            if (page != Page.LevelSelect) return;
-            LevelProgressStore.Reload();
-            ApplyProgressToUI();
-        }
-
-        private void ApplyProgressToUI()
-        {
-            activeProgressJsonPath = LevelProgressStore.SaveFilePath;
-            firstLevelCompleted = LevelProgressStore.IsCompleted(1);
-            RefreshUI();
-            if (paperView == PaperView.Completed || paperView == PaperView.Secret)
-                OpenCollection(paperView, false);
-            else if (paperView == PaperView.Details &&
-                (selectedSecret == null ? !GameSceneManager.IsUnlocked(selectedLevel) : !IsSecretUnlocked(selectedSecret)))
-                ClosePaper();
-            appliedProgressRevision = LevelProgressStore.Revision;
-        }
-
-        [ContextMenu("Progress/Open Active JSON")]
-        public void OpenActiveProgressJson()
-        {
-#if UNITY_EDITOR
-            const string path = "Assets/Script/SceneManager/level-progress.json";
-            UnityEditor.AssetDatabase.ImportAsset(path);
-            UnityEditor.AssetDatabase.OpenAsset(UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(path));
-#endif
-        }
-
+        private static void PlayMenuSound() => ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
-        public void OpenStart()
-        {
-            if (page == Page.LevelSelect) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-            GameSceneManager.OpenStart();
-        }
-        private void Start()
-        {
-            if (page == Page.LevelSelect) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-        }
+        public void OpenStart() { if (page == Page.LevelSelect) PlayMenuSound(); GameSceneManager.OpenStart(); }
         public void OpenGuide() => GameSceneManager.OpenGuide();
         public void OpenInGameSettings() => GameSceneManager.OpenInGameSettings();
         public void ReloadCurrentScene() => GameSceneManager.ReloadCurrentScene();
         public void ExitGame() => GameSceneManager.ExitGame();
-        public void OpenLevel1() => ShowLevelDetails(1);
-        public void OpenLevel2() => ShowLevelDetails(2);
-        public void OpenLevel3() => ShowLevelDetails(3);
-        public void OpenLevel4() => ShowLevelDetails(4);
-        public void OpenLevel5() => ShowLevelDetails(5);
 
-        public void OpenCompleted() => OpenCollection(PaperView.Completed, true);
-        public void OpenSecret() => OpenCollection(PaperView.Secret, true);
-        public void PreviousPaperPage() { paperPage = Mathf.Max(0, paperPage - 1); RefreshPaperCollection(); }
-        public void NextPaperPage() { paperPage++; RefreshPaperCollection(); }
-
-        public void ClosePaper()
-        {
-            if (paperPanel != null && paperPanel.activeSelf)
-                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-            paperView = PaperView.Closed;
-            if (paperPanel != null) paperPanel.SetActive(false);
-            if (mainPanel != null) mainPanel.SetActive(true);
-            RefreshUI();
-        }
-
-        private void OpenLevelSlot(int slot)
-        {
-            if (slot >= 0 && slot < visibleLevels.Length) ShowLevelDetails(visibleLevels[slot]);
-        }
-
-        private void ShowLevelDetails(int level)
-        {
-            if (!GameSceneManager.IsUnlocked(level)) return;
-            detailReturnView = paperView == PaperView.Completed ? PaperView.Completed : PaperView.Closed;
-            selectedLevel = level;
-            selectedSecret = null;
-            ShowDetails("Level " + level,
-                levelDescriptions != null && level <= levelDescriptions.Length && !string.IsNullOrWhiteSpace(levelDescriptions[level - 1])
-                    ? levelDescriptions[level - 1] : "Reach the exit before your turns run out.");
-        }
-
-        private void ShowDetails(string title, string description)
-        {
-            paperView = PaperView.Details;
-            SetPaperVisible();
-            if (paperTitle != null) paperTitle.text = title;
-            if (paperDescription != null) paperDescription.text = description;
-            SetCollectionControls(false);
-            if (playButton != null) playButton.gameObject.SetActive(true);
-        }
-
-        private void PlaySelectedLevel()
-        {
-            if (paperView != PaperView.Details) return;
-            if (selectedSecret == null)
-            {
-                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-                GameSceneManager.OpenLevel(selectedLevel);
-            }
-            else if (IsSecretUnlocked(selectedSecret))
-            {
-                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-                GameSceneManager.OpenSecretLevel(selectedSecret.scenePath);
-            }
-        }
-
-        private bool IsSecretUnlocked(SecretLevel level) => level != null &&
-            (GameSceneManager.IsSecretUnlocked(level.id) ||
-             (level.requiredCompletedLevel > 0 && GameSceneManager.IsCompleted(level.requiredCompletedLevel)));
-
-        private void SetPaperVisible()
-        {
-            if (paperPanel != null && !paperPanel.activeSelf)
-                ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
-            if (mainPanel != null) mainPanel.SetActive(false);
-            if (paperPanel != null) paperPanel.SetActive(true);
-        }
-
-        private void OpenCollection(PaperView view, bool resetPage)
-        {
-            if (paperLevelButtons != null)
-                foreach (var button in paperLevelButtons)
-                    ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button, view == PaperView.Completed);
-            paperView = view;
-            if (resetPage) paperPage = 0;
-            entries.Clear();
-            if (view == PaperView.Completed)
-            {
-                for (int level = 1; level <= GameSceneManager.LevelCount; level++)
-                    if (GameSceneManager.IsCompleted(level)) entries.Add(level);
-            }
-            else
-            {
-                for (int i = 0; secretLevels != null && i < secretLevels.Length; i++)
-                    if (IsSecretUnlocked(secretLevels[i])) entries.Add(i);
-            }
-            SetPaperVisible();
-            RefreshPaperCollection();
-        }
-
-        private int PaperCapacity => Mathf.Clamp(paperLevelButtons == null ? 0 : paperLevelButtons.Length, 1, 4);
-
-        private void RefreshPaperCollection()
-        {
-            int pages = Mathf.Max(1, (entries.Count + PaperCapacity - 1) / PaperCapacity);
-            paperPage = Mathf.Clamp(paperPage, 0, pages - 1);
-            if (paperTitle != null) paperTitle.text = paperView == PaperView.Completed ? "Complete" : "Secret";
-            if (paperDescription != null) paperDescription.text = entries.Count == 0
-                ? (paperView == PaperView.Completed ? "No completed levels yet." : "No secret levels unlocked yet.")
-                : "Select a paper to view its details.";
-            if (playButton != null) playButton.gameObject.SetActive(false);
-            SetCollectionControls(true);
-            for (int i = 0; paperLevelButtons != null && i < paperLevelButtons.Length; i++)
-            {
-                bool visible = i < PaperCapacity && paperPage * PaperCapacity + i < entries.Count;
-                if (paperLevelButtons[i] != null) paperLevelButtons[i].gameObject.SetActive(visible);
-                if (visible && paperLevelLabels != null && i < paperLevelLabels.Length && paperLevelLabels[i] != null)
-                    paperLevelLabels[i].text = paperView == PaperView.Completed
-                        ? "Level " + entries[paperPage * PaperCapacity + i]
-                        : secretLevels[entries[paperPage * PaperCapacity + i]].title;
-                if (paperLevelStars != null && i < paperLevelStars.Length && paperLevelStars[i] != null)
-                {
-                    string path = visible ? (paperView == PaperView.Completed
-                        ? GameSceneManager.LevelPath(entries[paperPage * PaperCapacity + i])
-                        : secretLevels[entries[paperPage * PaperCapacity + i]].scenePath) : string.Empty;
-                    paperLevelStars[i].SetStars(LevelProgressStore.GetSceneStars(path));
-                }
-            }
-            if (previousPageButton != null) previousPageButton.SetActive(paperPage > 0);
-            if (nextPageButton != null) nextPageButton.SetActive(paperPage + 1 < pages);
-            if (pageLabel != null) { pageLabel.gameObject.SetActive(pages > 1); pageLabel.text = (paperPage + 1) + " / " + pages; }
-        }
-
-        private void SetCollectionControls(bool visible)
-        {
-            if (paperLevelButtons != null)
-                foreach (Button button in paperLevelButtons) if (button != null) button.gameObject.SetActive(visible);
-            if (previousPageButton != null) previousPageButton.SetActive(visible);
-            if (nextPageButton != null) nextPageButton.SetActive(visible);
-            if (pageLabel != null) pageLabel.gameObject.SetActive(visible);
-        }
-
-        private void OpenPaperSlot(int slot)
-        {
-            int entry = paperPage * PaperCapacity + slot;
-            if (slot < 0 || slot >= PaperCapacity || entry >= entries.Count) return;
-            if (paperView == PaperView.Completed) ShowLevelDetails(entries[entry]);
-            else if (paperView == PaperView.Secret)
-            {
-                selectedSecret = secretLevels[entries[entry]];
-                detailReturnView = PaperView.Secret;
-                ShowDetails(selectedSecret.title, selectedSecret.description);
-            }
-        }
-
-        public void OpenSettings()
-        {
-            if (settingsPanel == null)
-            {
-                GameSceneManager.OpenInGameSettings();
-                return;
-            }
-            if (mainPanel != null) mainPanel.SetActive(false);
-            // The settings panel lives inside a Canvas that OverlayUI hides in Awake.
-            settingsPanel.GetComponentInParent<OverlayUI>(true)?.ActivateOverlay();
-            settingsPanel.SetActive(true);
-            RefreshUI();
-        }
-
-        public void CloseSettings()
-        {
-            if (GameSceneManager.IsInGameSettingsOpen)
-            {
-                GameSceneManager.CloseInGameSettings();
-                return;
-            }
-            if (gameObject.scene.path == GameSceneManager.SettingsScene)
-            {
-                OpenStart();
-                return;
-            }
-            if (settingsPanel != null) settingsPanel.SetActive(false);
-            if (mainPanel != null) mainPanel.SetActive(true);
-        }
-
-        public void ToggleSound()
-        {
-            GameSettings.SetSound(!GameSettings.SoundEnabled);
-            RefreshUI();
-        }
-
-        public void ToggleFullscreen()
-        {
-            GameSettings.SetFullscreen(!GameSettings.FullscreenEnabled);
-            RefreshUI();
-        }
-
-        private void RefreshUI()
-        {
-            if (soundLabel != null)
-                soundLabel.text = "Sound: " + (GameSettings.SoundEnabled ? "On" : "Off");
-            if (fullscreenLabel != null)
-                fullscreenLabel.text = "Fullscreen: " + (GameSettings.FullscreenEnabled ? "On" : "Off");
-
-            if (page != Page.LevelSelect || levelButtons == null) return;
-            // Completed levels move to Complete; unfinished levels keep their scene-authored positions.
-            for (int i = 0; i < levelButtons.Length; i++)
-            {
-                int level = i + 1;
-                bool visible = level <= GameSceneManager.LevelCount && !GameSceneManager.IsCompleted(level);
-                if (i < visibleLevels.Length) visibleLevels[i] = visible ? level : 0;
-                bool unlocked = GameSceneManager.IsUnlocked(level);
-                if (levelButtons[i] != null)
-                {
-                    levelButtons[i].gameObject.SetActive(visible);
-                    levelButtons[i].interactable = unlocked;
-                    var colors = levelButtons[i].colors;
-                    colors.disabledColor = new Color(0.38f, 0.38f, 0.38f, 1f);
-                    levelButtons[i].colors = colors;
-                }
-                if (levelLabels != null && i < levelLabels.Length && levelLabels[i] != null)
-                {
-                    levelLabels[i].text = visible ? "Level " + level + (unlocked ? string.Empty : "\nLocked") : string.Empty;
-                    levelLabels[i].color = unlocked ? new Color(0.19f, 0.14f, 0.08f, 1f) : new Color(0.92f, 0.92f, 0.92f, 1f);
-                }
-                if (levelStars != null && i < levelStars.Length && levelStars[i] != null)
-                    levelStars[i].SetStars(LevelProgressStore.GetSceneStars(GameSceneManager.LevelPath(level)));
-            }
-        }
+        // Generic Inspector callback for any future level ID.
+        public void OpenLevel(int levelId) => ShowLevelDetails(levelId);
+        // Preserve existing scene/prefab OnClick bindings.
+        public void OpenLevel1() => OpenLevel(1);
+        public void OpenLevel2() => OpenLevel(2);
+        public void OpenLevel3() => OpenLevel(3);
+        public void OpenLevel4() => OpenLevel(4);
+        public void OpenLevel5() => OpenLevel(5);
     }
 }

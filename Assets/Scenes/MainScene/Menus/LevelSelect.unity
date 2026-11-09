@@ -163,11 +163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f073acd2b1b467ab6eac28001969003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.MenuScreen
-  page: 1
-  mainPanel: {fileID: 1486358486}
-  settingsPanel: {fileID: 1600006900}
-  soundLabel: {fileID: 1136749454}
-  fullscreenLabel: {fileID: 1906101704}
   levelButtons:
   - {fileID: 904834260}
   - {fileID: 123123522}
@@ -181,15 +176,8 @@ MonoBehaviour:
   - {fileID: 679319916}
   - {fileID: 188769669}
   - {fileID: 1398133520}
-  levelStars: []
   activeProgressJsonPath: 
   firstLevelCompleted: 0
-  levelDescriptions:
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
   paperPanel: {fileID: 1800000026}
   paperTitle: {fileID: 1800000037}
   paperDescription: {fileID: 1800000041}
@@ -204,16 +192,26 @@ MonoBehaviour:
   - {fileID: 1800000056}
   - {fileID: 1800000065}
   - {fileID: 1800000074}
-  paperLevelStars: []
   previousPageButton: {fileID: 1800000087}
   nextPageButton: {fileID: 1800000096}
   pageLabel: {fileID: 1800000108}
+  levelDescriptions:
+  - Reach the exit before your turns run out.
+  - Reach the exit before your turns run out.
+  - Reach the exit before your turns run out.
+  - Reach the exit before your turns run out.
+  - Reach the exit before your turns run out.
   secretLevels:
   - id: SecretLevel1
     title: Secret Level
     description: A bonus challenge. Reach the exit within three turns.
     scenePath: Assets/Scenes/Mon/SceneGame/SecretLevel1.unity
     requiredCompletedLevel: 5
+  page: 1
+  mainPanel: {fileID: 1486358486}
+  settingsPanel: {fileID: 1600006900}
+  soundLabel: {fileID: 1136749454}
+  fullscreenLabel: {fileID: 1906101704}
 --- !u!1 &123123518
 GameObject:
   m_ObjectHideFlags: 0
@@ -626,6 +624,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 263568401}
   m_CullTransparentMesh: 1
+--- !u!1 &278402074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 278402075}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &278402075
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 278402074}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 437.534, y: -0, z: 530.8037}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &286950764
 GameObject:
   m_ObjectHideFlags: 0
@@ -4946,3 +4975,4 @@ SceneRoots:
   - {fileID: 1505227199}
   - {fileID: 763934421}
   - {fileID: 389351792}
+  - {fileID: 278402075}

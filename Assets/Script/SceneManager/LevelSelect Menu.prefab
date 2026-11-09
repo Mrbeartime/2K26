@@ -61,12 +61,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  levelStars:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   activeProgressJsonPath: 
   firstLevelCompleted: 0
   levelDescriptions:
@@ -85,11 +79,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   paperLevelLabels:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  paperLevelStars:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}

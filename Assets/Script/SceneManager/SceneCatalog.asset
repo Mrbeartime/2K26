@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 929c5eb3a61a47e1bf839398bec79b10, type: 3}
+  m_Name: SceneCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.SceneCatalog
+  startScene:
+    scene: {fileID: 102900000, guid: 9f073acd2b1b467ab6eac28001969005, type: 3}
+    scenePath: Assets/Scenes/MainScene/Menus/Start.unity
+  settingsScene:
+    scene: {fileID: 102900000, guid: 1e25674cc09f14d4a81b1a87e1be6d93, type: 3}
+    scenePath: Assets/Scenes/MainScene/Menus/Setting.unity
+  levelSelectScene:
+    scene: {fileID: 102900000, guid: 687fabe3fbd90e145bf834827b863bca, type: 3}
+    scenePath: Assets/Scenes/MainScene/Menus/LevelSelect.unity
+  guideScene:
+    scene: {fileID: 102900000, guid: be8301216cb42ca4fb1729b15674f6a8, type: 3}
+    scenePath: Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity
+  loadingScene:
+    scene: {fileID: 102900000, guid: 45a2c1c427324126a36b7bba1d2e2d75, type: 3}
+    scenePath: Assets/Scenes/MainScene/Menus/Loading.unity
+  firstLevelId: 1
+  requireFirstLevelCompletion: 1
+  levels:
+  - id: 1
+    title: Level 1
+    description: Reach the exit before your turns run out.
+    scene:
+      scene: {fileID: 102900000, guid: 995a54a1693413e42902957a9b6190e4, type: 3}
+      scenePath: Assets/Scenes/MainScene/Level/Level1.unity
+  - id: 2
+    title: Level 2
+    description: Reach the exit before your turns run out.
+    scene:
+      scene: {fileID: 102900000, guid: 1f83f47272cb32e4c91285708c808410, type: 3}
+      scenePath: Assets/Scenes/MainScene/Level/Level2.unity
+  - id: 3
+    title: Level 3
+    description: Reach the exit before your turns run out.
+    scene:
+      scene: {fileID: 102900000, guid: 881c397dbd4e4944baa51e182f090ba1, type: 3}
+      scenePath: Assets/Scenes/MainScene/Level/Level3.unity
+  - id: 4
+    title: Level 4
+    description: Reach the exit before your turns run out.
+    scene:
+      scene: {fileID: 102900000, guid: 7dfaedecdd9916d4980300b30a12c9ef, type: 3}
+      scenePath: Assets/Scenes/MainScene/Level/Level4.unity
+  - id: 5
+    title: Level 5
+    description: Reach the exit before your turns run out.
+    scene:
+      scene: {fileID: 102900000, guid: 2184c099ebae98d4da18590458bd6c5b, type: 3}
+      scenePath: Assets/Scenes/MainScene/Level/Level5.unity
+  secretLevels:
+  - id: SecretLevel1
+    title: Secret Level
+    description: A bonus challenge. Reach the exit within three turns.
+    scene:
+      scene: {fileID: 102900000, guid: b8a78abbb2544dd68adc2ebccf974b51, type: 3}
+      scenePath: Assets/Scenes/Mon/SceneGame/SecretLevel1.unity
+    requiredCompletedLevel: 5

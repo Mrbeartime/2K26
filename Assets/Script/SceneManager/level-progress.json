@@ -4,35 +4,29 @@
         {
             "level": 1,
             "completed": true,
-            "unlocked": true,
-            "stars": 3
+            "unlocked": true
         },
         {
             "level": 2,
             "completed": true,
-            "unlocked": true,
-            "stars": 3
+            "unlocked": true
         },
         {
             "level": 3,
             "completed": true,
-            "unlocked": true,
-            "stars": 0
+            "unlocked": true
         },
         {
             "level": 4,
             "completed": false,
-            "unlocked": true,
-            "stars": 0
+            "unlocked": true
         },
         {
             "level": 5,
             "completed": false,
-            "unlocked": true,
-            "stars": 0
+            "unlocked": true
         }
     ],
     "unlockedSecrets": [],
-    "completedSecrets": [],
-    "sceneStars": []
+    "completedSecrets": []
 }
