@@ -52,7 +52,7 @@ MonoBehaviour:
     title: Level 4
     description: Reach the exit before your turns run out.
     scene:
-      scene: {fileID: 102900000, guid: 7dfaedecdd9916d4980300b30a12c9ef, type: 3}
+      scene: {fileID: 102900000, guid: bd1ba01d6ecd49a4ba7de641ab490a08, type: 3}
       scenePath: Assets/Scenes/MainScene/Level/Level4.unity
   - id: 5
     title: Level 5
