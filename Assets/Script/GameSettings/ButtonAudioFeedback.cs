@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace ProjectD.Audio
 {
     [DisallowMultipleComponent, RequireComponent(typeof(Button))]
-    public sealed class ButtonAudioFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, ISubmitHandler
+    public sealed class ButtonAudioFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
     {
         [SerializeField] private bool clickSound = true;
         [SerializeField] private bool hoverSound = true;
@@ -13,6 +13,9 @@ namespace ProjectD.Audio
         private bool levelHover;
         private bool levelClickBound;
         private bool pointerInside;
+        private bool selected;
+        private bool pointerPress;
+        private int lastHoverFrame = -1;
         public static void BindLevelHover(Button target, bool enabled = true)
         {
             if (target == null) return;
@@ -43,6 +46,12 @@ namespace ProjectD.Audio
         {
             if (pointerInside) return;
             pointerInside = true;
+            Hover();
+        }
+        private void Hover()
+        {
+            if (lastHoverFrame == Time.frameCount) return;
+            lastHoverFrame = Time.frameCount;
             if (levelHover && button.IsActive() && button.IsInteractable())
             {
                 GameAudioManager.Instance?.PlayLevelHover();
@@ -51,29 +60,36 @@ namespace ProjectD.Audio
             if (InScope && hoverSound && button.IsActive() && button.IsInteractable())
                 GameAudioManager.Instance?.PlayUI(AudioCue.ButtonHover);
         }
-        public void OnPointerClick(PointerEventData data)
+        public void OnPointerDown(PointerEventData data)
         {
-            if (data.button == PointerEventData.InputButton.Left) Click();
+            if (data.button != PointerEventData.InputButton.Left || !button.IsActive() || !button.IsInteractable()) return;
+            pointerPress = true;
+            Click();
         }
         public void OnPointerExit(PointerEventData data) => pointerInside = false;
-        private void OnDisable() => pointerInside = false;
-        public void OnSubmit(BaseEventData data) => Click();
+        public void OnSelect(BaseEventData data)
+        {
+            if (selected) return;
+            selected = true;
+            if (!(data is PointerEventData)) Hover();
+        }
+        public void OnDeselect(BaseEventData data) { selected = false; pointerPress = false; }
+        private void OnDisable() { pointerInside = false; selected = false; }
+        public void OnSubmit(BaseEventData data) { pointerPress = false; Click(); }
         private void Click()
         {
-            if (levelHover) return; // Level buttons use Button.onClick, after its interactability check.
             // A successful Button callback may have just hidden its own panel.
-            if (InScope && clickSound && button.enabled && button.IsInteractable() && lastClickFrame != Time.frameCount)
+            if ((InScope || levelHover) && clickSound && button.enabled && button.IsInteractable() && lastClickFrame != Time.frameCount)
             {
                 lastClickFrame = Time.frameCount;
-                GameAudioManager.Instance?.PlayUI(AudioCue.ButtonClick);
+                GameAudioManager.Instance?.PlayLevelClick();
             }
         }
         private void LevelClick()
         {
             // The successful Button callback can hide/destroy its UI before this listener runs.
-            if (!levelHover || !clickSound || lastClickFrame == Time.frameCount) return;
-            lastClickFrame = Time.frameCount;
-            GameAudioManager.Instance?.PlayLevelClick();
+            if (!levelHover || pointerPress) return;
+            Click();
         }
     }
 }

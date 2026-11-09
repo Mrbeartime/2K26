@@ -14,8 +14,18 @@ public class TreasureChestAnimation : MonoBehaviour
     [SerializeField, Min(1f)] private float maximumOpenWait = 30f;
     private bool opened;
     private bool openSoundPlayed;
+    private bool openSoundRequested;
     public void PlayOpenSoundOnce()
     {
+        openSoundRequested = true;
+    }
+    private void LateUpdate()
+    {
+        if (!openSoundRequested || openSoundPlayed || animator == null || !animator.isActiveAndEnabled || animator.speed <= 0f) return;
+        int stateHash = Animator.StringToHash(openStateName);
+        bool opening = animator.GetCurrentAnimatorStateInfo(0).fullPathHash == stateHash ||
+            (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).fullPathHash == stateHash);
+        if (!opening) return;
         if (openSoundPlayed) return;
         openSoundPlayed = true;
         ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.ChestOpen, transform.position);
