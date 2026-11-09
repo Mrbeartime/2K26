@@ -1886,6 +1886,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Abyss
       objectReference: {fileID: 0}
+    - target: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4207,6 +4211,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Abyss
       objectReference: {fileID: 0}
+    - target: {fileID: 8975199766120506632, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4501,7 +4509,7 @@ Transform:
   m_GameObject: {fileID: 1721888579}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 1.076725, y: -0.0032337904, z: 0.0019869804}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

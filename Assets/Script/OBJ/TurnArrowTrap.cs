@@ -100,7 +100,28 @@ public class TurnArrowTrap : TurnTrap
         Gizmos.DrawWireSphere(muzzle.position, hitRadius);
     }
 
-    //เป็นการแสดงแนวยิงตามช่อง Grid โดยประมาณ ยังไม่ได้จำลองการหยุดของลูกธนูเมื่อชน Player ระหว่างทาง
+    // Preview static blockers along the real shot; characters do not shorten the danger preview.
+    private float GetUnblockedShotDistance(Transform muzzle)
+    {
+        Physics.SyncTransforms();
+        float radius = Mathf.Max(0.01f, hitRadius);
+        float distance = Mathf.Max(1, rangeTiles) * GridManager.Instance.TileSize;
+        foreach (Collider part in Physics.OverlapSphere(muzzle.position, radius, ~0,
+                     QueryTriggerInteraction.Collide))
+        {
+            if (!part.transform.IsChildOf(transform) && GridManager.Instance.IsArrowWall(part))
+                return 0f;
+        }
+
+        foreach (RaycastHit hit in Physics.SphereCastAll(muzzle.position, radius,
+                     muzzle.forward.normalized, distance, ~0, QueryTriggerInteraction.Collide))
+        {
+            if (!hit.collider.transform.IsChildOf(transform) && GridManager.Instance.IsArrowWall(hit.collider))
+                distance = Mathf.Min(distance, hit.distance);
+        }
+        return distance;
+    }
+
     public List<Tile> GetAttackRange()
     {
         List<Tile> tiles = new List<Tile>();
@@ -109,6 +130,8 @@ public class TurnArrowTrap : TurnTrap
             return tiles;
 
         Transform muzzle = firePoint != null ? firePoint : transform;
+        float unblockedDistance = GetUnblockedShotDistance(muzzle);
+        if (unblockedDistance <= 0f) return tiles;
 
         Vector2Int originPosition =
             GridManager.Instance.WorldToGrid(transform.position);
@@ -144,8 +167,14 @@ public class TurnArrowTrap : TurnTrap
             if (next == null)
                 break;
 
-            if (GridManager.Instance.IsBlockedByWall(
-                current, next, null, true))
+            // Project the grid centre onto the shot without using the raised tile's height.
+            Vector3 centre = new Vector3(next.gridPosition.x * GridManager.Instance.TileSize,
+                muzzle.position.y, next.gridPosition.y * GridManager.Instance.TileSize);
+            Vector3 horizontalForward = new Vector3(forward.x, 0f, forward.z);
+            if (horizontalForward.sqrMagnitude < 0.0001f) break;
+            float shotDistance = Vector3.Dot(centre - muzzle.position, horizontalForward) /
+                horizontalForward.sqrMagnitude;
+            if (shotDistance >= unblockedDistance)
                 break;
 
             tiles.Add(next);

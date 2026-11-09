@@ -61,6 +61,27 @@ public class PlayerController : MonoBehaviour
         HandleAttack();
     }
 
+    private void LateUpdate()
+    {
+        if (selectedArrowTrap == null) return;
+        if (!selectedArrowTrap.isActiveAndEnabled)
+        {
+            ClearHighlights();
+            return;
+        }
+        RefreshArrowTrapHighlights();
+    }
+
+    private void RefreshArrowTrapHighlights()
+    {
+        List<Tile> range = selectedArrowTrap.GetAttackRange();
+        foreach (Tile tile in currentHighlightedTiles)
+            if (tile != null && !range.Contains(tile)) tile.HideHighlight();
+        foreach (Tile tile in range)
+            if (!currentHighlightedTiles.Contains(tile)) tile.ShowHighlight(Tile.HighlightType.Enemy);
+        currentHighlightedTiles = range;
+    }
+
     private void HandleTurnInput(TurnGameManager turnManager)
     {
         if (!CanInteractFromWorld(turnManager) ||
@@ -536,13 +557,7 @@ public class PlayerController : MonoBehaviour
         selectedEnemy = null;
         selectedArrowTrap = trap;
 
-        List<Tile> range = trap.GetAttackRange();
-
-        foreach (Tile tile in range)
-        {
-            currentHighlightedTiles.Add(tile);
-            tile.ShowHighlight(Tile.HighlightType.Enemy);
-        }
+        RefreshArrowTrapHighlights();
 
         CameraFocusManager.Instance?.FocusObject(trap.transform);
     }
