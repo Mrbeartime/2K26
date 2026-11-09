@@ -13,6 +13,8 @@ public class Tile : MonoBehaviour
     public event System.Action<GameObject> OccupantChanged;
 
     [Header("Highlight")]
+    [Tooltip("Allow Move, Skill, and Enemy highlights on this tile. Disabling this also prevents skill targeting that requires a visible highlight.")]
+    [SerializeField] private bool canShowHighlight = true;
     [SerializeField] private GameObject highlightObject;
 
     [Header("Highlight Colors")]
@@ -43,17 +45,42 @@ public class Tile : MonoBehaviour
     }
 
     private HighlightType currentHighlightType;
+    private bool highlightRequested;
+
+    public void SetCanShowHighlight(bool allowed)
+    {
+        canShowHighlight = allowed;
+        if (!allowed)
+        {
+            if (highlightObject != null) highlightObject.SetActive(false);
+        }
+        else if (highlightRequested)
+        {
+            ShowHighlight(currentHighlightType);
+        }
+    }
 
     public bool IsHighlightShown(HighlightType type) =>
-        highlightObject != null && highlightObject.activeInHierarchy && currentHighlightType == type;
+        canShowHighlight && highlightObject != null && highlightObject.activeInHierarchy && currentHighlightType == type;
+
+    private void Awake()
+    {
+        if (!canShowHighlight) HideHighlight();
+    }
 
     // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
     public void ShowHighlight(HighlightType type)
     {
+        highlightRequested = true;
+        currentHighlightType = type;
+        if (!canShowHighlight)
+        {
+            if (highlightObject != null) highlightObject.SetActive(false);
+            return;
+        }
         if (highlightObject == null)
             return;
 
-        currentHighlightType = type;
         highlightObject.SetActive(true);
 
         Color targetColor = moveHighlightColor;
@@ -91,6 +118,7 @@ public class Tile : MonoBehaviour
     // ปิด Highlight
     public void HideHighlight()
     {
+        highlightRequested = false;
         if (highlightObject != null)
         {
             highlightObject.SetActive(false);

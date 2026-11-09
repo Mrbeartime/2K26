@@ -17,6 +17,9 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
     [SerializeField] private float riseSpeed = 3f;
 
     [Header("After Rising")]
+    [Tooltip("Hide highlights until rising finishes, then allow them according to this setting. Overrides Tile's Can Show Highlight setting.")]
+    [SerializeField] private bool canShowHighlightAfterRise = true;
+
     [Tooltip("Allow walking on this Tile after it finishes rising.")]
     [SerializeField] private bool walkableAfterRise = true;
 
@@ -52,6 +55,7 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
         if (tile != null)
         {
             tile.isWalkable = false;
+            tile.SetCanShowHighlight(false);
         }
     }
 
@@ -123,6 +127,7 @@ public class TurnTile : MonoBehaviour, IFixedTurnScheduledObject
         if (tile != null)
         {
             tile.isWalkable = walkableAfterRise;
+            tile.SetCanShowHighlight(canShowHighlightAfterRise);
         }
     }
 
