@@ -27,9 +27,13 @@ using UnityEngine.UI;
         [Tooltip("Movement multiplier for Parallax Layer 2.")]
         [SerializeField, Range(0f, 2f)] private float layer2Multiplier = 2f;
 
-        [Header("Background edges")]
+        [Header("Prevent gaps per layer (full-screen artwork)")]
         [Tooltip("Limits Background movement to its oversized area so the screen never shows an empty edge.")]
         [SerializeField] private bool preventBackgroundGaps = true;
+        [Tooltip("Limit Layer 1 movement to its oversized area. Use for full-screen artwork, not individual objects or buttons. A layer smaller than the Canvas cannot move on that axis.")]
+        [SerializeField] private bool preventLayer1Gaps = false;
+        [Tooltip("Limit Layer 2 movement to its oversized area. Use for full-screen artwork, not individual objects or buttons. A layer smaller than the Canvas cannot move on that axis.")]
+        [SerializeField] private bool preventLayer2Gaps = false;
 
         private RectTransform[] layers;
         private Vector2[] startPositions;
@@ -172,8 +176,12 @@ using UnityEngine.UI;
                 Vector2 drift = normalizedPointer * pointerRange * depth;
                 drift.y += Mathf.Sin(Time.unscaledTime * (0.38f + i * 0.08f) + i) * (2f + i);
                 Vector2 targetPosition = startPositions[i] + drift;
-                if (preventBackgroundGaps && layers[i] == background)
-                    targetPosition = ClampToBackgroundBounds(targetPosition, startPositions[i]);
+                bool preventGaps =
+                    (layers[i] == background && preventBackgroundGaps) ||
+                    (layers[i] == parallaxLayer1 && preventLayer1Gaps) ||
+                    (layers[i] == parallaxLayer2 && preventLayer2Gaps);
+                if (preventGaps)
+                    targetPosition = ClampToLayerBounds(layers[i], targetPosition, startPositions[i]);
 
                 layers[i].anchoredPosition = Vector2.SmoothDamp(
                     layers[i].anchoredPosition,
@@ -185,18 +193,18 @@ using UnityEngine.UI;
             }
         }
 
-        private Vector2 ClampToBackgroundBounds(Vector2 target, Vector2 restingPosition)
+        private Vector2 ClampToLayerBounds(RectTransform layer, Vector2 target, Vector2 restingPosition)
         {
             RectTransform canvasRect = transform as RectTransform;
-            if (canvasRect == null || background == null) return target;
+            if (canvasRect == null || layer == null) return target;
 
-            // Background needs to be larger than the Canvas for any visible movement.
+            // Full-screen artwork needs to be larger than the Canvas for visible movement.
             // The available oversized area becomes the maximum legal movement.
             Vector2 canvasSize = canvasRect.rect.size;
-            Vector3 scale = background.localScale;
+            Vector3 scale = layer.localScale;
             Vector2 backgroundSize = new Vector2(
-                background.rect.width * Mathf.Abs(scale.x),
-                background.rect.height * Mathf.Abs(scale.y));
+                layer.rect.width * Mathf.Abs(scale.x),
+                layer.rect.height * Mathf.Abs(scale.y));
             Vector2 maxOffset = new Vector2(
                 Mathf.Max(0f, (backgroundSize.x - canvasSize.x) * 0.5f),
                 Mathf.Max(0f, (backgroundSize.y - canvasSize.y) * 0.5f));
