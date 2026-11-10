@@ -1489,7 +1489,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 635433488}
         m_TargetAssemblyTypeName: ProjectD.Menus.MenuScreen, Assembly-CSharp
-        m_MethodName: OpenStart
+        m_MethodName: OpenLevelSelect
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
