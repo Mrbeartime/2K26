@@ -1254,6 +1254,8 @@ MonoBehaviour:
   doors:
   - {fileID: 1526548057}
   - {fileID: 1568875039}
+  spikeTraps:
+  - {fileID: 1872058655}
   interactionAnimations:
   - {fileID: 1407100738}
 --- !u!114 &224112161 stripped
@@ -4981,6 +4983,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorSwitch
   doors:
   - {fileID: 826875693}
+  spikeTraps: []
   interactionAnimations:
   - {fileID: 1624529807}
 --- !u!114 &1656908240 stripped
@@ -5019,6 +5022,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8630445062527418290, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
   m_PrefabInstance: {fileID: 1131458943}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1666206092 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+  m_PrefabInstance: {fileID: 1131458943}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fae6533672cef1b4c8b645f79631635e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tile
 --- !u!1 &1674773073 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 71ebf4e2d521ce4449888b0803ff9b13, type: 3}
@@ -5507,6 +5521,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1872058655 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 73186236184047799, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+  m_PrefabInstance: {fileID: 8248327741650386133}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52c2ace9476b4e149ff9757f5306b480, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwitchSpikeTrap
 --- !u!1 &1885212913
 GameObject:
   m_ObjectHideFlags: 0
@@ -5689,7 +5714,27 @@ PrefabInstance:
     - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
       propertyPath: door
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
+      propertyPath: doors.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
+      propertyPath: 'doors.Array.data[0]'
+      value: 
       objectReference: {fileID: 1526548057}
+    - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
+      propertyPath: 'doors.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1568875039}
+    - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
+      propertyPath: spikeTraps.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6263999020476264037, guid: a86fc552fc68aec478862f0fa754540f, type: 3}
+      propertyPath: 'spikeTraps.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1872058655}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6221,6 +6266,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+--- !u!114 &2010854071 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4994021806456154918, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+  m_PrefabInstance: {fileID: 2010854070}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fae6533672cef1b4c8b645f79631635e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tile
 --- !u!1001 &2019588619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7171,6 +7227,144 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 06f46d34791142b43aecfe8d8f994cb7, type: 3}
+--- !u!1001 &7622453630848717767
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.217
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.434
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.627
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2580483093210159307, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: targetTile
+      value: 
+      objectReference: {fileID: 2010854071}
+    - target: {fileID: 6017192798327124272, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_Name
+      value: Spike Trap - Every 2 Turns
+      objectReference: {fileID: 0}
+    - target: {fileID: 6017192798327124272, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+--- !u!1001 &8248327741650386133
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 313379912166095836, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: targetTile
+      value: 
+      objectReference: {fileID: 1666206092}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.236
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.49976704
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.65199995
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6866520554954546500, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6866520554954546500, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6866520554954546500, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Name
+      value: SpikeTrap (Switch)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
 --- !u!1001 &8547274475433925584
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7406,3 +7600,5 @@ SceneRoots:
   - {fileID: 48845087}
   - {fileID: 2119850577}
   - {fileID: 193694300}
+  - {fileID: 7622453630848717767}
+  - {fileID: 8248327741650386133}

@@ -14,7 +14,7 @@ public abstract class TurnTrap : MonoBehaviour, IFixedTurnScheduledObject
 
     public bool IsDue(int turn) => turn > 0 && turn % Mathf.Max(1, IntervalTurns) == 0;
 
-    public IEnumerator ResolveTurn(int turn)
+    public virtual IEnumerator ResolveTurn(int turn)
     {
         if (!isActiveAndEnabled || !IsDue(turn) || LastTriggeredTurn == turn) yield break;
         LastTriggeredTurn = turn;

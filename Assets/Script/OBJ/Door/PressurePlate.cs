@@ -1,75 +1,61 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PressurePlate : MonoBehaviour
 {
-    [SerializeField] private DoorController door;
+    [SerializeField] private DoorController[] doors;
+    [SerializeField] private SwitchSpikeTrap[] spikeTraps;
+    // Retain the old serialized reference so existing scenes/prefabs migrate safely.
+    [SerializeField, HideInInspector] private DoorController door;
     private Tile tile;
+    private bool isPressed;
+    private string sourceId;
 
-    // เก็บสถานะว่าสวิตช์ถูกเหยียบอยู่หรือไม่ จะได้ไม่ส่งคำสั่งซ้ำๆ ทุกเฟรม
-    private bool isPressed = false;
+    private void OnValidate() => MigrateLegacyDoor();
 
-    //private readonly HashSet<Collider> playersOnPlate = new();
-
-    //void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Player"))
-    //    {
-    //        playersOnPlate.Add(other);
-    //        door.SetOpen(gameObject.name, true);
-    //    }
-    //}
-
-    //void OnTriggerExit(Collider other)
-    //{
-    //    if (other.CompareTag("Player"))
-    //    {
-    //        playersOnPlate.Remove(other);
-
-    //        if (playersOnPlate.Count == 0)
-    //            door.SetOpen(gameObject.name, false);
-    //    }
-    //}
-
-    private void Start()
+    private void Awake()
     {
-        // อิงการทำงานจาก Tile Component แบบเดียวกับ Trap
+        MigrateLegacyDoor();
+        sourceId = "PressurePlate:" + GetEntityId();
         tile = GetComponent<Tile>();
-
         if (tile == null)
+            Debug.LogError(name + " ไม่มี Tile component!", this);
+    }
+
+    private void MigrateLegacyDoor()
+    {
+        if (door == null) return;
+        if (doors == null) doors = new DoorController[0];
+        if (System.Array.IndexOf(doors, door) < 0)
         {
-            Debug.LogError(name + " ไม่มี Tile component!");
+            int index = doors.Length;
+            System.Array.Resize(ref doors, index + 1);
+            doors[index] = door;
         }
+        door = null;
     }
 
     private void Update()
     {
-        CheckPlate();
+        if (tile == null) return;
+        // Any occupant can hold the plate down, matching the original behavior.
+        bool hasOccupant = tile.IsOccupied;
+        if (hasOccupant == isPressed) return;
+        isPressed = hasOccupant;
+        SetTargets(isPressed);
     }
 
-    private void CheckPlate()
+    private void SetTargets(bool active)
     {
-        if (tile == null)
-            return;
+        if (doors != null) foreach (DoorController target in doors)
+            if (target != null) target.SetOpen(sourceId, active);
+        if (spikeTraps != null) foreach (SwitchSpikeTrap target in spikeTraps)
+            if (target != null) target.SetActive(this, active);
+    }
 
-        // เช็กแค่ว่ามีคนหรือของอยู่บน Tile หรือไม่ (ใครเหยียบก็ได้ ไม่จำกัด Tag)
-        bool hasOccupant = tile.IsOccupied;
-
-        // ถ้าสถานะการเหยียบเปลี่ยนไปจากเฟรมที่แล้ว
-        if (hasOccupant != isPressed)
-        {
-            isPressed = hasOccupant;
-
-            if (isPressed)
-            {
-                // มีสิ่งมีชีวิตหรือวัตถุมาเหยียบ -> สั่งเปิดประตู
-                door.SetOpen(gameObject.name, true);
-            }
-            else
-            {
-                // ไม่มีอะไรเหยียบอยู่เลย -> สั่งปิดประตู
-                door.SetOpen(gameObject.name, false);
-            }
-        }
+    private void OnDisable()
+    {
+        // Release only this plate's requests; other switches may still hold targets active.
+        if (isPressed) SetTargets(false);
+        isPressed = false;
     }
 }
