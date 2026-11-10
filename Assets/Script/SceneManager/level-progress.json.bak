@@ -23,7 +23,7 @@
         },
         {
             "level": 5,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         }
     ],
