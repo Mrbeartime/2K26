@@ -3,6 +3,7 @@ using UnityEngine;
 public class PressurePlate : MonoBehaviour
 {
     [SerializeField] private DoorController[] doors;
+    [SerializeField] private SwitchSpikeTrap[] spikeTraps;
     // Retain the old serialized reference so existing scenes/prefabs migrate safely.
     [SerializeField, HideInInspector] private DoorController door;
     private Tile tile;
@@ -40,20 +41,21 @@ public class PressurePlate : MonoBehaviour
         bool hasOccupant = tile.IsOccupied;
         if (hasOccupant == isPressed) return;
         isPressed = hasOccupant;
-        SetDoors(isPressed);
+        SetTargets(isPressed);
     }
 
-    private void SetDoors(bool active)
+    private void SetTargets(bool active)
     {
-        if (doors == null) return;
-        foreach (DoorController target in doors)
+        if (doors != null) foreach (DoorController target in doors)
             if (target != null) target.SetOpen(sourceId, active);
+        if (spikeTraps != null) foreach (SwitchSpikeTrap target in spikeTraps)
+            if (target != null) target.SetActive(this, active);
     }
 
     private void OnDisable()
     {
-        // Release only this plate's requests; other switches may still hold doors open.
-        if (isPressed) SetDoors(false);
+        // Release only this plate's requests; other switches may still hold targets active.
+        if (isPressed) SetTargets(false);
         isPressed = false;
     }
 }
