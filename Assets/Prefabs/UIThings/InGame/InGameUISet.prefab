@@ -841,6 +841,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: OverlayUI, Assembly-CSharp
       objectReference: {fileID: 0}
+    - target: {fileID: 9073434033944090923, guid: d4316dbacebac964d812980872e69e9d, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
