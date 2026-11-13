@@ -56,13 +56,14 @@ MonoBehaviour:
   - 100
   - 100
   poolSize: 24
+  hoverVoiceLimit: 4
   musicFadeSeconds: 0.8
   cues:
   - cue: 0
     bus: 2
     clips:
-    - {fileID: 8300000, guid: 186e9e56938ecdc498349d837cdc55ac, type: 3}
-    volume: {x: 0.45, y: 0.45}
+    - {fileID: 8300000, guid: 5f6886d8c10f95744a17fb9c0dc57580, type: 3}
+    volume: {x: 1.4, y: 1.4}
     pitch: {x: 0.95, y: 1.05}
     maxSimultaneous: 3
     minimumInterval: 0
@@ -71,7 +72,7 @@ MonoBehaviour:
   - cue: 1
     bus: 2
     clips:
-    - {fileID: 8300000, guid: d62a1019632662d41bcbae3c528ca1fd, type: 3}
+    - {fileID: 8300000, guid: 0fd66e2a43ce1c84886affd2990477cc, type: 3}
     volume: {x: 0.8, y: 0.8}
     pitch: {x: 0.95, y: 1.05}
     maxSimultaneous: 3
@@ -81,7 +82,7 @@ MonoBehaviour:
   - cue: 2
     bus: 2
     clips:
-    - {fileID: 8300000, guid: 606e07bd0ce4a434aa63c0c0819abf25, type: 3}
+    - {fileID: 8300000, guid: faba3eee84a367348a0a4f5fb0209711, type: 3}
     volume: {x: 0.75, y: 0.75}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -91,7 +92,7 @@ MonoBehaviour:
   - cue: 3
     bus: 2
     clips:
-    - {fileID: 8300000, guid: a5fd9e4e1b625944596d9cc2fb832478, type: 3}
+    - {fileID: 8300000, guid: ccd1ce49fd60eb74f97417e8ad5b03e7, type: 3}
     volume: {x: 0.65, y: 0.65}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -111,7 +112,7 @@ MonoBehaviour:
   - cue: 5
     bus: 2
     clips:
-    - {fileID: 8300000, guid: 67e15f63950305146bb806ea112499d7, type: 3}
+    - {fileID: 8300000, guid: 13108b0c57e48424cb5b1f7c93b31754, type: 3}
     volume: {x: 0.85, y: 0.85}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -141,7 +142,7 @@ MonoBehaviour:
   - cue: 8
     bus: 3
     clips:
-    - {fileID: 8300000, guid: e99f263f65887a74cb80a13ab06e3497, type: 3}
+    - {fileID: 8300000, guid: 0633e2ed798539a4db595105e1b8198d, type: 3}
     volume: {x: 0.65, y: 0.65}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -151,7 +152,7 @@ MonoBehaviour:
   - cue: 9
     bus: 3
     clips:
-    - {fileID: 8300000, guid: 03395b12518558b4292fa16be7165850, type: 3}
+    - {fileID: 8300000, guid: e11ffb39499b67243a18696d3e12d54f, type: 3}
     volume: {x: 0.25, y: 0.25}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 1
@@ -161,8 +162,8 @@ MonoBehaviour:
   - cue: 10
     bus: 3
     clips:
-    - {fileID: 8300000, guid: 4da99400e5cabe449a884b316b397f7b, type: 3}
-    volume: {x: 0.9, y: 1}
+    - {fileID: 8300000, guid: d99e597a36b7dc94ebd5d469ace079ff, type: 3}
+    volume: {x: 0.7, y: 0.7}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
     minimumInterval: 0
