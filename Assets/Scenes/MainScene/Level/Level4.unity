@@ -173,6 +173,10 @@ MonoBehaviour:
   zoomSmoothTime: 0.3
   enableCameraDrag: 1
   dragSensitivity: 1
+  rotationSensitivity: 0.2
+  keyboardPanSpeed: 5
+  minimumPitch: 15
+  maximumPitch: 80
   dragStartThresholdPixels: 5
   dragSmoothTime: 0.07
   zoomOutWhenDragging: 1
@@ -4698,6 +4702,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 931353615}
     m_Modifications:
+    - target: {fileID: 58521886293281705, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1376055047790543497, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.01803638
@@ -4749,6 +4757,18 @@ PrefabInstance:
     - target: {fileID: 6017192798327124272, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
       propertyPath: m_Name
       value: Spike Trap - Every 2 Turns
+      objectReference: {fileID: 0}
+    - target: {fileID: 6017192798327124272, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7780632310480861824, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8756883047084304918, guid: 51c3c3a0bb008a64b8402be1cf02e626, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

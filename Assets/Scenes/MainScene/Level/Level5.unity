@@ -1289,6 +1289,14 @@ PrefabInstance:
       propertyPath: targetTile
       value: 
       objectReference: {fileID: 1651836366}
+    - target: {fileID: 4554452282626815703, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5079481883036833640, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.52747
@@ -1329,9 +1337,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6053146573692176382, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_Name
       value: SpikeTrap (Switch) (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6427,6 +6443,14 @@ PrefabInstance:
       propertyPath: targetTile
       value: 
       objectReference: {fileID: 2010854071}
+    - target: {fileID: 4554452282626815703, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5079481883036833640, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.52747
@@ -6467,9 +6491,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6053146573692176382, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_Name
       value: SpikeTrap (Switch) (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7514,6 +7546,14 @@ PrefabInstance:
       propertyPath: targetTile
       value: 
       objectReference: {fileID: 472201977}
+    - target: {fileID: 4554452282626815703, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5079481883036833640, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 5223092310177308550, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.582629
@@ -7554,9 +7594,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6053146573692176382, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
       propertyPath: m_Name
       value: SpikeTrap (Switch)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7454106005053716729, guid: 833ca0617e244ea46a4af1a4dba48be8, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

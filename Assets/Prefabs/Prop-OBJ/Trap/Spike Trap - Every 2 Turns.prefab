@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1376055047790543497}
   - component: {fileID: 2580483093210159307}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Spike Trap - Every 2 Turns
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -113,6 +113,18 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 82004a0c3d02da244b01d8d34a1f8b29, type: 3}
       propertyPath: m_Name
       value: SpikeTrap
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 82004a0c3d02da244b01d8d34a1f8b29, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2215068090628566471, guid: 82004a0c3d02da244b01d8d34a1f8b29, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7490853240258858104, guid: 82004a0c3d02da244b01d8d34a1f8b29, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
