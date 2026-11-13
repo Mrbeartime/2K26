@@ -24,6 +24,9 @@ public class PlayerController : MonoBehaviour
         }
     }
     private Camera mainCamera;
+    private bool pendingRightClickAttack;
+    private Vector2 rightClickOrigin;
+    private float rightClickTime;
     [SerializeField, Min(0.05f)] private float interactDoubleClickInterval = 0.3f;
     private Tile pendingInteractTile;
     private PlayerMove pendingInteractPlayer;
@@ -49,6 +52,7 @@ public class PlayerController : MonoBehaviour
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()))
         {
             ResetInteractClick();
+            pendingRightClickAttack = false;
             return;
         }
         if (TurnGameManager.Instance != null)
@@ -345,8 +349,22 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttack()
     {
-        if (Mouse.current == null || mainCamera == null || selectedPlayer == null ||
-            !Mouse.current.rightButton.wasPressedThisFrame) return;
+        if (Mouse.current == null || mainCamera == null || selectedPlayer == null) return;
+        // Reserve held/dragged right clicks for camera rotation; a quick tap still attacks.
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            pendingRightClickAttack = true;
+            rightClickOrigin = Mouse.current.position.ReadValue();
+            rightClickTime = Time.unscaledTime;
+            return;
+        }
+        if (Vector2.Distance(Mouse.current.position.ReadValue(), rightClickOrigin) >= 5f ||
+            Time.unscaledTime - rightClickTime > 0.25f)
+            pendingRightClickAttack = false;
+        if (!Mouse.current.rightButton.wasReleasedThisFrame) return;
+        bool attack = pendingRightClickAttack;
+        pendingRightClickAttack = false;
+        if (!attack) return;
         if (GridManager.Instance == null) return;
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
