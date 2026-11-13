@@ -55,7 +55,8 @@ public class CutSceneCharacter : MonoBehaviour
     private Transform groupCameraTarget;
     private bool prepared;
     private readonly Dictionary<Transform, List<Renderer>> hiddenRenderers = new();
-    private readonly List<CanvasGroup> hiddenUI = new();
+    private readonly List<(Canvas canvas, CanvasGroup group, bool addedGroup, bool wasEnabled,
+        bool wasInteractable, bool blockedRaycasts)> hiddenUI = new();
     private readonly List<InGameUIManager> disabledUIControllers = new();
     private static readonly int Moving = Animator.StringToHash("IsMoving");
 
@@ -65,9 +66,9 @@ public class CutSceneCharacter : MonoBehaviour
         MigrateLegacyEntry();
         if (characters == null || characters.Length == 0) yield break;
         prepared = true;
-        HideUI();
         try
         {
+            HideUI();
             var entries = new List<CharacterEntry>();
             var seen = new HashSet<Transform>();
             foreach (CharacterEntry entry in characters)
@@ -279,16 +280,19 @@ public class CutSceneCharacter : MonoBehaviour
 
     private void HideUI()
     {
-        // A dedicated group preserves existing canvas/group settings and lets
-        // UI objects finish their normal lifecycle without showing the HUD.
         foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsInactive.Include))
         {
             if (canvas.gameObject.scene != gameObject.scene) continue;
-            CanvasGroup group = canvas.gameObject.AddComponent<CanvasGroup>();
-            group.alpha = 0f;
+            bool addedGroup = !canvas.TryGetComponent(out CanvasGroup group);
+            if (addedGroup) group = canvas.gameObject.AddComponent<CanvasGroup>();
+            if (group == null) continue;
+
+            hiddenUI.Add((canvas, group, addedGroup, canvas.enabled, group.interactable, group.blocksRaycasts));
+            if (addedGroup) group.alpha = 0f;
+            // Existing groups can animate their alpha while the cutscene plays.
+            else canvas.enabled = false;
             group.interactable = false;
             group.blocksRaycasts = false;
-            hiddenUI.Add(group);
         }
         foreach (InGameUIManager ui in FindObjectsByType<InGameUIManager>())
         {
@@ -320,13 +324,19 @@ public class CutSceneCharacter : MonoBehaviour
         foreach (var renderers in hiddenRenderers.Values)
             foreach (Renderer renderer in renderers) if (renderer != null) renderer.enabled = true;
         hiddenRenderers.Clear();
-        foreach (CanvasGroup group in hiddenUI)
+        foreach (var state in hiddenUI)
         {
-            if (group == null) continue;
-            group.alpha = 1f;
-            group.interactable = true;
-            group.blocksRaycasts = true;
-            Destroy(group);
+            if (state.group != null)
+            {
+                state.group.interactable = state.wasInteractable;
+                state.group.blocksRaycasts = state.blockedRaycasts;
+                if (state.addedGroup)
+                {
+                    state.group.alpha = 1f;
+                    Destroy(state.group);
+                }
+            }
+            if (!state.addedGroup && state.canvas != null) state.canvas.enabled = state.wasEnabled;
         }
         hiddenUI.Clear();
         foreach (InGameUIManager ui in disabledUIControllers) if (ui != null) ui.enabled = true;
