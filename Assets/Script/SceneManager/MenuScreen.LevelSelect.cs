@@ -44,10 +44,12 @@ namespace ProjectD.Menus
         private SecretLevelDefinition selectedSecret;
         private float nextProgressCheck;
         private int appliedProgressRevision = -1;
+        private int appliedCatalogRevision = -1;
         private SceneCatalog Catalog => GameSceneManager.Catalog;
 
         private void SetupLevelSelection()
         {
+            SetupQuestPapers();
             BindButton(playButton, PlaySelectedLevel);
             if (boardHoverButtons != null)
                 foreach (var button in boardHoverButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button);
@@ -69,7 +71,8 @@ namespace ProjectD.Menus
         {
             if (Time.unscaledTime < nextProgressCheck) return;
             nextProgressCheck = Time.unscaledTime + 0.25f;
-            if (LevelProgressStore.ReloadIfFileChanged() || appliedProgressRevision != LevelProgressStore.Revision)
+            if (LevelProgressStore.ReloadIfFileChanged() || appliedProgressRevision != LevelProgressStore.Revision ||
+                (Catalog != null && appliedCatalogRevision != Catalog.Revision))
                 ApplyProgressToUI();
         }
 
@@ -90,6 +93,7 @@ namespace ProjectD.Menus
             else if (paperView == PaperView.Details &&
                 (selectedSecret == null ? !GameSceneManager.IsUnlocked(selectedLevel) : !IsSecretUnlocked(selectedSecret))) ClosePaper();
             appliedProgressRevision = LevelProgressStore.Revision;
+            appliedCatalogRevision = Catalog != null ? Catalog.Revision : -1;
         }
 
         [ContextMenu("Progress/Open Active JSON")]
@@ -121,6 +125,7 @@ namespace ProjectD.Menus
                     colors.disabledColor = new Color(0.38f, 0.38f, 0.38f, 1f);
                     levelButtons[i].colors = colors;
                 }
+                if (visible) RefreshBoardPaper(i, id);
                 if (levelLabels != null && i < levelLabels.Length && levelLabels[i] != null)
                 {
                     levelLabels[i].text = visible ? Catalog.FindLevel(id).Title + (unlocked ? string.Empty : "\nLocked") : string.Empty;
@@ -221,6 +226,7 @@ namespace ProjectD.Menus
                 int index = paperPage * PaperCapacity + i;
                 bool visible = index < entries.Count;
                 if (paperLevelButtons[i] != null) paperLevelButtons[i].gameObject.SetActive(visible);
+                if (visible) RefreshCollectionPaper(i, entries[index], completed);
                 if (visible && paperLevelLabels != null && i < paperLevelLabels.Length && paperLevelLabels[i] != null)
                     paperLevelLabels[i].text = completed ? Catalog.FindLevel(entries[index]).Title : Catalog.SecretLevels[entries[index]].title;
             }

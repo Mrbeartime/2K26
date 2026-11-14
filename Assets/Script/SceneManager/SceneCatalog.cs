@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace ProjectD.Menus
@@ -34,6 +35,8 @@ namespace ProjectD.Menus
         [Min(1)] public int id = 1;
         public string title;
         [TextArea] public string description = "Reach the exit before your turns run out.";
+        [Tooltip("Optional paper style from the QuestPaper prefab. Empty uses its default style.")]
+        public Sprite paperSprite;
         public SceneReference scene = new SceneReference();
         public string Title => string.IsNullOrWhiteSpace(title) ? "Level " + id : title;
     }
@@ -44,6 +47,7 @@ namespace ProjectD.Menus
         public string id = "SecretLevel1";
         public string title = "Secret Level";
         [TextArea] public string description;
+        public Sprite paperSprite;
         public SceneReference scene = new SceneReference();
         [Min(0)] public int requiredCompletedLevel = 5;
     }
@@ -57,6 +61,11 @@ namespace ProjectD.Menus
         public SceneReference levelSelectScene = new SceneReference();
         public SceneReference guideScene = new SceneReference();
         public SceneReference loadingScene = new SceneReference();
+        [Header("Level Select Quest Papers")]
+        [Tooltip("Shared paper prefab. Every level uses this automatically; no per-level button setup is required.")]
+        public QuestPaperDecoration questPaperPrefab;
+        [Tooltip("Readable font for level titles. Description ink still uses the QuestPaper's own font.")]
+        public TMP_FontAsset questTitleFont;
         [Tooltip("The first level is always playable. Completing it unlocks all main levels.")]
         [Min(1)] public int firstLevelId = 1;
         public bool requireFirstLevelCompletion = true;
@@ -64,6 +73,7 @@ namespace ProjectD.Menus
         [SerializeField] private List<SecretLevelDefinition> secretLevels = new List<SecretLevelDefinition>();
         public IReadOnlyList<LevelDefinition> Levels => levels;
         public IReadOnlyList<SecretLevelDefinition> SecretLevels => secretLevels;
+        public int Revision { get; private set; }
         public LevelDefinition FindLevel(int id) => levels.Find(level => level != null && level.id == id);
         public LevelDefinition FindLevelByScene(string path) => string.IsNullOrEmpty(path) ? null :
             levels.Find(level => level != null && level.scene.Path == path);
@@ -91,6 +101,7 @@ namespace ProjectD.Menus
 
         private void OnValidate()
         {
+            Revision++;
             RefreshPaths();
             var ids = new HashSet<int>();
             var paths = new HashSet<string>();
