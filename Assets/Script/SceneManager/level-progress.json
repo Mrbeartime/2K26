@@ -13,12 +13,12 @@
         },
         {
             "level": 3,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
             "level": 4,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
