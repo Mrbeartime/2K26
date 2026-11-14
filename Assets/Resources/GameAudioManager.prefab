@@ -232,3 +232,12 @@ MonoBehaviour:
     maxDistance: 20
   turnChangeDelay: 0
   clockTickDelay: 0.1
+  - cue: 17
+    bus: 2
+    clips: []
+    volume: {x: 0.75, y: 0.75}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20

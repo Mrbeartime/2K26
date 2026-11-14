@@ -45,6 +45,7 @@ public class Character : Entity
     public bool CanReact(Tile tile)
     {
         if (tile == null || GridManager.Instance == null) return false;
+        if (DiaryInteractable.FindAt(tile) != null) return true;
         foreach (DoorSwitch item in FindObjectsByType<DoorSwitch>())
             if (GridManager.Instance.WorldToGrid(item.transform.position) == tile.gridPosition && item.CanActivate)
                 return true;

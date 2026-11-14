@@ -757,6 +757,7 @@ public class InGameUIManager : MonoBehaviour
         if (Time.frameCount == lastSelectFrame && actionId == lastSelectId) return;
         lastSelectFrame = Time.frameCount;
         lastSelectId = actionId;
+        PlayActionClick(actionId);
 
         // Confirm only if this action was armed in an earlier frame and focus is still on it
         if (selectedAction == actionId && Time.frameCount > armedFrame &&
@@ -769,6 +770,29 @@ public class InGameUIManager : MonoBehaviour
     }
 
     // Move focus to a new action: cancel the old one -> Interact: arm and wait / others: execute immediately
+    private int lastActionClickFrame = -1;
+
+    private void PlayActionClick(int actionId)
+    {
+        if (!isActiveAndEnabled || IsPaused || DiaryUI.IsOpen ||
+            turnGameManager == null || !availableActions.Contains(actionId) ||
+            lastActionClickFrame == Time.frameCount) return;
+        bool available = actionId switch
+        {
+            ActionMove => turnGameManager.CanChooseMove,
+            ActionInteract => turnGameManager.CanChooseReact,
+            ActionSignature => turnGameManager.CanChooseSkill,
+            _ => false
+        };
+        if (!available) return;
+        GameObject actionObject = GetActionObject(actionId);
+        if (actionObject == null || !actionObject.activeInHierarchy) return;
+        Button button = actionObject.GetComponentInChildren<Button>(true);
+        if (button == null || !button.IsActive() || !button.IsInteractable()) return;
+        lastActionClickFrame = Time.frameCount;
+        ProjectD.Audio.GameAudioManager.Instance?.PlayLevelClick();
+    }
+
     private void FocusAndUseAction(int newIndex)
     {
         // During this block, Cancel* may fire StateChanged early -> RefreshActionList must not arm/confirm on its own
@@ -867,13 +891,16 @@ public class InGameUIManager : MonoBehaviour
         {
             case "d":
             case "s":
+                PlayActionClick(availableActions[(CurrentFocusActionIndex - 1 + count) % count]);
                 FocusAndUseAction((CurrentFocusActionIndex - 1 + count) % count);
                 break;
             case "a":
             case "w":
+                PlayActionClick(availableActions[(CurrentFocusActionIndex + 1) % count]);
                 FocusAndUseAction((CurrentFocusActionIndex + 1) % count);
                 break;
             case "space":
+                PlayActionClick(availableActions[CurrentFocusActionIndex]);
                 ConfirmAction(availableActions[CurrentFocusActionIndex]);
                 break;
         }

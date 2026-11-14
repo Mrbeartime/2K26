@@ -18,6 +18,7 @@ public class DoorSwitch : MonoBehaviour
 
     void Update()
     {
+        if (DiaryUI.IsOpen) return;
         if (playerNear && CanActivate && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             isOn = !isOn;

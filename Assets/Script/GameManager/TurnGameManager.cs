@@ -280,6 +280,7 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseMove()
     {
+        if (DiaryUI.IsOpen) return;
         if (gameComplete ||
             enemyPhase ||
             CurrentPlayer == null ||
@@ -326,6 +327,7 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkill()
     {
+        if (DiaryUI.IsOpen) return;
         if (SkipExhaustedSkill()) return;
         if (!CanChooseSkill)
         {
@@ -359,7 +361,10 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseReact()
     {
+        if (DiaryUI.IsOpen) return;
         if (!CanCurrentPlayerReact) return;
+        var diary = DiaryInteractable.FindAt(CurrentPlayer.GetCurrentTile());
+        if (diary != null) { diary.Read(CurrentPlayer); return; }
         Character character = CurrentPlayer.GetComponent<Character>();
         if (!character.React(CurrentPlayer.GetCurrentTile())) return;
 
@@ -372,6 +377,7 @@ public class TurnGameManager : MonoBehaviour
 
     public void ChooseSkip()
     {
+        if (DiaryUI.IsOpen) return;
         if (gameComplete || enemyPhase || CurrentPlayer == null || !currentPlayerSelected ||
             waitingForMovement || actionMode != ActionMode.None) return;
         EndCurrentPlayerAction("Skip");
@@ -380,6 +386,7 @@ public class TurnGameManager : MonoBehaviour
     /// <summary>Immediately starts the enemy phase, even if players have not acted.</summary>
     public void ChooseEndTurn()
     {
+        if (DiaryUI.IsOpen) return;
         if (gameComplete || enemyPhase || waitingForMovement) return;
         actionMode = ActionMode.None;   // จบเทิร์นได้แม้กำลังเลือกเป้าหมายอยู่
         currentPlayer = null;

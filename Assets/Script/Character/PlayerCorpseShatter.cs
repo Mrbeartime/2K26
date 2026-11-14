@@ -60,10 +60,13 @@ public sealed class PlayerCorpseShatter : MonoBehaviour
 
     private CrystalShatterVisual PlayVisual()
     {
-        return CrystalShatterVisual.Create(visualRoot != null ? visualRoot : transform,
+        var effect = CrystalShatterVisual.Create(visualRoot != null ? visualRoot : transform,
             Mathf.Max(0.1f, shatterDuration), Mathf.Clamp(fragmentCount, 12, 1500),
             explosionForce, fragmentRotationSpeed, crystalColor, emissionIntensity,
             particleLifetime, glowFlashIntensity, effectScale, fragmentSize, spreadRadius, diagnosticLogs, neonEmissionIntensity);
+        if (effect != null)
+            ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.PlayerShatter, transform.position);
+        return effect;
     }
 
     [ContextMenu("Preview Shatter (Play Mode, dead player only)")]

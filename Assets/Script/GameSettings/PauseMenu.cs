@@ -25,6 +25,7 @@ public class PauseMenu : MonoBehaviour
 
     private void Update()
     {
+        if (DiaryUI.IsOpen) return;
         if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
         if (settingsPanel != null && settingsPanel.activeSelf) CloseSettings();
         else if (isPaused) ResumeGame();
