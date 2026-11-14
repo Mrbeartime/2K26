@@ -199,6 +199,8 @@ namespace ProjectD.Audio
             source.mute = Muted(slot.bus);
         }
         public bool PlaySFX(AudioCue cue) => PlayPooled(cue, AudioBus.SFX, null);
+        public bool PlaySFX(AudioCue cue, AudioBus bus) =>
+            (bus == AudioBus.SFX || bus == AudioBus.UI) && PlayPooled(cue, bus, null);
         public bool PlaySFXAtPosition(AudioCue cue, Vector3 position) => PlayPooled(cue, AudioBus.SFX, position);
         public bool PlayDoorAudio(Object door, Vector3 position) =>
             door != null && PlayPooled(AudioCue.DoorOpen, AudioBus.SFX, position, door);

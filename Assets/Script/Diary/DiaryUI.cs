@@ -53,6 +53,7 @@ public sealed class DiaryUI : MonoBehaviour
         pageIndex = target;
         lastPageChangeFrame = Time.frameCount;
         RefreshPage();
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFX(ProjectD.Audio.AudioCue.DiaryPageTurn);
     }
     private void RefreshPage() {
         body.text = pages != null && pages.Length > 0 ? pages[pageIndex] ?? string.Empty : legacyBody;
@@ -86,6 +87,7 @@ public sealed class DiaryUI : MonoBehaviour
         RefreshPage();
         previousPageAction.Enable(); nextPageAction.Enable();
         closeButton.Select();
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFX(ProjectD.Audio.AudioCue.DiaryOpen);
     }
     private void Update() {
         if(active != this || Time.frameCount == openedFrame) return;
@@ -95,6 +97,8 @@ public sealed class DiaryUI : MonoBehaviour
     public void Close() {
         if(active != this || Time.frameCount == openedFrame) return;
         Release(); panel.SetActive(false);
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFX(
+            ProjectD.Audio.AudioCue.DiaryClose, ProjectD.Audio.AudioBus.UI);
     }
     private void Release() {
         if(active != this) return;

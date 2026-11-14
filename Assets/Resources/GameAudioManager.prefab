@@ -230,14 +230,55 @@ MonoBehaviour:
     minimumInterval: 0
     minDistance: 1
     maxDistance: 20
-  turnChangeDelay: 0
-  clockTickDelay: 0.1
   - cue: 17
     bus: 2
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 4ec7429bb3a762b4c9b17283957a4a54, type: 3}
     volume: {x: 0.75, y: 0.75}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 8
     minimumInterval: 0
     minDistance: 1
     maxDistance: 20
+  - cue: 18
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 64606a9ff628eb24b99748e262cd14a0, type: 3}
+    volume: {x: 0.5, y: 0.5}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 4
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 19
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 64606a9ff628eb24b99748e262cd14a0, type: 3}
+    volume: {x: 0.4, y: 0.4}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 4
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 20
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 95741b49a4905da44a87f576ffa3408f, type: 3}
+    volume: {x: 0.6, y: 0.6}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 21
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: a1929b55cf187a44fb3c20c582a2fc4a, type: 3}
+    volume: {x: 0.5, y: 0.5}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 4
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  turnChangeDelay: 0
+  clockTickDelay: 0.1
