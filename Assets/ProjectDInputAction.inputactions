@@ -1302,12 +1302,12 @@
             "actions": [
                 {
                     "name": "Pan",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "ac8ce076-8acb-45e9-bd5e-4d4c5be5bf8c",
-                    "expectedControlType": "Vector2",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true,
+                    "initialStateCheck": false,
                     "priority": 0
                 },
                 {
@@ -1333,37 +1333,15 @@
             ],
             "bindings": [
                 {
-                    "name": "QE",
+                    "name": "",
                     "id": "5c9af326-117f-4d35-98ad-76203922669a",
-                    "path": "1DAxis",
+                    "path": "<Mouse>/middleButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Pan",
-                    "isComposite": true,
+                    "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "60377096-f876-4a73-9f36-210911ce9069",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Pan",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "9b618298-edcc-457c-b2e4-e692547dfee7",
-                    "path": "<Keyboard>/e",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Pan",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "",

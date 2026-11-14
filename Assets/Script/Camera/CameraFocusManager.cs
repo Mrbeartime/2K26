@@ -7,7 +7,7 @@ using Unity.Cinemachine;
 /// Cinemachine camera controller:
 /// - Left-click selection (called from PlayerController): focus target + zoom in.
 /// - Player starts walking: follow player + return to normal zoom.
-/// - Hold right mouse and drag to orbit; Q/E pan left/right along the ground plane.
+/// - Hold right mouse and drag to orbit; hold middle mouse and drag to pan along the ground plane.
 /// - Optionally clamp the camera TARGET to inspector-configured XZ bounds.
 /// - Mouse wheel zooms temporarily, then smoothly returns to the default view.
 /// - Do not begin a drag on UI or move the camera while hovering UI.
@@ -32,17 +32,18 @@ public class CameraFocusManager : MonoBehaviour
     [Header("Zoom")]
     [SerializeField, Min(0.01f)] private float zoomSmoothTime = 0.3f;
 
-    [Header("Camera Rotation and Q/E Pan")]
+    [Header("Camera Rotation and Middle Mouse Pan")]
     [SerializeField] private bool enableCameraDrag = true;
     [SerializeField, Min(0.01f)] private float dragSensitivity = 1f;
     [SerializeField, Min(0.01f)] private float rotationSensitivity = 0.2f;
-    [SerializeField, Min(0.01f)] private float keyboardPanSpeed = 5f;
     [SerializeField, Range(1f, 89f)] private float minimumPitch = 15f;
     [SerializeField, Range(1f, 89f)] private float maximumPitch = 80f;
     private ProjectDInputAction cameraInputs;
     private float cameraYaw;
     private float cameraPitch;
-    private bool keyboardPanning;
+    private bool isPanning;
+    private bool panArmed;
+    private Vector2 accumulatedPanDelta;
     [SerializeField, Min(0f)] private float dragStartThresholdPixels = 5f;
     [SerializeField, Min(0.01f)] private float dragSmoothTime = 0.07f;
     [SerializeField] private bool zoomOutWhenDragging = true;
@@ -121,7 +122,7 @@ public class CameraFocusManager : MonoBehaviour
     private void OnDisable()
     {
         cameraInputs?.Camera.Disable();
-        keyboardPanning = false;
+        isPanning = false;
         CancelDragInput();
     }
 
@@ -235,7 +236,7 @@ public class CameraFocusManager : MonoBehaviour
         }
 
         HandleRightMouseDrag();
-        HandleKeyboardPan();
+        HandleMiddleMousePan();
         DetectNewWalkingAction();
 
         bool walking = trackedPlayer != null && trackedPlayer.IsMoving();
@@ -258,7 +259,7 @@ public class CameraFocusManager : MonoBehaviour
         HandleMouseWheelZoom();
 
         desiredPosition = ClampToBounds(desiredPosition);
-        float smoothTime = isDragging || keyboardPanning ? dragSmoothTime
+        float smoothTime = isDragging || isPanning ? dragSmoothTime
             : walking && !manualPanMode ? walkingSmoothTime : focusSmoothTime;
 
         ApplyCamera(smoothTime);
@@ -301,7 +302,7 @@ public class CameraFocusManager : MonoBehaviour
         // the camera DURING that walk, do not immediately steal control back.
         if (walkingPlayer != lastObservedWalkingPlayer)
         {
-            if (walkingPlayer != null && !isDragging && !dragArmed && !keyboardPanning && !scrollReturnPending)
+            if (walkingPlayer != null && !isDragging && !dragArmed && !isPanning && !panArmed && !scrollReturnPending)
             {
                 trackedPlayer = walkingPlayer;
                 manualPanMode = false;
@@ -316,7 +317,7 @@ public class CameraFocusManager : MonoBehaviour
     {
         if (!enableCameraDrag || cameraInputs == null || !cameraInputs.Camera.Rotate.IsPressed())
         {
-            CancelDragInput();
+            CancelRotationInput();
             return;
         }
         if (cameraInputs.Camera.Rotate.WasPressedThisFrame())
@@ -349,26 +350,55 @@ public class CameraFocusManager : MonoBehaviour
         gameCamera.transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
     }
 
-    private void HandleKeyboardPan()
+    private void HandleMiddleMousePan()
     {
-        float input = cameraInputs.Camera.Pan.ReadValue<float>();
-        bool canPan = enableCameraDrag && Mathf.Abs(input) > 0.01f &&
-            (!blockDragOverUI || !IsPointerOverUI());
-        if (!canPan)
+        if (!enableCameraDrag || cameraInputs == null || Mouse.current == null ||
+            !cameraInputs.Camera.Pan.IsPressed())
         {
-            if (keyboardPanning && returnToDefaultAfterDrag) ReturnToDefaultView();
-            keyboardPanning = false;
+            if (isPanning && returnToDefaultAfterDrag) ReturnToDefaultView();
+            CancelPanInput();
             return;
         }
-        keyboardPanning = true;
-        manualPanMode = true;
-        trackedPlayer = null;
-        wasWalking = false;
+        if (cameraInputs.Camera.Pan.WasPressedThisFrame())
+        {
+            panArmed = !blockDragOverUI || !IsPointerOverUI();
+            isPanning = false;
+            accumulatedPanDelta = Vector2.zero;
+            return;
+        }
+        if (!panArmed) return;
+        if (blockDragOverUI && IsPointerOverUI())
+        {
+            accumulatedPanDelta = Vector2.zero;
+            return;
+        }
+
+        Vector2 delta = cameraInputs.Camera.Look.ReadValue<Vector2>();
+        if (!isPanning)
+        {
+            accumulatedPanDelta += delta;
+            if (accumulatedPanDelta.magnitude < dragStartThresholdPixels) return;
+            isPanning = true;
+            delta = accumulatedPanDelta;
+            accumulatedPanDelta = Vector2.zero;
+            manualPanMode = true;
+            trackedPlayer = null;
+            wasWalking = false;
+            if (zoomOutWhenDragging) desiredLens = defaultLens;
+        }
         scrollReturnPending = false;
-        if (zoomOutWhenDragging) desiredLens = defaultLens;
-        Vector3 right = Vector3.ProjectOnPlane(gameCamera.transform.right, Vector3.up).normalized;
-        desiredPosition = ClampToBounds(desiredPosition + right *
-            (input * keyboardPanSpeed * dragSensitivity * Time.deltaTime));
+
+        // Project both screen axes onto the map using the same camera frame.
+        // Dragging vertically moves across the map, keeping target height unchanged.
+        Vector2 pointer = Mouse.current.position.ReadValue();
+        Plane ground = new Plane(Vector3.up, new Vector3(0f, cameraTarget.position.y, 0f));
+        Ray from = mainCamera.ScreenPointToRay(pointer - delta);
+        Ray to = mainCamera.ScreenPointToRay(pointer);
+        if (!ground.Raycast(from, out float fromDistance) ||
+            !ground.Raycast(to, out float toDistance)) return;
+        Vector3 shift = (from.GetPoint(fromDistance) - to.GetPoint(toDistance)) * dragSensitivity;
+        shift.y = 0f;
+        desiredPosition = ClampToBounds(desiredPosition + shift);
     }
 
     private void ReturnToDefaultView()
@@ -394,6 +424,19 @@ public class CameraFocusManager : MonoBehaviour
     }
 
     private void CancelDragInput()
+    {
+        CancelRotationInput();
+        CancelPanInput();
+    }
+
+    private void CancelPanInput()
+    {
+        panArmed = false;
+        isPanning = false;
+        accumulatedPanDelta = Vector2.zero;
+    }
+
+    private void CancelRotationInput()
     {
         dragArmed = false;
         isDragging = false;
@@ -443,7 +486,7 @@ public class CameraFocusManager : MonoBehaviour
         }
 
         // ไม่ให้ระบบ Zoom ชนกับการลากกล้อง
-        if (isDragging || dragArmed || keyboardPanning)
+        if (isDragging || dragArmed || isPanning || panArmed)
         {
             scrollReturnPending = false;
             return;
