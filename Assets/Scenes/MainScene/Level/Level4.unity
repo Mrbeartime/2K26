@@ -8046,10 +8046,6 @@ PrefabInstance:
       value: OutlineManager
       objectReference: {fileID: 0}
     - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.size
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
       propertyPath: elements.Array.data[0].target
       value: 
       objectReference: {fileID: 1104136753}
@@ -8093,78 +8089,6 @@ PrefabInstance:
       propertyPath: elements.Array.data[10].target
       value: 
       objectReference: {fileID: 2023735827}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[4].color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[4].color.g
-      value: 0.09803922
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[4].color.r
-      value: 0.69803923
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[5].color.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[5].color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[5].color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[6].color.g
-      value: 0.09803922
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[6].color.r
-      value: 0.69803923
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[7].color.g
-      value: 0.09803922
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[7].color.r
-      value: 0.69803923
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[9].color.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[9].color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[9].color.g
-      value: 0.43954813
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[9].color.r
-      value: 0.013207495
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[10].color.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[10].color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[10].color.g
-      value: 0.43954813
-      objectReference: {fileID: 0}
-    - target: {fileID: 8243350105255080017, guid: d3dfc23b2ac0cd14187d8fd05536e136, type: 3}
-      propertyPath: elements.Array.data[10].color.r
-      value: 0.013207495
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
