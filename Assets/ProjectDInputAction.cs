@@ -1381,6 +1381,311 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""GameplayControl_New"",
+            ""id"": ""875a4828-62b1-430a-9978-1769c7b075e5"",
+            ""actions"": [
+                {
+                    ""name"": ""Reset"",
+                    ""type"": ""Button"",
+                    ""id"": ""a91ccc6a-d517-4e7b-be5e-188e9bd4769d"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""552ad3d7-dd3b-4c84-af8c-c5f5f674e492"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Tips"",
+                    ""type"": ""Button"",
+                    ""id"": ""a87a0650-5ad9-4cf3-9b95-f8f09b1ad9f8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Zoom"",
+                    ""type"": ""Value"",
+                    ""id"": ""6b03cf60-93d2-4cd0-a08d-52e5da35f47e"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Select"",
+                    ""type"": ""Button"",
+                    ""id"": ""79c58271-7f2a-477b-aeb6-d38d8a8c7ca7"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""CameraMove"",
+                    ""type"": ""Button"",
+                    ""id"": ""75f462a8-67a1-4313-bc61-4357edd176ef"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""CharacterChange"",
+                    ""type"": ""Value"",
+                    ""id"": ""dfcdec73-8c35-436f-9864-883b5cec4035"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""ActionChange"",
+                    ""type"": ""Value"",
+                    ""id"": ""9215b660-9686-4e0b-9b8e-0748fd04eaf9"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""ActionConfirm"",
+                    ""type"": ""Button"",
+                    ""id"": ""d562c16e-da03-4248-9ebe-57d0a4355c20"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""ShowMap"",
+                    ""type"": ""Button"",
+                    ""id"": ""cdebc294-bf7c-4ccb-bb97-97217fb3cdac"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""RotateView"",
+                    ""type"": ""Value"",
+                    ""id"": ""98ac9ca9-d355-4cb0-aff0-60ba910abd0a"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""0663dc27-b143-4165-a992-fe8004584349"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Reset"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cb40cdc9-b688-4b32-9022-0e49d7eb04c2"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d77cc54f-8789-4873-ac29-09d3b02f2358"",
+                    ""path"": ""<Keyboard>/u"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Tips"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bb6ae241-ca79-424c-9c65-7e3730c9b1bd"",
+                    ""path"": ""<Mouse>/scroll/y"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Zoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""966ca485-1d8c-4fba-9b79-5aed759e8c4b"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ea41c70b-cafb-4f17-b4dd-abe6311b1bd0"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""CameraMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""c2a26008-40bd-4a80-b973-629d6c82fde3"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CharacterChange"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""6e4e4929-a2d7-4d0f-9c80-db89a7db949e"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""CharacterChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""a9719989-b9f6-488c-98a9-077ec49b27d5"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""CharacterChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""39edf41d-9eee-45b8-b0a4-4e70b26d0f9f"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ActionChange"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""aec5544c-8dcf-4185-ae83-35ebca0b3512"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""ActionChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""049e3bca-2f1a-4932-864f-b4f49052ded5"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""ActionChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""90513f27-fda5-4c73-b2b6-0e6855faa984"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""ActionConfirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""76abb421-6130-4d7d-880b-41c04ff84578"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""ShowMap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""4427d088-4fdf-4160-ba29-36d2e26377bd"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RotateView"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""60f10bad-52fe-4833-a3c7-3103d50760a1"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""RotateView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""98be67ec-db2a-4eb7-a853-b0d484488e64"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""RotateView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -1479,6 +1784,19 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         // MenuUI
         m_MenuUI = asset.FindActionMap("MenuUI", throwIfNotFound: true);
         m_MenuUI_Exit = m_MenuUI.FindAction("Exit", throwIfNotFound: true);
+        // GameplayControl_New
+        m_GameplayControl_New = asset.FindActionMap("GameplayControl_New", throwIfNotFound: true);
+        m_GameplayControl_New_Reset = m_GameplayControl_New.FindAction("Reset", throwIfNotFound: true);
+        m_GameplayControl_New_Pause = m_GameplayControl_New.FindAction("Pause", throwIfNotFound: true);
+        m_GameplayControl_New_Tips = m_GameplayControl_New.FindAction("Tips", throwIfNotFound: true);
+        m_GameplayControl_New_Zoom = m_GameplayControl_New.FindAction("Zoom", throwIfNotFound: true);
+        m_GameplayControl_New_Select = m_GameplayControl_New.FindAction("Select", throwIfNotFound: true);
+        m_GameplayControl_New_CameraMove = m_GameplayControl_New.FindAction("CameraMove", throwIfNotFound: true);
+        m_GameplayControl_New_CharacterChange = m_GameplayControl_New.FindAction("CharacterChange", throwIfNotFound: true);
+        m_GameplayControl_New_ActionChange = m_GameplayControl_New.FindAction("ActionChange", throwIfNotFound: true);
+        m_GameplayControl_New_ActionConfirm = m_GameplayControl_New.FindAction("ActionConfirm", throwIfNotFound: true);
+        m_GameplayControl_New_ShowMap = m_GameplayControl_New.FindAction("ShowMap", throwIfNotFound: true);
+        m_GameplayControl_New_RotateView = m_GameplayControl_New.FindAction("RotateView", throwIfNotFound: true);
     }
 
     ~@ProjectDInputAction()
@@ -1487,6 +1805,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         UnityEngine.Debug.Assert(!m_Gameplay_keyboard.enabled, "This will cause a leak and performance issues, ProjectDInputAction.Gameplay_keyboard.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, ProjectDInputAction.UI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_MenuUI.enabled, "This will cause a leak and performance issues, ProjectDInputAction.MenuUI.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_GameplayControl_New.enabled, "This will cause a leak and performance issues, ProjectDInputAction.GameplayControl_New.Disable() has not been called.");
     }
 
     /// <summary>
@@ -2173,6 +2492,212 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="MenuUIActions" /> instance referencing this action map.
     /// </summary>
     public MenuUIActions @MenuUI => new MenuUIActions(this);
+
+    // GameplayControl_New
+    private readonly InputActionMap m_GameplayControl_New;
+    private List<IGameplayControl_NewActions> m_GameplayControl_NewActionsCallbackInterfaces = new List<IGameplayControl_NewActions>();
+    private readonly InputAction m_GameplayControl_New_Reset;
+    private readonly InputAction m_GameplayControl_New_Pause;
+    private readonly InputAction m_GameplayControl_New_Tips;
+    private readonly InputAction m_GameplayControl_New_Zoom;
+    private readonly InputAction m_GameplayControl_New_Select;
+    private readonly InputAction m_GameplayControl_New_CameraMove;
+    private readonly InputAction m_GameplayControl_New_CharacterChange;
+    private readonly InputAction m_GameplayControl_New_ActionChange;
+    private readonly InputAction m_GameplayControl_New_ActionConfirm;
+    private readonly InputAction m_GameplayControl_New_ShowMap;
+    private readonly InputAction m_GameplayControl_New_RotateView;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "GameplayControl_New".
+    /// </summary>
+    public struct GameplayControl_NewActions
+    {
+        private @ProjectDInputAction m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public GameplayControl_NewActions(@ProjectDInputAction wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/Reset".
+        /// </summary>
+        public InputAction @Reset => m_Wrapper.m_GameplayControl_New_Reset;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/Pause".
+        /// </summary>
+        public InputAction @Pause => m_Wrapper.m_GameplayControl_New_Pause;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/Tips".
+        /// </summary>
+        public InputAction @Tips => m_Wrapper.m_GameplayControl_New_Tips;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/Zoom".
+        /// </summary>
+        public InputAction @Zoom => m_Wrapper.m_GameplayControl_New_Zoom;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/Select".
+        /// </summary>
+        public InputAction @Select => m_Wrapper.m_GameplayControl_New_Select;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/CameraMove".
+        /// </summary>
+        public InputAction @CameraMove => m_Wrapper.m_GameplayControl_New_CameraMove;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/CharacterChange".
+        /// </summary>
+        public InputAction @CharacterChange => m_Wrapper.m_GameplayControl_New_CharacterChange;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/ActionChange".
+        /// </summary>
+        public InputAction @ActionChange => m_Wrapper.m_GameplayControl_New_ActionChange;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/ActionConfirm".
+        /// </summary>
+        public InputAction @ActionConfirm => m_Wrapper.m_GameplayControl_New_ActionConfirm;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/ShowMap".
+        /// </summary>
+        public InputAction @ShowMap => m_Wrapper.m_GameplayControl_New_ShowMap;
+        /// <summary>
+        /// Provides access to the underlying input action "GameplayControl_New/RotateView".
+        /// </summary>
+        public InputAction @RotateView => m_Wrapper.m_GameplayControl_New_RotateView;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_GameplayControl_New; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="GameplayControl_NewActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(GameplayControl_NewActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="GameplayControl_NewActions" />
+        public void AddCallbacks(IGameplayControl_NewActions instance)
+        {
+            if (instance == null || m_Wrapper.m_GameplayControl_NewActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_GameplayControl_NewActionsCallbackInterfaces.Add(instance);
+            @Reset.started += instance.OnReset;
+            @Reset.performed += instance.OnReset;
+            @Reset.canceled += instance.OnReset;
+            @Pause.started += instance.OnPause;
+            @Pause.performed += instance.OnPause;
+            @Pause.canceled += instance.OnPause;
+            @Tips.started += instance.OnTips;
+            @Tips.performed += instance.OnTips;
+            @Tips.canceled += instance.OnTips;
+            @Zoom.started += instance.OnZoom;
+            @Zoom.performed += instance.OnZoom;
+            @Zoom.canceled += instance.OnZoom;
+            @Select.started += instance.OnSelect;
+            @Select.performed += instance.OnSelect;
+            @Select.canceled += instance.OnSelect;
+            @CameraMove.started += instance.OnCameraMove;
+            @CameraMove.performed += instance.OnCameraMove;
+            @CameraMove.canceled += instance.OnCameraMove;
+            @CharacterChange.started += instance.OnCharacterChange;
+            @CharacterChange.performed += instance.OnCharacterChange;
+            @CharacterChange.canceled += instance.OnCharacterChange;
+            @ActionChange.started += instance.OnActionChange;
+            @ActionChange.performed += instance.OnActionChange;
+            @ActionChange.canceled += instance.OnActionChange;
+            @ActionConfirm.started += instance.OnActionConfirm;
+            @ActionConfirm.performed += instance.OnActionConfirm;
+            @ActionConfirm.canceled += instance.OnActionConfirm;
+            @ShowMap.started += instance.OnShowMap;
+            @ShowMap.performed += instance.OnShowMap;
+            @ShowMap.canceled += instance.OnShowMap;
+            @RotateView.started += instance.OnRotateView;
+            @RotateView.performed += instance.OnRotateView;
+            @RotateView.canceled += instance.OnRotateView;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="GameplayControl_NewActions" />
+        private void UnregisterCallbacks(IGameplayControl_NewActions instance)
+        {
+            @Reset.started -= instance.OnReset;
+            @Reset.performed -= instance.OnReset;
+            @Reset.canceled -= instance.OnReset;
+            @Pause.started -= instance.OnPause;
+            @Pause.performed -= instance.OnPause;
+            @Pause.canceled -= instance.OnPause;
+            @Tips.started -= instance.OnTips;
+            @Tips.performed -= instance.OnTips;
+            @Tips.canceled -= instance.OnTips;
+            @Zoom.started -= instance.OnZoom;
+            @Zoom.performed -= instance.OnZoom;
+            @Zoom.canceled -= instance.OnZoom;
+            @Select.started -= instance.OnSelect;
+            @Select.performed -= instance.OnSelect;
+            @Select.canceled -= instance.OnSelect;
+            @CameraMove.started -= instance.OnCameraMove;
+            @CameraMove.performed -= instance.OnCameraMove;
+            @CameraMove.canceled -= instance.OnCameraMove;
+            @CharacterChange.started -= instance.OnCharacterChange;
+            @CharacterChange.performed -= instance.OnCharacterChange;
+            @CharacterChange.canceled -= instance.OnCharacterChange;
+            @ActionChange.started -= instance.OnActionChange;
+            @ActionChange.performed -= instance.OnActionChange;
+            @ActionChange.canceled -= instance.OnActionChange;
+            @ActionConfirm.started -= instance.OnActionConfirm;
+            @ActionConfirm.performed -= instance.OnActionConfirm;
+            @ActionConfirm.canceled -= instance.OnActionConfirm;
+            @ShowMap.started -= instance.OnShowMap;
+            @ShowMap.performed -= instance.OnShowMap;
+            @ShowMap.canceled -= instance.OnShowMap;
+            @RotateView.started -= instance.OnRotateView;
+            @RotateView.performed -= instance.OnRotateView;
+            @RotateView.canceled -= instance.OnRotateView;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="GameplayControl_NewActions.UnregisterCallbacks(IGameplayControl_NewActions)" />.
+        /// </summary>
+        /// <seealso cref="GameplayControl_NewActions.UnregisterCallbacks(IGameplayControl_NewActions)" />
+        public void RemoveCallbacks(IGameplayControl_NewActions instance)
+        {
+            if (m_Wrapper.m_GameplayControl_NewActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="GameplayControl_NewActions.AddCallbacks(IGameplayControl_NewActions)" />
+        /// <seealso cref="GameplayControl_NewActions.RemoveCallbacks(IGameplayControl_NewActions)" />
+        /// <seealso cref="GameplayControl_NewActions.UnregisterCallbacks(IGameplayControl_NewActions)" />
+        public void SetCallbacks(IGameplayControl_NewActions instance)
+        {
+            foreach (var item in m_Wrapper.m_GameplayControl_NewActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_GameplayControl_NewActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="GameplayControl_NewActions" /> instance referencing this action map.
+    /// </summary>
+    public GameplayControl_NewActions @GameplayControl_New => new GameplayControl_NewActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     /// <summary>
     /// Provides access to the input control scheme.
@@ -2444,5 +2969,90 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnExit(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "GameplayControl_New" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="GameplayControl_NewActions.AddCallbacks(IGameplayControl_NewActions)" />
+    /// <seealso cref="GameplayControl_NewActions.RemoveCallbacks(IGameplayControl_NewActions)" />
+    public interface IGameplayControl_NewActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "Reset" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnReset(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Tips" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTips(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Zoom" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnZoom(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Select" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSelect(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CameraMove" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCameraMove(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CharacterChange" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCharacterChange(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ActionChange" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActionChange(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ActionConfirm" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActionConfirm(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ShowMap" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnShowMap(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "RotateView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRotateView(InputAction.CallbackContext context);
     }
 }

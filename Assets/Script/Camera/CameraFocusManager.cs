@@ -207,6 +207,7 @@ public class CameraFocusManager : MonoBehaviour
 
         if (Time.timeScale == 0f ||
             (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) ||
+            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
             (InGameUIManager.Instance != null && InGameUIManager.Instance.IsPaused))
         {
             CancelDragInput();
@@ -302,7 +303,10 @@ public class CameraFocusManager : MonoBehaviour
             return;
         }
 
-        if (mouse.rightButton.wasReleasedThisFrame || !mouse.rightButton.isPressed)
+        InputAction cameraMove = NewInGameUIManager.Instance?.GameplayInput?.CameraMove;
+        bool released = cameraMove?.WasReleasedThisFrame() ?? mouse.rightButton.wasReleasedThisFrame;
+        bool held = cameraMove?.IsPressed() ?? mouse.rightButton.isPressed;
+        if (released || !held)
         {
             if (isDragging && returnToDefaultAfterDrag)
                 ReturnToDefaultView();
@@ -313,7 +317,7 @@ public class CameraFocusManager : MonoBehaviour
 
         Vector2 mousePosition = mouse.position.ReadValue();
 
-        if (mouse.rightButton.wasPressedThisFrame)
+        if (cameraMove?.WasPressedThisFrame() ?? mouse.rightButton.wasPressedThisFrame)
         {
             // Block the WHOLE gesture if the right press started over UI.
             dragArmed = !blockDragOverUI || !IsPointerOverUI();
@@ -447,7 +451,8 @@ public class CameraFocusManager : MonoBehaviour
             return;
         }
 
-        float scroll = Mouse.current.scroll.ReadValue().y;
+        InputAction zoom = NewInGameUIManager.Instance?.GameplayInput?.Zoom;
+        float scroll = zoom?.ReadValue<float>() ?? Mouse.current.scroll.ReadValue().y;
 
         // Current Input System normalizes wheel steps already. Only legacy
         // Windows platform-specific input needs conversion from 120 units.

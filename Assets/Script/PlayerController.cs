@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     {
         if ((TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) ||
             Time.timeScale == 0 ||
+            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
             (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()))
         {
@@ -88,16 +89,20 @@ public class PlayerController : MonoBehaviour
             pendingInteractPlayer != turnManager.CurrentPlayer)
             ResetInteractClick();
 
-        if (Mouse.current == null || mainCamera == null ||
-            !Mouse.current.leftButton.wasPressedThisFrame) return;
+        Mouse mouse = Mouse.current;
+        if (mouse == null || mainCamera == null) return;
 
-        if (turnManager.IsPointerOverTurnUI(Mouse.current.position.ReadValue()))
+        InputAction select = NewInGameUIManager.Instance?.GameplayInput?.Select;
+        if (!(select?.WasPressedThisFrame() ?? mouse.leftButton.wasPressedThisFrame)) return;
+
+        Vector2 mousePosition = mouse.position.ReadValue();
+        if (turnManager.IsPointerOverTurnUI(mousePosition))
         {
             ResetInteractClick();
             return;
         }
 
-        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
         RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -190,8 +195,10 @@ public class PlayerController : MonoBehaviour
 
     private bool CanInteractFromWorld(TurnGameManager turnManager)
     {
-        return turnManager.CanChooseReact && InGameUIManager.Instance != null &&
-            InGameUIManager.Instance.IsInteractMode;
+        NewInGameUIManager newHud = NewInGameUIManager.Instance;
+        return turnManager.CanChooseReact && (newHud != null && newHud.isActiveAndEnabled
+            ? newHud.IsInteractMode
+            : InGameUIManager.Instance != null && InGameUIManager.Instance.IsInteractMode);
     }
 
     private bool HandleInteractClick(TurnGameManager turnManager, RaycastHit[] hits)
