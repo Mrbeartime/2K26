@@ -229,6 +229,7 @@ public class CameraFocusManager : MonoBehaviour
 
         if (Time.timeScale == 0f ||
             (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) ||
+            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
             (InGameUIManager.Instance != null && InGameUIManager.Instance.IsPaused))
         {
             CancelDragInput();
@@ -315,12 +316,14 @@ public class CameraFocusManager : MonoBehaviour
 
     private void HandleRightMouseDrag()
     {
-        if (!enableCameraDrag || cameraInputs == null || !cameraInputs.Camera.Rotate.IsPressed())
+        InputAction rotate = NewInGameUIManager.Instance?.GameplayInput?.CameraMove
+            ?? cameraInputs?.Camera.Rotate;
+        if (!enableCameraDrag || cameraInputs == null || rotate == null || !rotate.IsPressed())
         {
             CancelRotationInput();
             return;
         }
-        if (cameraInputs.Camera.Rotate.WasPressedThisFrame())
+        if (rotate.WasPressedThisFrame())
         {
             dragArmed = !blockDragOverUI || !IsPointerOverUI();
             isDragging = false;
@@ -492,7 +495,8 @@ public class CameraFocusManager : MonoBehaviour
             return;
         }
 
-        float scroll = Mouse.current.scroll.ReadValue().y;
+        InputAction zoom = NewInGameUIManager.Instance?.GameplayInput?.Zoom;
+        float scroll = zoom?.ReadValue<float>() ?? Mouse.current.scroll.ReadValue().y;
 
         // Current Input System normalizes wheel steps already. Only legacy
         // Windows platform-specific input needs conversion from 120 units.

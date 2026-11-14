@@ -228,6 +228,21 @@ public class TurnGameManager : MonoBehaviour
         return int.TryParse(playerName[(index + 1)..], out int number) ? number : int.MaxValue;
     }
 
+    internal void CyclePlayer(bool forward)
+    {
+        if (gameComplete || enemyPhase || waitingForMovement || players.Count == 0) return;
+
+        int direction = forward ? 1 : -1;
+        int currentIndex = players.IndexOf(currentPlayer);
+        int index = currentIndex >= 0 ? currentIndex : (forward ? -1 : 0);
+        int candidates = currentIndex >= 0 ? players.Count - 1 : players.Count;
+        for (int step = 0; step < candidates; step++)
+        {
+            index = (index + direction + players.Count) % players.Count;
+            if (TrySelectPlayer(players[index])) return;
+        }
+    }
+
     public bool TrySelectPlayer(PlayerMove player)
 {
     if (gameComplete ||
@@ -610,6 +625,12 @@ public class TurnGameManager : MonoBehaviour
         // Finish the last player's shot before enemies decide whether they are alive.
         while (!gameComplete && HasFlyingArrows()) yield return null;
         if (gameComplete) yield break;
+
+        NewInGameUIManager hud = NewInGameUIManager.Instance;
+        if (hud != null && hud.gameObject.scene == gameObject.scene)
+            yield return hud.AnimateTurnProgress(this);
+        if (gameComplete) yield break;
+
         trapPhase = true;
         status = "Trap Phase: resolving turn " + ElapsedTurn + "...";
         RaiseStateChanged();
@@ -639,8 +660,9 @@ public class TurnGameManager : MonoBehaviour
         while (!gameComplete && effects.Exists(effect => effect != null && effect.isActiveAndEnabled))
             yield return null;
         if (gameComplete) yield break;
-        enemyPhase = false;
+
         currentTurn--;
+        enemyPhase = false;
         if (currentTurn <= 0)
         {
             ShowGameOver("Turn limit reached.");
