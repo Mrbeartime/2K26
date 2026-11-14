@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f0f0034f37d9314a86681ec8af01e82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Audio.GameAudioManager
+  debugAudioTiming: 1
   mixer: {fileID: 24100000, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
   groups:
   - {fileID: 24300000, guid: de94094f06b54e742a0a569a2b3f23e6, type: 2}
@@ -82,7 +83,7 @@ MonoBehaviour:
   - cue: 2
     bus: 2
     clips:
-    - {fileID: 8300000, guid: faba3eee84a367348a0a4f5fb0209711, type: 3}
+    - {fileID: 8300000, guid: 230bccf331b239740acc7609c63c5e08, type: 3}
     volume: {x: 0.75, y: 0.75}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -103,7 +104,7 @@ MonoBehaviour:
     bus: 2
     clips:
     - {fileID: 8300000, guid: ae3dd9de9f78a4b4aa624cf139fce1fd, type: 3}
-    volume: {x: 0.65, y: 0.65}
+    volume: {x: 0.8, y: 0.8}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
     minimumInterval: 0
@@ -113,7 +114,7 @@ MonoBehaviour:
     bus: 2
     clips:
     - {fileID: 8300000, guid: 13108b0c57e48424cb5b1f7c93b31754, type: 3}
-    volume: {x: 0.85, y: 0.85}
+    volume: {x: 1, y: 1}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
     minimumInterval: 0
@@ -122,7 +123,7 @@ MonoBehaviour:
   - cue: 6
     bus: 1
     clips:
-    - {fileID: 8300000, guid: e64a6879964f40a448c50e1316450581, type: 3}
+    - {fileID: 8300000, guid: b3782c86cf85a4e40a27f15fa5a3dcf9, type: 3}
     volume: {x: 0.3, y: 0.3}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
@@ -143,7 +144,7 @@ MonoBehaviour:
     bus: 3
     clips:
     - {fileID: 8300000, guid: 0633e2ed798539a4db595105e1b8198d, type: 3}
-    volume: {x: 0.65, y: 0.65}
+    volume: {x: 0.1, y: 0.1}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
     minimumInterval: 0
@@ -153,7 +154,7 @@ MonoBehaviour:
     bus: 3
     clips:
     - {fileID: 8300000, guid: e11ffb39499b67243a18696d3e12d54f, type: 3}
-    volume: {x: 0.25, y: 0.25}
+    volume: {x: 0.05, y: 0.05}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 1
     minimumInterval: 0.12
@@ -162,8 +163,8 @@ MonoBehaviour:
   - cue: 10
     bus: 3
     clips:
-    - {fileID: 8300000, guid: d99e597a36b7dc94ebd5d469ace079ff, type: 3}
-    volume: {x: 0.7, y: 0.7}
+    - {fileID: 8300000, guid: 966a6d7e76a79ed41986ddb29e3bdab5, type: 3}
+    volume: {x: 0.2, y: 0.2}
     pitch: {x: 1, y: 1}
     maxSimultaneous: 3
     minimumInterval: 0
@@ -179,3 +180,55 @@ MonoBehaviour:
     minimumInterval: 0
     minDistance: 1
     maxDistance: 20
+  - cue: 12
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: a3f2034d0f13c0942bae5c5cbc71d6ea, type: 3}
+    volume: {x: 1, y: 1}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 13
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: e8662abe0478efd43b081fd82f3649b8, type: 3}
+    volume: {x: 0.45, y: 0.45}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 14
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: a98613a25b64bb241bed7a8fcc84a4a0, type: 3}
+    volume: {x: 0.22, y: 0.22}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 15
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 578ed3e2c1724004b959b3201225a89e, type: 3}
+    volume: {x: 10, y: 10}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 8
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  - cue: 16
+    bus: 3
+    clips:
+    - {fileID: 8300000, guid: bb2fa4afec1b07d47a6434831b78e6e7, type: 3}
+    volume: {x: 0.28, y: 0.28}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 4
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
+  turnChangeDelay: 0
+  clockTickDelay: 0.1

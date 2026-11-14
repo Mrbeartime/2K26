@@ -104,6 +104,7 @@ public class SpikeTrap : MonoBehaviour
         if (raised && !WatchTargetTile()) yield break;
         int version = ++visualVersion;
         float from = currentHeight;
+        if (raised && !IsRaised) ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.SpikeTrap, transform.position);
         float target = raised ? 1f : 0f;
         // A retracting trap stops damaging immediately.
         if (!raised) IsRaised = false;

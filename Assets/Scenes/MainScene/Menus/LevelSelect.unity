@@ -168,6 +168,7 @@ MonoBehaviour:
   - {fileID: 123123522}
   - {fileID: 1439561082}
   - {fileID: 1396672377}
+  secretHoverButton: {fileID: 1800000021}
   boardHoverButtons:
   - {fileID: 1800000012}
   - {fileID: 1800000021}

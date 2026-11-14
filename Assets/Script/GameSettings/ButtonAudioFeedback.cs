@@ -11,6 +11,13 @@ namespace ProjectD.Audio
         [SerializeField] private bool hoverSound = true;
         private Button button;
         private bool levelHover;
+        private AudioCue levelHoverCue = AudioCue.Pause;
+        public static void BindBellHover(Button target)
+        {
+            if (target == null) return;
+            BindLevelHover(target);
+            target.GetComponent<ButtonAudioFeedback>().levelHoverCue = AudioCue.BellHover;
+        }
         private bool levelClickBound;
         private bool pointerInside;
         private bool selected;
@@ -38,6 +45,11 @@ namespace ProjectD.Audio
                 var feedback = target.GetComponent<ButtonAudioFeedback>();
                 if (feedback == null) feedback = target.gameObject.AddComponent<ButtonAudioFeedback>();
                 feedback.audioScope = root.transform;
+                if (!feedback.levelClickBound)
+                {
+                    target.onClick.AddListener(feedback.LevelClick);
+                    feedback.levelClickBound = true;
+                }
             }
         }
         private bool InScope => audioScope != null && transform.IsChildOf(audioScope);
@@ -54,11 +66,12 @@ namespace ProjectD.Audio
             lastHoverFrame = Time.frameCount;
             if (levelHover && button.IsActive() && button.IsInteractable())
             {
-                GameAudioManager.Instance?.PlayLevelHover();
+                GameAudioManager.TimingEvent(levelHoverCue);
+                GameAudioManager.Instance?.PlayLevelHover(levelHoverCue);
                 return;
             }
             if (InScope && hoverSound && button.IsActive() && button.IsInteractable())
-                GameAudioManager.Instance?.PlayUI(AudioCue.ButtonHover);
+                GameAudioManager.Instance?.PlayUI(GameAudioManager.TimingEvent(AudioCue.ButtonHover));
         }
         public void OnPointerDown(PointerEventData data)
         {
@@ -88,7 +101,7 @@ namespace ProjectD.Audio
         private void LevelClick()
         {
             // The successful Button callback can hide/destroy its UI before this listener runs.
-            if (!levelHover || pointerPress) return;
+            if ((!levelHover && !InScope) || pointerPress) return;
             Click();
         }
     }

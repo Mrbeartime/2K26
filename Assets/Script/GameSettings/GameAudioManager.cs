@@ -10,6 +10,57 @@ namespace ProjectD.Audio
     [DisallowMultipleComponent]
     public sealed class GameAudioManager : MonoBehaviour
     {
+#if UNITY_EDITOR
+        [Header("Temporary audio diagnostics (Editor only)")]
+        [SerializeField] private bool debugAudioTiming;
+        private long timingEvent, timingManager, timingPlay;
+        private AudioCue timingCue;
+        public static AudioCue TimingEvent(AudioCue cue)
+        {
+            var manager = Instance;
+            if (manager != null && manager.debugAudioTiming)
+            { manager.timingEvent = System.Diagnostics.Stopwatch.GetTimestamp(); manager.timingManager = 0; manager.timingPlay = 0; manager.timingCue = cue; }
+            return cue;
+        }
+        [ContextMenu("Audio Timing/Log DSP Configuration")]
+        private void LogDSP()
+        {
+            AudioSettings.GetDSPBufferSize(out int size, out int count);
+            Debug.Log($"AudioTiming DSP: {size} samples x {count}, rate={AudioSettings.outputSampleRate}; buffer configuration is NOT measured hardware latency.");
+        }
+#else
+        public static AudioCue TimingEvent(AudioCue cue) => cue;
+#endif
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void TimingBegin(AudioCue cue)
+        {
+#if UNITY_EDITOR
+            if (!debugAudioTiming) return;
+            if (timingManager == 0) timingManager = System.Diagnostics.Stopwatch.GetTimestamp();
+            if (timingCue != cue) timingEvent = 0;
+#endif
+        }
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void TimingPlayCall()
+        {
+#if UNITY_EDITOR
+            if (debugAudioTiming) timingPlay = System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+        }
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void TimingEnd(AudioCue cue, string result, AudioClip clip = null)
+        {
+#if UNITY_EDITOR
+            if (!debugAudioTiming || (cue != AudioCue.ButtonHover && cue != AudioCue.Pause && cue != AudioCue.SwordSlash && cue != AudioCue.BowShot)) return;
+            long now = timingPlay != 0 ? timingPlay : System.Diagnostics.Stopwatch.GetTimestamp();
+            double scale = 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+            string eventMs = timingEvent != 0 ? ((timingManager - timingEvent) * scale).ToString("F3") : "unmarked";
+            timingEvent = 0;
+            Debug.Log($"AudioTiming {cue} frame={Time.frameCount} Event->Manager={eventMs}ms Manager->Play/decision={(now-timingManager)*scale:F3}ms result={result} load={clip?.loadState} dsp={AudioSettings.dspTime:F6}. Play timestamp is NOT audible output time.");
+            timingManager = 0;
+            timingPlay = 0;
+#endif
+        }
         public static GameAudioManager Instance { get; private set; }
         [Header("Mixer routing: Master, Music, SFX, UI")]
         [SerializeField] private AudioMixer mixer;
@@ -27,7 +78,7 @@ namespace ProjectD.Audio
             new(AudioCue.ButtonClick, AudioBus.UI), new(AudioCue.ButtonHover, AudioBus.UI),
             new(AudioCue.Pause, AudioBus.UI), new(AudioCue.CharacterSelect, AudioBus.UI)};
         private static readonly string[] Parameters = { "MasterVolume", "MusicVolume", "SFXVolume", "UIVolume" };
-        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; public Object owner; public bool hover; }
+        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; public Object owner; public bool hover; public Scene scene; }
         private Voice[] voices;
         private AudioSource[] music;
         private Coroutine fade;
@@ -36,6 +87,19 @@ namespace ProjectD.Audio
         private int specialUIFrame = -1;
         private int buttonPressFrame = -1;
         public int PoolCapacity => voices == null ? 0 : voices.Length;
+        [SerializeField, Min(0f)] private float turnChangeDelay;
+        [SerializeField, Min(0f)] private float clockTickDelay = .1f;
+        public void PlayTurnSounds()
+        {
+            StartCoroutine(PlayTurnCue(AudioCue.TurnChange, turnChangeDelay));
+            StartCoroutine(PlayTurnCue(AudioCue.ClockTick, clockTickDelay));
+        }
+        private IEnumerator PlayTurnCue(AudioCue cue, float delay)
+        {
+            var scene = SceneManager.GetActiveScene();
+            if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+            if (scene == SceneManager.GetActiveScene()) PlaySFX(cue);
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetInstance() => Instance = null;
@@ -60,6 +124,7 @@ namespace ProjectD.Audio
             music = new[] { CreateSource("Music A", AudioBus.Music), CreateSource("Music B", AudioBus.Music) };
             GameSettings.AudioChanged += ApplySettings;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnAudioSceneUnloaded;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -76,6 +141,23 @@ namespace ProjectD.Audio
             if (mode == LoadSceneMode.Additive && currentMusic.HasValue) return;
             if (level) PlayMusic(AudioCue.LevelBGM);
             else if (menu) PlayMusic(AudioCue.MenuBGM);
+        }
+        private void OnAudioSceneUnloaded(Scene scene)
+        {
+            if (voices == null) return;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].bus == AudioBus.SFX && voices[i].scene == scene)
+                {
+                    voices[i].source.Stop();
+                    voices[i].owner = null;
+                }
+        }
+        public void UpdateFootstepPosition(Object owner, Vector3 position)
+        {
+            if (owner == null || voices == null) return;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].owner == owner && voices[i].cue == AudioCue.Footstep && voices[i].source.isPlaying)
+                    voices[i].source.transform.position = position;
         }
 
         private void Start() { started = true; ApplySettings(); }
@@ -118,13 +200,23 @@ namespace ProjectD.Audio
         }
         public bool PlaySFX(AudioCue cue) => PlayPooled(cue, AudioBus.SFX, null);
         public bool PlaySFXAtPosition(AudioCue cue, Vector3 position) => PlayPooled(cue, AudioBus.SFX, position);
+        public bool PlayDoorAudio(Object door, Vector3 position) =>
+            door != null && PlayPooled(AudioCue.DoorOpen, AudioBus.SFX, position, door);
+        public void StopDoorAudio(Object door)
+        {
+            if (door == null || voices == null) return;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].owner == door && voices[i].cue == AudioCue.DoorOpen)
+                { voices[i].source.Stop(); voices[i].owner = null; }
+        }
         public bool PlayUI(AudioCue cue)
         {
-            if (cue == AudioCue.Pause && buttonPressFrame == Time.frameCount) return false;
+            TimingBegin(cue);
+            if (cue == AudioCue.Pause && buttonPressFrame == Time.frameCount) { TimingEnd(cue, "button-frame suppression"); return false; }
             if (cue == AudioCue.ButtonClick && specialUIFrame == Time.frameCount) return false;
             if (cue == AudioCue.Pause || cue == AudioCue.CharacterSelect)
             {
-                if (specialUIFrame == Time.frameCount) return false;
+                if (specialUIFrame == Time.frameCount) { TimingEnd(cue, "special-frame suppression"); return false; }
                 specialUIFrame = Time.frameCount;
             }
             return PlayPooled(cue, AudioBus.UI, null);
@@ -143,7 +235,7 @@ namespace ProjectD.Audio
                 if (voices[i].owner == owner && voices[i].cue == AudioCue.Footstep)
                 { voices[i].source.Stop(); voices[i].owner = null; }
         }
-        public bool PlayLevelHover() => PlayPooled(AudioCue.Pause, AudioBus.UI, null, null, true);
+        public bool PlayLevelHover(AudioCue cue = AudioCue.Pause) => PlayPooled(cue, AudioBus.UI, null, null, true);
         public bool PlayLevelClick()
         {
             // Press feedback must never cut a previously started hover/open sound.
@@ -152,12 +244,13 @@ namespace ProjectD.Audio
         }
         private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position, Object owner = null, bool hover = false)
         {
-            if (Instance != this || voices == null) return false;
+            TimingBegin(cue);
+            if (Instance != this || voices == null) { TimingEnd(cue, "manager unavailable"); return false; }
             var slot = Find(cue);
-            if (slot == null || slot.bus != bus) return false;
+            if (slot == null || slot.bus != bus) { TimingEnd(cue, "slot/routing invalid"); return false; }
             hover |= cue == AudioCue.ButtonHover && bus == AudioBus.UI;
-            if (!hover && Time.unscaledTime < slot.nextPlayTime) return false;
-            var clip = slot.PickClip(); if (clip == null) return false;
+            if (!hover && Time.unscaledTime < slot.nextPlayTime) { TimingEnd(cue, "cooldown"); return false; }
+            var clip = slot.PickClip(); if (clip == null) { TimingEnd(cue, "clip missing"); return false; }
             int free = -1, overlapping = 0;
             for (int i = 0; i < voices.Length; i++)
             {
@@ -166,12 +259,15 @@ namespace ProjectD.Audio
                     overlapping++;
             }
             int limit = hover ? Mathf.Clamp(hoverVoiceLimit, 1, voices.Length) : Mathf.Max(1, slot.maxSimultaneous);
-            if (free < 0 || overlapping >= limit) return false;
+            if (free < 0 || overlapping >= limit) { TimingEnd(cue, free < 0 ? "pool full" : "voice limit", clip); return false; }
             voices[free].cue = cue; voices[free].bus = bus;
             voices[free].owner = owner;
+            voices[free].scene = owner is Component component ? component.gameObject.scene : SceneManager.GetActiveScene();
             voices[free].hover = hover;
             Configure(voices[free].source, slot, clip, position, cue == AudioCue.Footstep && owner != null);
+            TimingPlayCall();
             voices[free].source.Play();
+            TimingEnd(cue, "Play called", clip);
             if (!hover) slot.nextPlayTime = Time.unscaledTime + Mathf.Max(0f, slot.minimumInterval);
             return true;
         }
@@ -218,6 +314,7 @@ namespace ProjectD.Audio
         {
             if (Instance != this) return;
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneUnloaded -= OnAudioSceneUnloaded;
             GameSettings.AudioChanged -= ApplySettings; Instance = null;
         }
     }

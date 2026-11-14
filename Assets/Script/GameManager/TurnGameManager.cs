@@ -667,6 +667,7 @@ public class TurnGameManager : MonoBehaviour
         waitingForMovement = false;
         actionMode = ActionMode.None;
         status = "Turn " + ElapsedTurn + "/" + maximumTurns + ": select any Player.";
+        if (ElapsedTurn > 1) ProjectD.Audio.GameAudioManager.Instance?.PlayTurnSounds();
         RaiseStateChanged();
     }
 

@@ -6,6 +6,8 @@ public class DoorCutScene : MonoBehaviour
     [SerializeField] private DoorController door;
     [SerializeField, Min(0f)] private float pauseBeforeClose = 0.3f;
     [SerializeField, Min(0f)] private float pauseAfterClose = 0.4f;
+    public void StopDoorAudio() { if (door != null) door.StopMovementAudio(); }
+    private void OnDisable() => StopDoorAudio();
 
     public IEnumerator Play()
     {
@@ -15,6 +17,8 @@ public class DoorCutScene : MonoBehaviour
             yield break;
         }
 
+        try
+        {
         yield return new WaitForSeconds(pauseBeforeClose);
         if (!isActiveAndEnabled || door == null) yield break;
         door.CloseForCutscene();
@@ -26,5 +30,7 @@ public class DoorCutScene : MonoBehaviour
         }
         if (isActiveAndEnabled && door != null)
             yield return new WaitForSeconds(pauseAfterClose);
+        }
+        finally { StopDoorAudio(); }
     }
 }

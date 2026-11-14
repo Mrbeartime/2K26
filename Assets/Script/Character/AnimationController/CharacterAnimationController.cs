@@ -6,6 +6,7 @@ public class CharacterAnimationController : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private PlayerMove playerMove;
+    public Animator CharacterAnimator => animator;
 
     private static readonly int IsMoving =
         Animator.StringToHash("IsMoving");

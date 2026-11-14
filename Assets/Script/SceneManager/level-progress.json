@@ -3,12 +3,12 @@
     "levels": [
         {
             "level": 1,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
             "level": 2,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {

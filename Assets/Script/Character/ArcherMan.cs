@@ -66,7 +66,7 @@ public class ArcherMan : Character
         projectile.enabled = true;
         projectile.Initialize(this, origin, direction, arrowSpeed);
         arrow.SetActive(true);
-        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.BowShot, position);
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.GameAudioManager.TimingEvent(ProjectD.Audio.AudioCue.BowShot), position);
         RecordSkillUse();
     }
 
