@@ -597,13 +597,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AllOutlineColor
   elements:
   - target: {fileID: 1104136753}
-    color: {r: 0.23607905, g: 0.9547169, b: 0.07025265, a: 0}
+    color: {r: 0.1, g: 1, b: 0.15, a: 1}
   - target: {fileID: 233918284}
-    color: {r: 0.9529412, g: 0.14782836, b: 0.07058825, a: 0}
+    color: {r: 1, g: 0.05, b: 0.05, a: 1}
   - target: {fileID: 1749611519}
-    color: {r: 0.9529412, g: 0.9372549, b: 0.16470589, a: 0}
+    color: {r: 1, g: 1, b: 0, a: 1}
   - target: {fileID: 306828205}
-    color: {r: 0.7283019, g: 0.65580624, b: 0.1305446, a: 0}
+    color: {r: 1, g: 0.65, b: 0, a: 1}
 --- !u!4 &126569254
 Transform:
   m_ObjectHideFlags: 0
