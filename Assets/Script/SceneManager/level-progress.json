@@ -9,22 +9,22 @@
         {
             "level": 2,
             "completed": false,
-            "unlocked": true
+            "unlocked": false
         },
         {
             "level": 3,
             "completed": false,
-            "unlocked": true
+            "unlocked": false
         },
         {
             "level": 4,
-            "completed": false,
-            "unlocked": true
+            "completed": true,
+            "unlocked": false
         },
         {
             "level": 5,
             "completed": false,
-            "unlocked": true
+            "unlocked": false
         }
     ],
     "unlockedSecrets": [],

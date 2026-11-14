@@ -3,28 +3,28 @@
     "levels": [
         {
             "level": 1,
-            "completed": true,
+            "completed": false,
             "unlocked": true
         },
         {
             "level": 2,
-            "completed": true,
-            "unlocked": true
+            "completed": false,
+            "unlocked": false
         },
         {
             "level": 3,
-            "completed": true,
-            "unlocked": true
+            "completed": false,
+            "unlocked": false
         },
         {
             "level": 4,
             "completed": true,
-            "unlocked": true
+            "unlocked": false
         },
         {
             "level": 5,
-            "completed": true,
-            "unlocked": true
+            "completed": false,
+            "unlocked": false
         }
     ],
     "unlockedSecrets": [],

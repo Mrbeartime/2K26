@@ -1882,6 +1882,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, ProjectDInputAction.UI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_MenuUI.enabled, "This will cause a leak and performance issues, ProjectDInputAction.MenuUI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_Camera.enabled, "This will cause a leak and performance issues, ProjectDInputAction.Camera.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_GameplayControl_New.enabled, "This will cause a leak and performance issues, ProjectDInputAction.GameplayControl_New.Disable() has not been called.");
     }
 
     /// <summary>
@@ -2686,6 +2687,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="CameraActions" /> instance referencing this action map.
     /// </summary>
     public CameraActions @Camera => new CameraActions(this);
+
     // GameplayControl_New
     private readonly InputActionMap m_GameplayControl_New;
     private List<IGameplayControl_NewActions> m_GameplayControl_NewActionsCallbackInterfaces = new List<IGameplayControl_NewActions>();
