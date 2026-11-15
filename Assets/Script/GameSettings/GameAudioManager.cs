@@ -17,6 +17,7 @@ namespace ProjectD.Audio
         [Header("Default volume percentages")]
         [SerializeField] private float[] defaultVolumes = { 100f, 80f, 100f, 100f };
         [SerializeField, Range(1, 64)] private int poolSize = 24;
+        [SerializeField, Range(1, 64)] private int hoverVoiceLimit = 4;
         [SerializeField, Min(0f)] private float musicFadeSeconds = .8f;
         [SerializeField] private AudioCueSlot[] cues = {
             new(AudioCue.Footstep, AudioBus.SFX), new(AudioCue.SwordSlash, AudioBus.SFX),
@@ -26,13 +27,14 @@ namespace ProjectD.Audio
             new(AudioCue.ButtonClick, AudioBus.UI), new(AudioCue.ButtonHover, AudioBus.UI),
             new(AudioCue.Pause, AudioBus.UI), new(AudioCue.CharacterSelect, AudioBus.UI)};
         private static readonly string[] Parameters = { "MasterVolume", "MusicVolume", "SFXVolume", "UIVolume" };
-        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; public Object owner; }
+        private struct Voice { public AudioSource source; public AudioCue cue; public AudioBus bus; public Object owner; public bool hover; }
         private Voice[] voices;
         private AudioSource[] music;
         private Coroutine fade;
         private bool started;
         private AudioCue? currentMusic;
         private int specialUIFrame = -1;
+        private int buttonPressFrame = -1;
         public int PoolCapacity => voices == null ? 0 : voices.Length;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -118,6 +120,7 @@ namespace ProjectD.Audio
         public bool PlaySFXAtPosition(AudioCue cue, Vector3 position) => PlayPooled(cue, AudioBus.SFX, position);
         public bool PlayUI(AudioCue cue)
         {
+            if (cue == AudioCue.Pause && buttonPressFrame == Time.frameCount) return false;
             if (cue == AudioCue.ButtonClick && specialUIFrame == Time.frameCount) return false;
             if (cue == AudioCue.Pause || cue == AudioCue.CharacterSelect)
             {
@@ -143,36 +146,33 @@ namespace ProjectD.Audio
         public bool PlayLevelHover() => PlayPooled(AudioCue.Pause, AudioBus.UI, null, null, true);
         public bool PlayLevelClick()
         {
-            // Replace the same-click paper-open sound; keep other menus' special cue rules intact.
-            if (specialUIFrame == Time.frameCount && voices != null)
-                for (int i = 0; i < voices.Length; i++)
-                    if (voices[i].cue == AudioCue.Pause) voices[i].source.Stop();
+            // Press feedback must never cut a previously started hover/open sound.
+            buttonPressFrame = Time.frameCount;
             return PlayPooled(AudioCue.ButtonClick, AudioBus.UI, null);
         }
-        private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position, Object owner = null, bool restart = false)
+        private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position, Object owner = null, bool hover = false)
         {
             if (Instance != this || voices == null) return false;
             var slot = Find(cue);
             if (slot == null || slot.bus != bus) return false;
-            bool replaceHover = restart || (cue == AudioCue.ButtonHover && bus == AudioBus.UI);
-            if (!replaceHover && Time.unscaledTime < slot.nextPlayTime) return false;
+            hover |= cue == AudioCue.ButtonHover && bus == AudioBus.UI;
+            if (!hover && Time.unscaledTime < slot.nextPlayTime) return false;
             var clip = slot.PickClip(); if (clip == null) return false;
             int free = -1, overlapping = 0;
             for (int i = 0; i < voices.Length; i++)
             {
                 if (!voices[i].source.isPlaying) { if (free < 0) free = i; }
-                else if (voices[i].cue == cue)
-                {
-                    if (replaceHover) { voices[i].source.Stop(); free = i; }
-                    else overlapping++;
-                }
+                else if (hover ? voices[i].hover : !voices[i].hover && voices[i].cue == cue)
+                    overlapping++;
             }
-            if (free < 0 || overlapping >= Mathf.Max(1, slot.maxSimultaneous)) return false;
+            int limit = hover ? Mathf.Clamp(hoverVoiceLimit, 1, voices.Length) : Mathf.Max(1, slot.maxSimultaneous);
+            if (free < 0 || overlapping >= limit) return false;
             voices[free].cue = cue; voices[free].bus = bus;
             voices[free].owner = owner;
-            Configure(voices[free].source, slot, clip, position, false);
+            voices[free].hover = hover;
+            Configure(voices[free].source, slot, clip, position, cue == AudioCue.Footstep && owner != null);
             voices[free].source.Play();
-            slot.nextPlayTime = Time.unscaledTime + Mathf.Max(0f, slot.minimumInterval);
+            if (!hover) slot.nextPlayTime = Time.unscaledTime + Mathf.Max(0f, slot.minimumInterval);
             return true;
         }
         public bool PlayMusic(AudioCue cue)

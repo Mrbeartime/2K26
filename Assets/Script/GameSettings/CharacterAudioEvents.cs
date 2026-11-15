@@ -28,7 +28,11 @@ namespace ProjectD.Audio
         }
         private void LateUpdate()
         {
-            if (footstepPlaying && !Walking()) StopFootstep();
+            if (!Walking())
+            {
+                if (footstepPlaying) StopFootstep();
+            }
+            else if (!footstepPlaying) AudioFootstep();
         }
         private void StopFootstep()
         {
@@ -38,7 +42,7 @@ namespace ProjectD.Audio
         private void OnDisable() { if (footstepPlaying) StopFootstep(); }
         public void AudioFootstep()
         {
-            if (!Walking() || lastFootFrame == Time.frameCount) return;
+            if (footstepPlaying || !Walking() || lastFootFrame == Time.frameCount) return;
             lastFootFrame = Time.frameCount;
             if (GameAudioManager.Instance != null && GameAudioManager.Instance.PlayFootstep(this, owner.transform.position))
                 footstepPlaying = true;
