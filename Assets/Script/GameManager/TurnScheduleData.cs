@@ -49,6 +49,21 @@ public sealed class TurnScheduleData : MonoBehaviour
         EnsureDictionary();
         return trapTypesByTurn.TryGetValue(round, out var types) ? types : Array.Empty<string>();
     }
+
+    internal List<TurnTrap> GetActiveTraps(int round, string trapType)
+    {
+        var states = GetStates(round);
+        var traps = new List<TurnTrap>();
+        foreach (var item in objects)
+        {
+            if (item?.source is TurnTrap trap && trap != null && trap.isActiveAndEnabled &&
+                item.trapType == trapType && item.id != null &&
+                states.TryGetValue(item.id, out int state) && state == 1)
+                traps.Add(trap);
+        }
+        return traps;
+    }
+
     private ReadOnlyDictionary<int, IReadOnlyDictionary<string, int>> dictionaryView;
     private ReadOnlyDictionary<string, string> namesView;
     private bool initialized;

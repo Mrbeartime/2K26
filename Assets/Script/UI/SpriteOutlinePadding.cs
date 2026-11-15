@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Sprites;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -14,6 +15,7 @@ public sealed class SpriteOutlinePadding : BaseMeshEffect
     protected override void OnEnable()
     {
         base.OnEnable();
+        EnableSpriteBoundsChannel();
         Canvas.preWillRenderCanvases += RefreshPadding;
     }
 
@@ -23,15 +25,21 @@ public sealed class SpriteOutlinePadding : BaseMeshEffect
         base.OnDisable();
     }
 
+    protected override void OnCanvasHierarchyChanged()
+    {
+        base.OnCanvasHierarchyChanged();
+        EnableSpriteBoundsChannel();
+    }
+
     public override void ModifyMesh(VertexHelper vertices)
     {
-        if (!IsActive() || vertices.currentVertCount != 4)
-            return;
+        if (!IsActive() || vertices.currentVertCount != 4) return;
+        Image image = GetOutlineImage();
+        if (image == null) return;
 
-        Vector2 padding = CalculatePadding();
+        Vector2 padding = CalculatePadding(image);
         currentPadding = padding;
-        if (padding == Vector2.zero)
-            return;
+        Vector4 spriteBounds = DataUtility.GetOuterUV(image.overrideSprite);
 
         // A Simple Image quad starts at the bottom-left, with the opposite corner at index 2.
         UIVertex bottomLeft = default;
@@ -58,13 +66,15 @@ public sealed class SpriteOutlinePadding : BaseMeshEffect
             vertex.position.y += yDirection * padding.y;
             vertex.uv0.x += xDirection * uvPadding.x;
             vertex.uv0.y += yDirection * uvPadding.y;
+            vertex.uv1 = spriteBounds;
             vertices.SetUIVertex(vertex, index);
         }
     }
 
     private void RefreshPadding()
     {
-        Vector2 padding = CalculatePadding();
+        Image image = GetOutlineImage();
+        Vector2 padding = image != null ? CalculatePadding(image) : Vector2.zero;
         if (padding == currentPadding)
             return;
 
@@ -72,19 +82,30 @@ public sealed class SpriteOutlinePadding : BaseMeshEffect
         graphic.SetVerticesDirty();
     }
 
-    private Vector2 CalculatePadding()
+    private void EnableSpriteBoundsChannel()
     {
-        if (graphic is not Image image || image.type != Image.Type.Simple || image.useSpriteMesh)
-            return Vector2.zero;
+        if (graphic is Image image && image.canvas && UsesSourceOutline(image.material))
+            image.canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+    }
 
-        Sprite sprite = image.overrideSprite;
-        Material material = image.material;
+    private static bool UsesSourceOutline(Material material) =>
+        material && material.IsKeywordEnabled(SourceOutlineKeyword) && material.HasProperty(ThicknessProperty);
+
+    private Image GetOutlineImage()
+    {
+        if (graphic is not Image image || image.type != Image.Type.Simple || image.useSpriteMesh ||
+            !image.overrideSprite || !UsesSourceOutline(image.material))
+            return null;
+        return image;
+    }
+
+    private static Vector2 CalculatePadding(Image image)
+    {
         Canvas canvas = image.canvas;
-        if (!sprite || sprite.packed || !canvas || !material ||
-            !material.IsKeywordEnabled(SourceOutlineKeyword) || !material.HasProperty(ThicknessProperty))
+        if (!canvas || image.overrideSprite.packed)
             return Vector2.zero;
 
-        float thickness = material.GetFloat(ThicknessProperty);
+        float thickness = image.material.GetFloat(ThicknessProperty);
         if (thickness <= 0f)
             return Vector2.zero;
 
