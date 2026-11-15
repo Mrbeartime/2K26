@@ -52,6 +52,7 @@ public class TurnGameManager : MonoBehaviour
     private string status;
 
     public PlayerMove CurrentPlayer => currentPlayer;
+    internal IReadOnlyList<PlayerMove> Players => players;
     public bool IsGameComplete => gameComplete;
     public bool PlayerWon => playerWon;
     public string GameOverReason => gameOverReason;
@@ -205,9 +206,6 @@ public class TurnGameManager : MonoBehaviour
             if (player.isActiveAndEnabled && player.gameObject.scene == gameObject.scene)
                 players.Add(player);
         players.Sort((left, right) => GetPlayerNumber(left).CompareTo(GetPlayerNumber(right)));
-
-        if (players.Count != 3)
-            Debug.LogWarning("TurnGameManager ต้องการ PlayerMove 3 ตัว: Player1, Player2, Player3", this);
 
         if (IsIntroPlaying)
         {

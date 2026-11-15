@@ -62,6 +62,7 @@ Shader "ProjectD/UI/Outline"
                 float4 position : POSITION;
                 half4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                float4 spriteBounds : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -70,6 +71,7 @@ Shader "ProjectD/UI/Outline"
                 float4 position : SV_POSITION;
                 half4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                float4 spriteBounds : TEXCOORD2;
                 #ifdef UNITY_UI_CLIP_RECT
                 float4 mask : TEXCOORD1;
                 #endif
@@ -84,6 +86,7 @@ Shader "ProjectD/UI/Outline"
             CBUFFER_END
 
             sampler2D _MainTex;
+            float4 _MainTex_TexelSize;
             float4 _ClipRect;
             float _UIMaskSoftnessX;
             float _UIMaskSoftnessY;
@@ -97,6 +100,7 @@ Shader "ProjectD/UI/Outline"
                 output.position = UnityObjectToClipPos(input.position);
                 output.color = input.color;
                 output.uv = input.uv;
+                output.spriteBounds = input.spriteBounds;
 
                 #ifdef UNITY_UI_CLIP_RECT
                 float4 rect = clamp(_ClipRect, -2e10, 2e10);
@@ -117,24 +121,26 @@ Shader "ProjectD/UI/Outline"
                 return length(max(corner, 0.0)) + min(max(corner.x, corner.y), 0.0) - radius;
             }
 
-            half SampleSourceAlpha(float2 uv)
+            half SampleSourceAlpha(float2 uv, float4 bounds)
             {
-                // A standalone sprite can touch the texture edge. Treat samples beyond it as clear.
-                float2 inside = step(0.0, uv) * step(uv, 1.0);
-                return tex2D(_MainTex, uv).a * inside.x * inside.y;
+                float2 inside = step(bounds.xy, uv) * step(uv, bounds.zw);
+                float2 halfTexel = abs(_MainTex_TexelSize.xy) * 0.5;
+                // Keep bilinear filtering inside this sprite's slice.
+                float2 sampleUV = clamp(uv, bounds.xy + halfTexel, bounds.zw - halfTexel);
+                return tex2D(_MainTex, sampleUV).a * inside.x * inside.y;
             }
 
-            half SourceOutlineCoverage(float2 uv, float2 offsetX, float2 offsetY)
+            half SourceOutlineCoverage(float2 uv, float2 offsetX, float2 offsetY, float4 bounds)
             {
                 const float diagonal = 0.70710678;
                 float2 offsetNE = (offsetX + offsetY) * diagonal;
                 float2 offsetNW = (offsetY - offsetX) * diagonal;
 
-                half source = SampleSourceAlpha(uv);
-                half exterior = max(SampleSourceAlpha(uv + offsetX), SampleSourceAlpha(uv - offsetX));
-                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetY), SampleSourceAlpha(uv - offsetY)));
-                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetNE), SampleSourceAlpha(uv - offsetNE)));
-                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetNW), SampleSourceAlpha(uv - offsetNW)));
+                half source = SampleSourceAlpha(uv, bounds);
+                half exterior = max(SampleSourceAlpha(uv + offsetX, bounds), SampleSourceAlpha(uv - offsetX, bounds));
+                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetY, bounds), SampleSourceAlpha(uv - offsetY, bounds)));
+                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetNE, bounds), SampleSourceAlpha(uv - offsetNE, bounds)));
+                exterior = max(exterior, max(SampleSourceAlpha(uv + offsetNW, bounds), SampleSourceAlpha(uv - offsetNW, bounds)));
 
                 // Subtract the original silhouette from the expanded silhouette.
                 return saturate(exterior - source);
@@ -148,7 +154,9 @@ Shader "ProjectD/UI/Outline"
                 float2 uvDy = ddy(input.uv);
                 float thickness = max(_OutlineThickness, 0.0);
                 #ifdef _SOURCE_IMAGE_OUTLINE
-                half coverage = SourceOutlineCoverage(input.uv, uvDx * thickness, uvDy * thickness);
+                float4 bounds = input.spriteBounds;
+                if (any(bounds.zw <= bounds.xy)) bounds = float4(0.0, 0.0, 1.0, 1.0);
+                half coverage = SourceOutlineCoverage(input.uv, uvDx * thickness, uvDy * thickness, bounds);
                 #else
                 // Full-rect UVs let one material measure any UI rectangle in render-target pixels.
                 float2 uvPerPixel = sqrt(uvDx * uvDx + uvDy * uvDy);
