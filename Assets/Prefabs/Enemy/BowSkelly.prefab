@@ -91,6 +91,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d097fad0bc4fee44911df95dc7a4945, type: 3}
       insertIndex: -1
       addedObject: {fileID: 495840654891631876}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d097fad0bc4fee44911df95dc7a4945, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880009912345}
   m_SourcePrefab: {fileID: 100100000, guid: 4d097fad0bc4fee44911df95dc7a4945, type: 3}
 --- !u!4 &6265481015307032809 stripped
 Transform:
@@ -214,3 +217,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationController
   animator: {fileID: 5638201854022119757}
+--- !u!114 &880009912345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6753329494500835923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c06dc264d2d4a44be583dfa6977f2bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  duration: 2
+  particleCount: 160
+  dustSize: 0.035
+  driftSpeed: 0.15
+  dustShader: {fileID: 4800000, guid: 0d188737ee8f4b2f810de7d688ca41f4, type: 3}

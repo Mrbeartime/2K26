@@ -10,6 +10,7 @@ namespace ProjectD.Menus
         [Header("Board slots (Hierarchy order, no fixed level limit)")]
         [SerializeField] private Button[] levelButtons;
         [SerializeField] private Button[] boardHoverButtons;
+        [SerializeField] private Button secretHoverButton;
         [SerializeField] private Text[] levelLabels;
         [Header("Level progress source (runtime)")]
         [SerializeField] private string activeProgressJsonPath;
@@ -51,6 +52,7 @@ namespace ProjectD.Menus
             BindButton(playButton, PlaySelectedLevel);
             if (boardHoverButtons != null)
                 foreach (var button in boardHoverButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button);
+            ProjectD.Audio.ButtonAudioFeedback.BindBellHover(secretHoverButton);
             for (int i = 0; levelButtons != null && i < levelButtons.Length; i++)
             {
                 int slot = i;

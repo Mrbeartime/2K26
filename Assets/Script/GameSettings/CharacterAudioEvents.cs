@@ -9,6 +9,13 @@ namespace ProjectD.Audio
         private PlayerMove movement;
         private Animator animator;
         private bool footstepPlaying;
+        private int cutsceneMoveFrame = -1;
+        public void NotifyCutsceneMovement(bool moving)
+        {
+            moving &= isActiveAndEnabled;
+            cutsceneMoveFrame = moving ? Time.frameCount : -1;
+            if (!moving && footstepPlaying) StopFootstep();
+        }
         private static readonly int WalkState = Animator.StringToHash("Walk");
         private int lastFootFrame = -1, lastSlashFrame = -1;
         private void Awake()
@@ -20,7 +27,8 @@ namespace ProjectD.Audio
         private bool Walking()
         {
             if (owner == null || owner.IsDead || !owner.isActiveAndEnabled || movement == null ||
-                !movement.isActiveAndEnabled || !movement.IsMoving() || !movement.MovedAlongPathThisFrame ||
+                (cutsceneMoveFrame != Time.frameCount &&
+                 (!movement.isActiveAndEnabled || !movement.IsMoving() || !movement.MovedAlongPathThisFrame)) ||
                 Time.timeScale <= 0 || animator == null || !animator.isActiveAndEnabled || animator.speed <= 0) return false;
             return animator.IsInTransition(0)
                 ? animator.GetNextAnimatorStateInfo(0).shortNameHash == WalkState
@@ -33,13 +41,15 @@ namespace ProjectD.Audio
                 if (footstepPlaying) StopFootstep();
             }
             else if (!footstepPlaying) AudioFootstep();
+            if (footstepPlaying && owner != null)
+                GameAudioManager.Instance?.UpdateFootstepPosition(this, owner.transform.position);
         }
         private void StopFootstep()
         {
             GameAudioManager.Instance?.StopFootstep(this);
             footstepPlaying = false;
         }
-        private void OnDisable() { if (footstepPlaying) StopFootstep(); }
+        private void OnDisable() { cutsceneMoveFrame = -1; if (footstepPlaying) StopFootstep(); }
         public void AudioFootstep()
         {
             if (footstepPlaying || !Walking() || lastFootFrame == Time.frameCount) return;
@@ -51,7 +61,7 @@ namespace ProjectD.Audio
         {
             if (owner is not SwordMan || owner.IsDead || Time.timeScale <= 0 || lastSlashFrame == Time.frameCount) return;
             lastSlashFrame = Time.frameCount;
-            GameAudioManager.Instance?.PlaySFXAtPosition(AudioCue.SwordSlash, owner.transform.position);
+            GameAudioManager.Instance?.PlaySFXAtPosition(GameAudioManager.TimingEvent(AudioCue.SwordSlash), owner.transform.position);
         }
     }
 }

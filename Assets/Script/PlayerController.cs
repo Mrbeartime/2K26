@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (DiaryUI.IsOpen) { ResetInteractClick(); pendingRightClickAttack = false; return; }
         if ((TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) ||
             Time.timeScale == 0 ||
             NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
@@ -226,6 +227,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 Component prop = collider.GetComponentInParent<DoorSwitch>();
+                if (prop == null) prop = collider.GetComponentInParent<DiaryInteractable>();
                 if (prop == null) prop = collider.GetComponentInParent<FloorSwitch>();
                 // Some lever models are separate scene objects on the switch's tile.
                 if (prop == null) prop = collider.GetComponentInParent<PropInteractAnimation>();
