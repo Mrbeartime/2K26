@@ -20,13 +20,16 @@ namespace ProjectD.Menus
 
         [Header("UI (objects in the Loading scene/prefab)")]
         [SerializeField] private CanvasGroup group;
-        [SerializeField] private Image filler;
+        [SerializeField] private Image rogue;
+        [SerializeField] private Sprite[] rogueWalkFrames;
+        [SerializeField, Min(1f)] private float rogueWalkFrameRate = 24f;
         [SerializeField] private TMP_Text progressLabel;
         [Header("Timing")]
         [SerializeField, Min(0f)] private float minShowTime = 1f;
         [SerializeField, Min(0f)] private float fadeTime = 0.25f;
         [SerializeField, Min(0.01f)] private float fillSpeed = 1.5f;
         private AsyncOperation pendingLoad;
+        private float walkStartedAt;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetState() { instance = null; destination = null; IsLoading = false; }
@@ -74,6 +77,7 @@ namespace ProjectD.Menus
                 canvas.sortingOrder = 32700;
             }
             if (group != null) { group.alpha = 1f; group.blocksRaycasts = true; group.interactable = true; }
+            walkStartedAt = Time.unscaledTime;
             SetProgress(0f);
         }
 
@@ -97,9 +101,13 @@ namespace ProjectD.Menus
             try
             {
                 float shown = 0f;
-                while (pendingLoad.progress < 0.9f || shown < 1f || Time.unscaledTime - started < Mathf.Max(0f, minShowTime))
+                while (pendingLoad.progress < 0.9f || shown < 1f)
                 {
-                    shown = Mathf.MoveTowards(shown, Mathf.Clamp01(pendingLoad.progress / 0.9f),
+                    float sceneProgress = Mathf.Clamp01(pendingLoad.progress / 0.9f);
+                    float timeProgress = minShowTime > 0f
+                        ? Mathf.Clamp01((Time.unscaledTime - started) / minShowTime)
+                        : 1f;
+                    shown = Mathf.MoveTowards(shown, Mathf.Min(sceneProgress, timeProgress),
                         Mathf.Max(0.01f, fillSpeed) * Time.unscaledDeltaTime);
                     SetProgress(shown);
                     yield return null;
@@ -130,7 +138,18 @@ namespace ProjectD.Menus
         private void SetProgress(float value)
         {
             Progress = Mathf.Clamp01(value);
-            if (filler != null) filler.fillAmount = Progress;
+            if (rogue != null)
+            {
+                RectTransform rect = rogue.rectTransform;
+                rect.anchorMin = new Vector2(Progress, rect.anchorMin.y);
+                rect.anchorMax = new Vector2(Progress, rect.anchorMax.y);
+
+                if (Progress < 1f && rogueWalkFrames != null && rogueWalkFrames.Length > 0)
+                {
+                    int frame = Mathf.FloorToInt((Time.unscaledTime - walkStartedAt) * rogueWalkFrameRate);
+                    rogue.sprite = rogueWalkFrames[frame % rogueWalkFrames.Length];
+                }
+            }
             if (progressLabel != null) progressLabel.text = Mathf.RoundToInt(Progress * 100f) + "%";
         }
         private void Finish()
