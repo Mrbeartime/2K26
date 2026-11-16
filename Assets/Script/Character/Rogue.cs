@@ -30,23 +30,18 @@ public class Rogue : Character
         return Mathf.Abs(delta.x) + Mathf.Abs(delta.y) <= lockpickRange;
     }
 
-    public override void ShowSkillRange()
+    public override void ShowSkillRange(bool preview = false)
     {
         if (!CanUseSkill)
         {
-            PlayerController.Instance?.ClearHighlights();
+            PlayerController.Instance?.ClearHighlightLayer(preview);
             return;
         }
         if (GridManager.Instance == null)
             return;
 
-        Tile origin =
-            GridManager.Instance.GetTile(CurrentLocation);
-
-        PlayerController.Instance?.ShowRogueSkillRange(
-            origin,
-            LockpickRange
-        );
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+        PlayerController.Instance?.ShowRogueSkillRange(origin, LockpickRange, preview);
     }
 }
 

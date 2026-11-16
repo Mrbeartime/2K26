@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
 {
-    [SerializeField] private float holdDuration = 1f;
+    [SerializeField, Min(0.01f)] private float holdDuration = 1f;
+    [SerializeField, Min(0f)] private float completedFillDuration;
 
     [Tooltip("Optional. An Image with Type = Filled, used as a progress ring or bar.")]
     public Image fillImage;
@@ -16,53 +17,90 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public event Action HoldStarted;
     public event Action HoldCanceled;
 
-    private bool isHolding;
+    private enum HoldSource { None, Pointer, Keyboard }
+
+    private HoldSource holdSource;
+    private int pointerId;
     private bool hasTriggered;
-    private float heldTime;
+    private double holdStartedAt;
+    private double completedFillUntil;
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        isHolding = true;
-        hasTriggered = false;
-        heldTime = 0f;
+        if (eventData.button != PointerEventData.InputButton.Left || holdSource != HoldSource.None) return;
+        pointerId = eventData.pointerId;
+        BeginHold(HoldSource.Pointer);
+    }
 
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Left) OnPointerExit(eventData);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (holdSource == HoldSource.Pointer && pointerId == eventData.pointerId) CancelHold();
+    }
+
+    internal void BeginKeyboardHold() => BeginHold(HoldSource.Keyboard);
+
+    internal void CancelKeyboardHold()
+    {
+        if (holdSource == HoldSource.Keyboard) CancelHold();
+    }
+
+    private void BeginHold(HoldSource source)
+    {
+        if (!isActiveAndEnabled || holdSource != HoldSource.None) return;
+
+        holdSource = source;
+        hasTriggered = false;
+        holdStartedAt = Time.unscaledTimeAsDouble;
+        completedFillUntil = 0d;
+        SetProgress(0f);
         HoldStarted?.Invoke();
     }
 
-    public void OnPointerUp(PointerEventData eventData) => CancelHold();
-    public void OnPointerExit(PointerEventData eventData) => CancelHold();
-
     private void Update()
     {
-        if (!isHolding || hasTriggered) return;
-
-        heldTime += Time.unscaledDeltaTime;
-        float t = Mathf.Clamp01(heldTime / holdDuration);
-        if (fillImage != null) fillImage.fillAmount = t;
-        HoldProgress?.Invoke(t);
-
-        if (t >= 1f)
+        double now = Time.unscaledTimeAsDouble;
+        if (completedFillUntil > 0d && now >= completedFillUntil)
         {
-            hasTriggered = true;
-
-            HoldCompleted?.Invoke();
-
+            completedFillUntil = 0d;
+            SetProgress(0f);
         }
+
+        if (holdSource == HoldSource.None || hasTriggered) return;
+
+        float progress = Mathf.Clamp01((float)(now - holdStartedAt) / Mathf.Max(0.01f, holdDuration));
+        SetProgress(progress);
+        if (progress < 1f) return;
+
+        hasTriggered = true;
+        if (completedFillDuration > 0f) completedFillUntil = now + completedFillDuration;
+        HoldCompleted?.Invoke();
     }
 
-    private void CancelHold()
+    private void SetProgress(float progress)
     {
-        if (isHolding)
-        {
-            isHolding = false;
-            hasTriggered = false;
-            heldTime = 0f;
-            if (fillImage != null) fillImage.fillAmount = 0f;
-            HoldProgress?.Invoke(0f);
-
-            HoldCanceled?.Invoke();
-        }
+        if (fillImage != null) fillImage.fillAmount = progress;
+        HoldProgress?.Invoke(progress);
     }
 
-    private void OnDisable() => CancelHold();
+    internal void CancelHold()
+    {
+        if (holdSource == HoldSource.None) return;
+
+        holdSource = HoldSource.None;
+        hasTriggered = false;
+        if (completedFillUntil == 0d) SetProgress(0f);
+        HoldCanceled?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        completedFillUntil = 0d;
+        if (holdSource != HoldSource.None) CancelHold();
+        else if (fillImage != null) fillImage.fillAmount = 0f;
+    }
 }

@@ -70,22 +70,18 @@ public class ArcherMan : Character
         RecordSkillUse();
     }
 
-    public override void ShowSkillRange()
+    public override void ShowSkillRange(bool preview = false)
     {
         if (!CanUseSkill)
         {
-            PlayerController.Instance?.ClearHighlights();
+            PlayerController.Instance?.ClearHighlightLayer(preview);
             return;
         }
         if (GridManager.Instance == null)
             return;
 
-        Tile origin =
-            GridManager.Instance.GetTile(CurrentLocation);
-
-        PlayerController.Instance?.ShowArcherSkillRange(origin);
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+        PlayerController.Instance?.ShowArcherSkillRange(origin, preview);
     }
-
-    
 }
 

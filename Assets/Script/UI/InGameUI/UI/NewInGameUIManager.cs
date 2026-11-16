@@ -47,6 +47,8 @@ public class NewInGameUIManager : MonoBehaviour
     [SerializeField, Tooltip("Character slots ordered from top to bottom.")]
     private Image[] characterIconReferences;
     [SerializeField] private NewCharacterIcon characterIconPrefab;
+    [SerializeField] private RectTransform characterIconDeathEffect;
+    [SerializeField] private HoldButton endTurnButtonPrefab;
     [SerializeField, Min(0f)] private float characterIconSpacing = 105f;
     [SerializeField, Min(0f)] private float characterConnectorWidth = 3f;
     [SerializeField] private CharacterEntry[] CharacterList;
@@ -60,6 +62,8 @@ public class NewInGameUIManager : MonoBehaviour
     [SerializeField] private Sprite moveActionIcon;
     [SerializeField] private Sprite interactActionIcon;
     [SerializeField] private Vector2 actionOuterOffset = new Vector2(-40f, 65f);
+    [SerializeField, Min(0f), Tooltip("Time allowed to cross the gap between a character and its actions.")]
+    private float actionHoverExitDelay = 0.25f;
 
     [Header("Action Menu Animation")]
     [SerializeField, Min(0f)] private float actionOpeningDuration = 0.25f;
@@ -106,6 +110,12 @@ public class NewInGameUIManager : MonoBehaviour
     private const int MaximumCharacterIcons = 5;
     private readonly List<(PlayerMove player, NewCharacterIcon icon, CanvasGroup group)> characterIcons = new();
     private readonly List<RectTransform> characterConnectors = new();
+    private HoldButton endTurnButton;
+    private CanvasGroup endTurnGroup;
+    private Image endTurnImage;
+    private TextMeshProUGUI endTurnLabel;
+    private Color endTurnNormalColor;
+    private bool endTurnFocused;
 
     private sealed class TurnBarSlot
     {
@@ -124,6 +134,7 @@ public class NewInGameUIManager : MonoBehaviour
         (settingsOverlay != null && settingsOverlay.gameObject.activeInHierarchy);
 
     private PlayerMove previousCharacter;
+    private PlayerMove focusedCharacter;
 
     // Action IDs used by SelectAction and the action icon array.
     private const int ActionMove = 0, ActionInteract = 1, ActionSignature = 2;
@@ -131,13 +142,18 @@ public class NewInGameUIManager : MonoBehaviour
 
     private readonly List<int> availableActions = new();
     private int focusedActionIndex;
+    private int hoveredAction = NoAction;
     private int FocusedAction => focusedActionIndex < availableActions.Count
         ? availableActions[focusedActionIndex]
         : NoAction;
     private int selectedAction = NoAction;
     private bool choosingAction;
+    private PlayerMove actionMenuPlayer;
+    private bool pointerPreview;
+    private PlayerMove previewBeforeHover;
+    private float? pointerPreviewCloseAt;
     // World clicks may confirm Interact only while this action is selected in the HUD.
-    public bool IsInteractMode => isActiveAndEnabled && choosingAction && !BlocksGameplayInput && !changingFocus &&
+    public bool IsInteractMode => isActiveAndEnabled && choosingAction && !BlocksGameplayInput &&
         ActionUI != null && ActionUI.activeInHierarchy && selectedAction == ActionInteract &&
         FocusedAction == ActionInteract &&
         turnGameManager != null && turnGameManager.CanChooseReact &&
@@ -152,8 +168,8 @@ public class NewInGameUIManager : MonoBehaviour
     private Sprite defaultSignatureIcon;
     private Sprite focusedSignatureIcon;
 
-    private bool changingFocus;
-    private int armedFrame = -1;
+    private bool confirmingAction;
+    private bool actionPreviewsBlocked;
     private int lastSelectFrame = -1;
     private int lastSelectId = NoAction;
 
@@ -198,6 +214,7 @@ public class NewInGameUIManager : MonoBehaviour
         gameplay.CharacterChange.performed += OnChangeSelectionMode;
         gameplay.ActionChange.performed += OnNavigateSelection;
         gameplay.ActionConfirm.performed += OnConfirmAction;
+        gameplay.ActionConfirm.canceled += OnReleaseConfirm;
         gameplay.Pause.performed += OnShowPauseUI;
         gameplay.Reset.performed += OnReset;
         gameplay.Tips.performed += OnToggleTips;
@@ -207,11 +224,15 @@ public class NewInGameUIManager : MonoBehaviour
     private void OnDisable()
     {
         if (inputActions == null) return;
+        if (endTurnButton != null) endTurnButton.CancelHold();
+        PlayerController.Instance?.ClearActionPreview();
+        if (pointerPreview) CloseActionList();
 
         var gameplay = inputActions.GameplayControl_New;
         gameplay.CharacterChange.performed -= OnChangeSelectionMode;
         gameplay.ActionChange.performed -= OnNavigateSelection;
         gameplay.ActionConfirm.performed -= OnConfirmAction;
+        gameplay.ActionConfirm.canceled -= OnReleaseConfirm;
         gameplay.Pause.performed -= OnShowPauseUI;
         gameplay.Reset.performed -= OnReset;
         gameplay.Tips.performed -= OnToggleTips;
@@ -228,6 +249,11 @@ public class NewInGameUIManager : MonoBehaviour
         ClearHazardEvents();
         ClearTurnBarSlots();
         ClearCharacterIcons();
+        if (endTurnButton != null)
+        {
+            endTurnButton.HoldCompleted -= OnClickEndTurn;
+            RemoveGraphic(endTurnButton.transform);
+        }
         if (turnGameManager == null) return;
         turnGameManager.StateChanged -= RefreshFromTurnManager;
         turnGameManager.GameEnded -= OnGameEnded;
@@ -248,6 +274,8 @@ public class NewInGameUIManager : MonoBehaviour
         turnGameManager.GameEnded += OnGameEnded;
 
         SetUpActionList();
+        BuildCharacterIcons();
+        BuildEndTurnButton();
         RefreshFromTurnManager();
     }
 
@@ -308,6 +336,7 @@ public class NewInGameUIManager : MonoBehaviour
         icon.SetLabel(title);
         icon.SetPortrait(sprite);
         icon.BindClick(() => SelectAction(actionId));
+        icon.BindHover(() => HoverAction(actionId), () => LeaveAction(actionId));
         actionIcons[actionId] = icon;
     }
 
@@ -323,33 +352,59 @@ public class NewInGameUIManager : MonoBehaviour
         RefreshHazardSchedule();
 
         PlayerMove current = turnGameManager.CurrentPlayer;
-        RefreshCharacterIcons(current);
         if (current != previousCharacter)
         {
             previousCharacter = current;
-            CloseActionList();
+            focusedCharacter = current;
+            endTurnFocused = false;
+            if (!confirmingAction || current != actionMenuPlayer) CloseActionList();
         }
-        RefreshActionList(current);
+        if (turnGameManager.IsGameComplete || turnGameManager.IsEnemyPhase ||
+            (focusedCharacter != null && !turnGameManager.IsWaitingForMovement &&
+             !turnGameManager.CanSelectPlayer(focusedCharacter)))
+            focusedCharacter = null;
+        RefreshCharacterIcons();
+        UpdateEndTurnButton();
+        if (!confirmingAction) RefreshActionList();
     }
 
-    private void RefreshCharacterIcons(PlayerMove selectedPlayer)
+    private void RefreshCharacterIcons()
     {
-        if (characterIconContainer == null || characterIconPrefab == null) return;
+        // Keep the starting slots so surviving icons retain their positions.
+        for (int i = 0; i < characterIcons.Count; i++)
+        {
+            var entry = characterIcons[i];
+            if (entry.icon == null) continue;
+            if (entry.player != null &&
+                (!entry.player.TryGetComponent(out Character character) || !character.IsDead))
+                continue;
 
-        IReadOnlyList<PlayerMove> players = turnGameManager.Players;
-        int count = Mathf.Min(players.Count, MaximumCharacterIcons);
-        if (!CharacterIconsMatch(players, count)) BuildCharacterIcons(players, count);
+            var icon = (RectTransform)entry.icon.transform;
+            if (characterIconDeathEffect != null)
+            {
+                RectTransform effect = Instantiate(characterIconDeathEffect, icon.parent, false);
+                effect.localPosition = GetCenterInParent(icon);
+                effect.localScale = icon.localScale;
+            }
 
-        UpdateCharacterSelection(selectedPlayer);
+            RemoveGraphic(icon);
+            characterIcons[i] = (entry.player, null, null);
+        }
+        UpdateCharacterSelection();
     }
 
-    private void UpdateCharacterSelection(PlayerMove selectedPlayer)
+    private void UpdateCharacterSelection()
     {
         bool canSelectCharacters = !turnGameManager.IsGameComplete &&
             !turnGameManager.IsEnemyPhase && !turnGameManager.IsWaitingForMovement;
-        bool actionsFocused = choosingAction && ActionUI != null && ActionUI.activeSelf;
+        bool actionsVisible = ActionUI != null && ActionUI.activeSelf;
+        bool actionsFocused = choosingAction && actionsVisible;
+        PlayerMove selectedPlayer = actionsVisible && (pointerPreview || choosingAction)
+            ? actionMenuPlayer
+            : focusedCharacter;
         foreach (var entry in characterIcons)
         {
+            if (entry.icon == null) continue;
             bool selected = entry.player == selectedPlayer;
             bool selectable = canSelectCharacters && !turnGameManager.IsPlayerFinished(entry.player);
             entry.icon.SetSelected(selected);
@@ -360,31 +415,37 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void UpdateCharacterConnectors()
     {
-        for (int i = 0; i < characterConnectors.Count; i++)
+        RectTransform upper = null;
+        int connectorIndex = 0;
+        foreach (var entry in characterIcons)
         {
-            RectTransform upper = (RectTransform)characterIcons[i].icon.transform;
-            RectTransform lower = (RectTransform)characterIcons[i + 1].icon.transform;
-            Vector2 upperEdge = upper.anchoredPosition + Vector2.up * (upper.rect.yMin * upper.localScale.y);
-            Vector2 lowerEdge = lower.anchoredPosition + Vector2.up * (lower.rect.yMax * lower.localScale.y);
-            Vector2 gap = upperEdge - lowerEdge;
-            RectTransform connector = characterConnectors[i];
-            connector.anchoredPosition = (upperEdge + lowerEdge) * 0.5f;
-            connector.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, gap));
-            connector.sizeDelta = new Vector2(characterConnectorWidth, gap.y > 0f ? gap.magnitude : 0f);
+            if (entry.icon == null) continue;
+
+            var lower = (RectTransform)entry.icon.transform;
+            if (upper != null)
+            {
+                RectTransform connector = characterConnectors[connectorIndex++];
+                Vector2 upperEdge = upper.anchoredPosition + Vector2.up * (upper.rect.yMin * upper.localScale.y);
+                Vector2 lowerEdge = lower.anchoredPosition + Vector2.up * (lower.rect.yMax * lower.localScale.y);
+                Vector2 gap = upperEdge - lowerEdge;
+                connector.anchoredPosition = (upperEdge + lowerEdge) * 0.5f;
+                connector.localRotation = Quaternion.Euler(0f, 0f, Vector2.SignedAngle(Vector2.up, gap));
+                connector.sizeDelta = new Vector2(characterConnectorWidth, gap.y > 0f ? gap.magnitude : 0f);
+            }
+            upper = lower;
         }
+
+        for (int i = connectorIndex; i < characterConnectors.Count; i++)
+            if (characterConnectors[i].gameObject.activeSelf)
+                characterConnectors[i].gameObject.SetActive(false);
     }
 
-    private bool CharacterIconsMatch(IReadOnlyList<PlayerMove> players, int count)
+    private void BuildCharacterIcons()
     {
-        if (characterIcons.Count != count) return false;
-        for (int i = 0; i < count; i++)
-            if (characterIcons[i].player != players[i]) return false;
-        return true;
-    }
+        if (characterIconContainer == null || characterIconPrefab == null) return;
 
-    private void BuildCharacterIcons(IReadOnlyList<PlayerMove> players, int count)
-    {
-        ClearCharacterIcons();
+        IReadOnlyList<PlayerMove> players = turnGameManager.Players;
+        int count = Mathf.Min(players.Count, MaximumCharacterIcons);
         for (int i = 1; i < count; i++)
         {
             var line = new GameObject("Character Connector", typeof(RectTransform), typeof(Image));
@@ -413,11 +474,8 @@ public class NewInGameUIManager : MonoBehaviour
             AlignToIconReference(rect, characterIconReferences, referenceIndex);
             characterIcons.Add((player, icon, GetOrAddCanvasGroup(icon.gameObject)));
 
-            icon.BindClick(() =>
-            {
-                if (!BlocksGameplayInput && isActiveAndEnabled && turnGameManager != null)
-                    turnGameManager.TrySelectPlayer(player);
-            });
+            icon.BindClick(() => SelectCharacterIcon(player));
+            icon.BindHover(() => HoverCharacter(player), LeaveActionPreview);
         }
     }
 
@@ -429,6 +487,21 @@ public class NewInGameUIManager : MonoBehaviour
             RemoveGraphic(connector);
         characterIcons.Clear();
         characterConnectors.Clear();
+    }
+
+    private void BuildEndTurnButton()
+    {
+        if (endTurnButtonPrefab == null || characterIcons.Count == 0) return;
+
+        endTurnButton = Instantiate(endTurnButtonPrefab, characterIconContainer, false);
+        var buttonRect = (RectTransform)endTurnButton.transform;
+        var topIcon = (RectTransform)characterIcons[0].icon.transform;
+        buttonRect.anchoredPosition = topIcon.anchoredPosition + Vector2.up * (characterIconSpacing + 12f);
+        endTurnGroup = GetOrAddCanvasGroup(endTurnButton.gameObject);
+        endTurnImage = endTurnButton.GetComponent<Image>();
+        endTurnLabel = endTurnButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (endTurnImage != null) endTurnNormalColor = endTurnImage.color;
+        endTurnButton.HoldCompleted += OnClickEndTurn;
     }
 
     private static void RemoveGraphic(Transform graphic)
@@ -670,63 +743,138 @@ public class NewInGameUIManager : MonoBehaviour
 
     #region Action List
 
-    public void RefreshActionList(PlayerMove current)
+    private void RefreshActionList()
     {
-        if (!choosingAction || ActionUI == null || actionIcons[ActionMove] == null) return;
+        if (actionMenuPlayer == null || actionListClosing || ActionUI == null || actionIcons[ActionMove] == null) return;
+
+        PlayerMove current = actionMenuPlayer;
+        if (turnGameManager.IsWaitingForMovement && !pointerPreview && current == turnGameManager.CurrentPlayer)
+        {
+            actionTransitionStartedAt = null;
+            SetActionListVisible(false);
+            return;
+        }
+
+        if (!turnGameManager.CanSelectPlayer(current))
+        {
+            CloseActionList();
+            return;
+        }
 
         int previousFocus = FocusedAction;
         availableActions.Clear();
 
-        bool show = current != null && !turnGameManager.IsGameComplete && !turnGameManager.IsEnemyPhase &&
-            !turnGameManager.IsWaitingForMovement;
-        if (show)
-        {
-            if (turnGameManager.CanChooseReact) availableActions.Add(ActionInteract);
-            if (turnGameManager.CanChooseSkill) availableActions.Add(ActionSignature);
-            if (turnGameManager.CanChooseMove) availableActions.Add(ActionMove);
-        }
+        if (turnGameManager.CanPlayerReact(current)) availableActions.Add(ActionInteract);
+        if (turnGameManager.CanPlayerUseSkill(current)) availableActions.Add(ActionSignature);
+        if (!turnGameManager.HasPlayerMoved(current)) availableActions.Add(ActionMove);
         if (availableActions.Count == 0)
         {
-            selectedAction = NoAction;
-            actionTransitionStartedAt = null;
-            SetActionListVisible(false);
-            if (show)
-            {
-                CloseActionList();
-                PlayerController.Instance?.ClearHighlights();
-                turnGameManager.SkipExhaustedSkill();
-            }
+            CloseActionList();
             return;
         }
 
         if (selectedAction != NoAction && !availableActions.Contains(selectedAction)) selectedAction = NoAction;
+        if (!availableActions.Contains(hoveredAction)) hoveredAction = NoAction;
 
-        int modeAction = turnGameManager.IsMoveTargeting ? ActionMove :
-            turnGameManager.IsSkillTargeting ? ActionSignature : NoAction;
-        int focus = availableActions.IndexOf(modeAction);
-        if (focus < 0) focus = availableActions.IndexOf(previousFocus);
+        int focus = availableActions.IndexOf(previousFocus);
         if (focus < 0) focus = availableActions.IndexOf(ActionMove);
         focusedActionIndex = Mathf.Max(0, focus);
 
         if (availableActions.Contains(ActionSignature)) UpdateSignatureUI(current);
         PositionActionList(current);
-        if (actionListClosing || !ActionUI.activeSelf)
+        if (!ActionUI.activeSelf)
         {
-            float progress = actionListClosing ? GetActionListProgress() : 0f;
-            actionListClosing = false;
-            actionTransitionStartedAt = Time.unscaledTime - progress * actionOpeningDuration;
+            actionTransitionStartedAt = Time.unscaledTime;
             SetActionListVisible(true);
         }
         UpdateActionFocusUI();
+    }
 
-        if (changingFocus) return;
-        int action = FocusedAction;
-        if (action == ActionInteract) Arm(action);
-        else
+    private void OpenActionPreview(PlayerMove player, bool fromPointer)
+    {
+        if (!isActiveAndEnabled || BlocksGameplayInput || turnGameManager == null ||
+            ActionUI == null || actionIcons[ActionMove] == null || !turnGameManager.CanSelectPlayer(player))
+            return;
+
+        if (actionMenuPlayer != player) CloseActionList();
+        if (actionListClosing)
         {
-            if (modeAction == action) selectedAction = action;
-            ConfirmAction(action);
+            float progress = GetActionListProgress();
+            actionListClosing = false;
+            actionTransitionStartedAt = Time.unscaledTime - progress * actionOpeningDuration;
+            if (actionListGroup != null) actionListGroup.blocksRaycasts = true;
         }
+        actionMenuPlayer = player;
+        choosingAction = false;
+        hoveredAction = NoAction;
+        pointerPreview = fromPointer;
+        pointerPreviewCloseAt = null;
+        if (!fromPointer)
+        {
+            focusedCharacter = player;
+            endTurnFocused = false;
+            if (endTurnButton != null) endTurnButton.CancelKeyboardHold();
+            previewBeforeHover = null;
+        }
+        RefreshActionList();
+        UpdateCharacterSelection();
+    }
+
+    private void HoverCharacter(PlayerMove player)
+    {
+        if (choosingAction) return;
+        if (player == actionMenuPlayer && !actionListClosing)
+        {
+            pointerPreviewCloseAt = null;
+            return;
+        }
+
+        PlayerMove previousPreview = pointerPreview ? previewBeforeHover :
+            actionListClosing ? null : actionMenuPlayer;
+        OpenActionPreview(player, true);
+        if (pointerPreview && actionMenuPlayer == player) previewBeforeHover = previousPreview;
+    }
+
+    private void HoverAction(int actionId)
+    {
+        if (!isActiveAndEnabled || BlocksGameplayInput || actionListClosing || !availableActions.Contains(actionId))
+            return;
+
+        pointerPreviewCloseAt = null;
+        hoveredAction = actionId;
+        if (endTurnButton != null) endTurnButton.CancelKeyboardHold();
+        UpdateActionFocusUI();
+    }
+
+    private void LeaveAction(int actionId)
+    {
+        LeaveActionPreview();
+        if (hoveredAction != actionId) return;
+        hoveredAction = NoAction;
+        UpdateActionFocusUI();
+    }
+
+    private void LeaveActionPreview()
+    {
+        // Give the pointer time to cross the empty space between the character and the actions.
+        if (pointerPreview) pointerPreviewCloseAt = Time.unscaledTime + actionHoverExitDelay;
+    }
+
+    private void ResetPointerPreview()
+    {
+        pointerPreview = false;
+        previewBeforeHover = null;
+        pointerPreviewCloseAt = null;
+    }
+
+    private void SelectCharacterIcon(PlayerMove player)
+    {
+        if (!isActiveAndEnabled || BlocksGameplayInput || turnGameManager == null ||
+            !turnGameManager.CanSelectPlayer(player)) return;
+
+        bool cancelTargeting = selectedAction != NoAction;
+        OpenActionPreview(player, false);
+        if (cancelTargeting) CancelPendingAction();
     }
 
     private void PositionActionList(PlayerMove current)
@@ -745,7 +893,7 @@ public class NewInGameUIManager : MonoBehaviour
             position = actionList.anchoredPosition + (Vector2)offset;
         }
 
-        // Keep the bottom character's menu at the reference to leave space below it.
+        // Keep the original bottom slot's menu at the reference to leave space below it.
         if (characterIcons.Count > 0 && characterIcons[^1].player == current)
         {
             actionList.anchoredPosition = position;
@@ -778,20 +926,69 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void UpdateActionFocusUI()
     {
+        int highlightedAction = HighlightedAction;
         for (int actionId = 0; actionId < actionIcons.Length; actionId++)
         {
-            NewCharacterIcon icon = actionIcons[actionId];
-            int index = availableActions.IndexOf(actionId);
-            actionIconSlots[actionId].gameObject.SetActive(index >= 0);
-            if (index < 0) continue;
+            bool available = availableActions.Contains(actionId);
+            actionIconSlots[actionId].gameObject.SetActive(available);
+            if (!available) continue;
 
-            bool selected = index == focusedActionIndex;
+            NewCharacterIcon icon = actionIcons[actionId];
+            bool selected = actionId == highlightedAction;
             icon.SetSelected(selected);
             icon.SetFocused(selected);
             if (actionId == ActionSignature)
                 icon.SetPortrait(selected ? focusedSignatureIcon : defaultSignatureIcon);
         }
+        UpdateActionPreview();
         UpdateActionIconLayout();
+    }
+
+    private int HighlightedAction => hoveredAction != NoAction ? hoveredAction :
+        choosingAction ? FocusedAction : NoAction;
+
+    internal bool IsPreviewingAction
+    {
+        get
+        {
+            if (!isActiveAndEnabled || BlocksGameplayInput || actionListClosing || confirmingAction ||
+                actionMenuPlayer == null || ActionUI == null || !ActionUI.activeInHierarchy || turnGameManager == null)
+                return false;
+
+            return HighlightedAction switch
+            {
+                ActionMove => actionMenuPlayer != turnGameManager.CurrentPlayer || !turnGameManager.IsMoveTargeting,
+                ActionSignature => actionMenuPlayer != turnGameManager.CurrentPlayer || !turnGameManager.IsSkillTargeting,
+                ActionInteract => true,
+                _ => false
+            };
+        }
+    }
+
+    private void UpdateActionPreview()
+    {
+        PlayerController playerController = PlayerController.Instance;
+        if (playerController == null) return;
+
+        if (!IsPreviewingAction)
+        {
+            playerController.ClearActionPreview();
+            return;
+        }
+
+        switch (HighlightedAction)
+        {
+            case ActionMove:
+                playerController.ShowMoveRange(actionMenuPlayer, preview: true);
+                break;
+            case ActionSignature:
+                playerController.ClearActionPreview();
+                if (actionMenuPlayer.TryGetComponent(out Character character)) character.ShowSkillRange(preview: true);
+                break;
+            case ActionInteract:
+                playerController.ShowInteractPreview(actionMenuPlayer);
+                break;
+        }
     }
 
     private void UpdateActionIconLayout()
@@ -823,7 +1020,7 @@ public class NewInGameUIManager : MonoBehaviour
         Vector2 origin = Vector2.zero;
         if (progress < 1f)
         {
-            RectTransform characterIcon = FindCharacterIcon(turnGameManager.CurrentPlayer);
+            RectTransform characterIcon = FindCharacterIcon(actionMenuPlayer);
             if (characterIcon != null)
             {
                 Vector3 offset = characterIconContainer.parent == actionList.parent
@@ -939,49 +1136,42 @@ public class NewInGameUIManager : MonoBehaviour
 
     public void SelectAction(int actionId)
     {
-        if (!choosingAction || BlocksGameplayInput || turnGameManager == null) return;
+        if (actionMenuPlayer == null || actionListClosing || confirmingAction || !isActiveAndEnabled || BlocksGameplayInput ||
+            ActionUI == null || !ActionUI.activeInHierarchy || turnGameManager == null) return;
+
         int index = availableActions.IndexOf(actionId);
         if (index < 0) return;
 
-        // A duplicate callback in the same frame must not confirm Interact.
         if (Time.frameCount == lastSelectFrame && actionId == lastSelectId) return;
         lastSelectFrame = Time.frameCount;
         lastSelectId = actionId;
 
-        if (selectedAction == actionId && Time.frameCount > armedFrame &&
-            focusedActionIndex == index)
-        {
-            ConfirmAction(actionId);
-            return;
-        }
-        FocusAndUseAction(index);
-    }
-
-    private void FocusAndUseAction(int newIndex)
-    {
-        // Canceling targeting can refresh the list before the new action has focus.
-        changingFocus = true;
-        int id = availableActions[newIndex];
+        PlayerMove player = actionMenuPlayer;
+        confirmingAction = true;
         try
         {
-            focusedActionIndex = newIndex;
-            CancelPendingAction();
+            if (!turnGameManager.CanSelectPlayer(player)) return;
+            if (turnGameManager.CurrentPlayer != player && !turnGameManager.TrySelectPlayer(player)) return;
+            if (turnGameManager.CurrentPlayer != player) return;
+
+            focusedCharacter = player;
+            choosingAction = true;
+            hoveredAction = NoAction;
+            PlayerController.Instance?.ClearActionPreview();
+            ResetPointerPreview();
+            focusedActionIndex = index;
+            if ((turnGameManager.IsMoveTargeting && actionId != ActionMove) ||
+                (turnGameManager.IsSkillTargeting && actionId != ActionSignature))
+                CancelPendingAction();
+
+            selectedAction = actionId;
+            ConfirmAction(actionId);
         }
-        finally { changingFocus = false; }
-
-        int focus = availableActions.IndexOf(id);
-        if (focus < 0) return;
-        focusedActionIndex = focus;
-
-        if (id == ActionInteract) Arm(id);
-        UpdateActionFocusUI();
-        if (id != ActionInteract) ConfirmAction(id);
-    }
-
-    private void Arm(int id)
-    {
-        if (selectedAction != id) armedFrame = Time.frameCount;
-        selectedAction = id;
+        finally
+        {
+            confirmingAction = false;
+            RefreshActionList();
+        }
     }
 
     private void ConfirmAction(int actionId)
@@ -1018,8 +1208,13 @@ public class NewInGameUIManager : MonoBehaviour
 
     public void GoBack()
     {
-        if (!choosingAction) return;
+        if (actionMenuPlayer == null || actionListClosing) return;
 
+        bool cancelTargeting = selectedAction != NoAction;
+        int previousHighlight = HighlightedAction;
+        hoveredAction = NoAction;
+        PlayerController.Instance?.ClearActionPreview();
+        ResetPointerPreview();
         // Give focus back before canceling targeting, which can raise StateChanged.
         if (ActionUI != null && ActionUI.activeSelf && availableActions.Count > 0 && actionOpeningDuration > 0f)
         {
@@ -1027,21 +1222,24 @@ public class NewInGameUIManager : MonoBehaviour
             choosingAction = false;
             actionListClosing = true;
             actionTransitionStartedAt = Time.unscaledTime - (1f - progress) * actionOpeningDuration;
-            actionIcons[FocusedAction].SetFocused(false);
+            if (previousHighlight != NoAction) actionIcons[previousHighlight].SetFocused(false);
             if (actionListGroup != null) actionListGroup.blocksRaycasts = false;
-            UpdateCharacterSelection(turnGameManager.CurrentPlayer);
+            UpdateCharacterSelection();
             UpdateActionIconLayout();
         }
         else
         {
             CloseActionList();
         }
-        CancelPendingAction();
+        if (cancelTargeting) CancelPendingAction();
     }
 
     private void CloseActionList()
     {
         choosingAction = false;
+        hoveredAction = NoAction;
+        actionMenuPlayer = null;
+        ResetPointerPreview();
         actionTransitionStartedAt = null;
         actionListClosing = false;
         focusedActionIndex = 0;
@@ -1055,8 +1253,9 @@ public class NewInGameUIManager : MonoBehaviour
         if (ActionUI == null) return;
 
         ActionUI.SetActive(visible);
+        if (!visible) PlayerController.Instance?.ClearActionPreview();
         if (actionListGroup != null) actionListGroup.blocksRaycasts = true;
-        if (turnGameManager != null) UpdateCharacterSelection(turnGameManager.CurrentPlayer);
+        if (turnGameManager != null) UpdateCharacterSelection();
     }
 
     public void CancelCurrentAction() => GoBack();
@@ -1074,21 +1273,48 @@ public class NewInGameUIManager : MonoBehaviour
 
         if (!choosingAction)
         {
-            turnGameManager.CyclePlayer(direction > 0f);
+            NavigateCharacterRow(direction > 0f);
             return;
         }
 
         int count = availableActions.Count;
-        if (count < 2) return;
+        if (count < 2 || !ActionUI.activeInHierarchy) return;
+        hoveredAction = NoAction;
         int step = direction < 0f ? -1 : 1;
-        FocusAndUseAction((focusedActionIndex + step + count) % count);
+        focusedActionIndex = (focusedActionIndex + step + count) % count;
+        UpdateActionFocusUI();
     }
 
     private void OnConfirmAction(InputAction.CallbackContext context)
     {
-        if (!choosingAction || BlocksGameplayInput) return;
-        int action = FocusedAction;
-        if (action != NoAction) ConfirmAction(action);
+        int action = HighlightedAction;
+        if (action != NoAction) SelectAction(action);
+        else if (endTurnFocused && CanUseEndTurnButton && endTurnButton != null)
+            endTurnButton.BeginKeyboardHold();
+    }
+
+    private void OnReleaseConfirm(InputAction.CallbackContext context)
+    {
+        if (endTurnButton != null) endTurnButton.CancelKeyboardHold();
+    }
+
+    private void NavigateCharacterRow(bool forward)
+    {
+        bool watchAvailable = endTurnButton != null && CanUseEndTurnButton;
+        PlayerMove next = turnGameManager.FindNextSelectablePlayer(focusedCharacter, forward,
+            wrap: !watchAvailable || endTurnFocused);
+
+        if (watchAvailable && !endTurnFocused && (next == null || (focusedCharacter == null && !forward)))
+        {
+            focusedCharacter = null;
+            endTurnFocused = true;
+            CloseActionList();
+            UpdateEndTurnButton();
+        }
+        else
+        {
+            OpenActionPreview(next != null ? next : focusedCharacter, false);
+        }
     }
 
     private void OnChangeSelectionMode(InputAction.CallbackContext context)
@@ -1102,13 +1328,16 @@ public class NewInGameUIManager : MonoBehaviour
             return;
         }
 
-        PlayerMove current = turnGameManager.CurrentPlayer;
-        if (direction == 0f || choosingAction || current == null || actionIcons[ActionMove] == null ||
-            turnGameManager.IsGameComplete || turnGameManager.IsEnemyPhase || turnGameManager.IsWaitingForMovement)
-            return;
+        if (direction <= 0f || choosingAction) return;
+
+        PlayerMove player = actionListClosing || actionMenuPlayer == null ? focusedCharacter : actionMenuPlayer;
+        if (!turnGameManager.CanSelectPlayer(player)) return;
+        OpenActionPreview(player, false);
+        if (actionMenuPlayer != player || ActionUI == null || !ActionUI.activeInHierarchy) return;
 
         choosingAction = true;
-        RefreshActionList(current);
+        UpdateCharacterSelection();
+        UpdateActionFocusUI();
     }
 
     private void OnReset(InputAction.CallbackContext context)
@@ -1133,22 +1362,73 @@ public class NewInGameUIManager : MonoBehaviour
 
     public void OnClickEndTurn()
     {
-        if (!BlocksGameplayInput && turnGameManager != null) turnGameManager.ChooseEndTurn();
+        if (CanUseEndTurnButton) turnGameManager.ChooseEndTurn();
+    }
+
+    private bool CanUseEndTurnButton => isActiveAndEnabled && !BlocksGameplayInput &&
+        turnGameManager != null && turnGameManager.CanEndTurn;
+
+    private void UpdateEndTurnButton()
+    {
+        if (endTurnButton == null) return;
+
+        bool available = CanUseEndTurnButton;
+        if (!available)
+        {
+            endTurnButton.CancelHold();
+            endTurnFocused = false;
+        }
+
+        endTurnGroup.blocksRaycasts = available;
+        float holdProgress = endTurnButton.fillImage != null ? endTurnButton.fillImage.fillAmount : 0f;
+        endTurnGroup.alpha = available || holdProgress >= 1f ? 1f : 0.5f;
+
+        bool focused = endTurnFocused && HighlightedAction == NoAction;
+        Color iconColor = focused
+            ? Color.Lerp(endTurnNormalColor, Color.white, 0.55f)
+            : endTurnNormalColor;
+        if (endTurnImage != null) endTurnImage.color = iconColor;
+        if (endTurnLabel != null)
+        {
+            endTurnLabel.enabled = focused;
+            if (focused)
+                endTurnLabel.alpha = Mathf.Lerp(endTurnImage != null ? iconColor.a : 1f, 1f, holdProgress);
+        }
     }
 
     #endregion
 
-    #region Pause
-
     private void LateUpdate()
     {
         UpdateCharacterConnectors();
+        UpdateEndTurnButton();
+        UpdateActionPreviewLifetime();
         if (actionTransitionStartedAt.HasValue) UpdateActionIconLayout();
 
         if (!IsPaused || pauseGroup == null) return;
         pauseGroup.interactable = !HasOpenChildOverlay;
         pauseGroup.blocksRaycasts = pauseGroup.interactable;
     }
+
+    private void UpdateActionPreviewLifetime()
+    {
+        bool blocked = BlocksGameplayInput;
+        if (actionPreviewsBlocked != blocked)
+        {
+            actionPreviewsBlocked = blocked;
+            UpdateActionPreview();
+        }
+
+        bool timedOut = pointerPreviewCloseAt is float closeAt && Time.unscaledTime >= closeAt;
+        if (!pointerPreview || (!blocked && !timedOut)) return;
+
+        if (!blocked && turnGameManager.CanSelectPlayer(previewBeforeHover))
+            OpenActionPreview(previewBeforeHover, false);
+        else
+            GoBack();
+    }
+
+    #region Pause
 
     public void CallPause() => SetPaused(!IsPaused);
 
