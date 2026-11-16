@@ -178,7 +178,8 @@ public class PlayerController : MonoBehaviour
                     turnManager.UseSkillOn(clickedPlayer.GetCurrentTile());
                     return;
                 }
-                turnManager.TrySelectPlayer(clickedPlayer);
+                if (turnManager.TrySelectPlayer(clickedPlayer) && turnManager.CurrentPlayer == clickedPlayer)
+                    hud?.OpenActionSelection(clickedPlayer, playSelectionSound: false);
                 return;
             }
 

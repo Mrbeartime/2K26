@@ -103,6 +103,19 @@ public class CameraFocusManager : MonoBehaviour
     private bool scrollReturnPending;
     private float lastScrollTime;
 
+    internal bool CanAcceptManualInput => isActiveAndEnabled && ready && !cutsceneActive && !ManualInputBlocked;
+
+    private static bool ManualInputBlocked
+    {
+        get
+        {
+            TurnGameManager turns = TurnGameManager.Instance;
+            return Time.timeScale == 0f || (turns != null && (turns.IsIntroPlaying || turns.IsGameComplete)) ||
+                NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
+                (InGameUIManager.Instance != null && InGameUIManager.Instance.IsPaused);
+        }
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -221,16 +234,7 @@ public class CameraFocusManager : MonoBehaviour
                 return;
             }
         }
-        if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying)
-        {
-            CancelDragInput();
-            return;
-        }
-
-        if (Time.timeScale == 0f ||
-            (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) ||
-            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
-            (InGameUIManager.Instance != null && InGameUIManager.Instance.IsPaused))
+        if (ManualInputBlocked)
         {
             CancelDragInput();
             return;

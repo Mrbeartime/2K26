@@ -67,13 +67,6 @@ MonoBehaviour:
     scene:
       scene: {fileID: 102900000, guid: 61436b15a539b4b459898782fe66d865, type: 3}
       scenePath: Assets/Scenes/MainScene/Level/Level5.unity
-  - id: 5
-    title: Level 5
-    description: Reach the exit before your turns run out.
-    paperSprite: {fileID: 0}
-    scene:
-      scene: {fileID: 102900000, guid: 61436b15a539b4b459898782fe66d865, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level5.unity
   secretLevels:
   - id: SecretLevel1
     title: Secret Level
