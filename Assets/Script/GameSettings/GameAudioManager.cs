@@ -202,6 +202,19 @@ namespace ProjectD.Audio
         public bool PlaySFX(AudioCue cue, AudioBus bus) =>
             (bus == AudioBus.SFX || bus == AudioBus.UI) && PlayPooled(cue, bus, null);
         public bool PlaySFXAtPosition(AudioCue cue, Vector3 position) => PlayPooled(cue, AudioBus.SFX, position);
+        public bool PlayTurnCharge(Object owner) =>
+            owner != null && PlayPooled(AudioCue.TurnCharge, AudioBus.UI, null, owner);
+
+        public void StopTurnCharge(Object owner)
+        {
+            if (owner == null || voices == null) return;
+            for (int i = 0; i < voices.Length; i++)
+                if (voices[i].owner == owner && voices[i].cue == AudioCue.TurnCharge)
+                {
+                    voices[i].source.Stop();
+                    voices[i].owner = null;
+                }
+        }
         public bool PlayDoorAudio(Object door, Vector3 position) =>
             door != null && PlayPooled(AudioCue.DoorOpen, AudioBus.SFX, position, door);
         public void StopDoorAudio(Object door)

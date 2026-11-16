@@ -323,11 +323,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void SelectPlayer(PlayerMove player)
+    public void SelectPlayer(PlayerMove player) => SelectPlayer(player, true);
 
-
+    public void SelectPlayer(PlayerMove player, bool playSelectionSound)
     {
-        if (player != null && selectedPlayer != player)
+        if (playSelectionSound && player != null && selectedPlayer != player)
             ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.CharacterSelect);
         ClearHighlights();
 

@@ -223,6 +223,7 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void OnDisable()
     {
+        StopTurnCharge();
         if (inputActions == null) return;
         if (endTurnButton != null) endTurnButton.CancelHold();
         PlayerController.Instance?.ClearActionPreview();
@@ -252,6 +253,8 @@ public class NewInGameUIManager : MonoBehaviour
         if (endTurnButton != null)
         {
             endTurnButton.HoldCompleted -= OnClickEndTurn;
+            endTurnButton.HoldStarted -= StartTurnCharge;
+            endTurnButton.HoldCanceled -= StopTurnCharge;
             RemoveGraphic(endTurnButton.transform);
         }
         if (turnGameManager == null) return;
@@ -502,6 +505,8 @@ public class NewInGameUIManager : MonoBehaviour
         endTurnLabel = endTurnButton.GetComponentInChildren<TextMeshProUGUI>(true);
         if (endTurnImage != null) endTurnNormalColor = endTurnImage.color;
         endTurnButton.HoldCompleted += OnClickEndTurn;
+        endTurnButton.HoldStarted += StartTurnCharge;
+        endTurnButton.HoldCanceled += StopTurnCharge;
     }
 
     private static void RemoveGraphic(Transform graphic)
@@ -875,6 +880,7 @@ public class NewInGameUIManager : MonoBehaviour
         bool cancelTargeting = selectedAction != NoAction;
         OpenActionPreview(player, false);
         if (cancelTargeting) CancelPendingAction();
+        if (actionMenuPlayer == player && ActionUI != null && ActionUI.activeInHierarchy) PlaySelectionClick(true);
     }
 
     private void PositionActionList(PlayerMove current)
@@ -1151,7 +1157,7 @@ public class NewInGameUIManager : MonoBehaviour
         try
         {
             if (!turnGameManager.CanSelectPlayer(player)) return;
-            if (turnGameManager.CurrentPlayer != player && !turnGameManager.TrySelectPlayer(player)) return;
+            if (turnGameManager.CurrentPlayer != player && !turnGameManager.TrySelectPlayer(player, false)) return;
             if (turnGameManager.CurrentPlayer != player) return;
 
             focusedCharacter = player;
@@ -1165,6 +1171,10 @@ public class NewInGameUIManager : MonoBehaviour
                 CancelPendingAction();
 
             selectedAction = actionId;
+            bool canExecute = actionId == ActionMove ? turnGameManager.CanChooseMove :
+                actionId == ActionInteract ? turnGameManager.CanChooseReact :
+                actionId == ActionSignature && turnGameManager.CanChooseSkill;
+            if (canExecute) PlaySelectionClick();
             ConfirmAction(actionId);
         }
         finally
@@ -1172,6 +1182,17 @@ public class NewInGameUIManager : MonoBehaviour
             confirmingAction = false;
             RefreshActionList();
         }
+    }
+
+    private int lastSelectionClickFrame = -1;
+    private void PlaySelectionClick(bool characterSelection = false)
+    {
+        if (lastSelectionClickFrame == Time.frameCount) return;
+        lastSelectionClickFrame = Time.frameCount;
+        if (characterSelection)
+            ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.CharacterSelect);
+        else
+            ProjectD.Audio.GameAudioManager.Instance?.PlayLevelClick();
     }
 
     private void ConfirmAction(int actionId)
@@ -1338,6 +1359,7 @@ public class NewInGameUIManager : MonoBehaviour
         choosingAction = true;
         UpdateCharacterSelection();
         UpdateActionFocusUI();
+        PlaySelectionClick(true);
     }
 
     private void OnReset(InputAction.CallbackContext context)
@@ -1362,8 +1384,17 @@ public class NewInGameUIManager : MonoBehaviour
 
     public void OnClickEndTurn()
     {
+        StopTurnCharge();
         if (CanUseEndTurnButton) turnGameManager.ChooseEndTurn();
     }
+
+    private void StartTurnCharge()
+    {
+        if (CanUseEndTurnButton)
+            ProjectD.Audio.GameAudioManager.Instance?.PlayTurnCharge(this);
+    }
+
+    private void StopTurnCharge() => ProjectD.Audio.GameAudioManager.Instance?.StopTurnCharge(this);
 
     private bool CanUseEndTurnButton => isActiveAndEnabled && !BlocksGameplayInput &&
         turnGameManager != null && turnGameManager.CanEndTurn;

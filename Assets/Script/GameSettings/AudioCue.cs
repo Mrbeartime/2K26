@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ProjectD.Audio
 {
     public enum AudioBus { Master, Music, SFX, UI }
-    public enum AudioCue { Footstep, SwordSlash, BowShot, DoorOpen, ChestOpen, Death, LevelBGM, MenuBGM, ButtonClick, ButtonHover, Pause, CharacterSelect, Lever, TurnChange, ClockTick, SpikeTrap, BellHover, PlayerShatter, DiaryOpen, DiaryPageTurn, EnemyDustDeath, DiaryClose }
+    public enum AudioCue { Footstep, SwordSlash, BowShot, DoorOpen, ChestOpen, Death, LevelBGM, MenuBGM, ButtonClick, ButtonHover, Pause, CharacterSelect, Lever, TurnChange, ClockTick, SpikeTrap, BellHover, PlayerShatter, DiaryOpen, DiaryPageTurn, EnemyDustDeath, DiaryClose, TurnCharge }
 
     [Serializable]
     public sealed class AudioCueSlot
