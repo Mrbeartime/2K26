@@ -60,7 +60,7 @@ public class TurnGameManager : MonoBehaviour
     public bool IsSkillTargeting => actionMode == ActionMode.SkillTargeting;
     private bool CanCurrentPlayerReact => !gameComplete && !enemyPhase && CurrentPlayer != null &&
         currentPlayerSelected && !waitingForMovement &&
-        CurrentPlayer.TryGetComponent(out Character character) && character.CanReact(CurrentPlayer.GetCurrentTile());
+        CanPlayerReact(CurrentPlayer);
 
     #region AddByChitipat //review this before any change
 
@@ -76,10 +76,23 @@ public class TurnGameManager : MonoBehaviour
 
     public bool CanChooseSkill => !gameComplete && !enemyPhase && currentPlayer != null &&
         currentPlayerSelected && !waitingForMovement &&
-        currentPlayer.TryGetComponent(out Character skillCharacter) && skillCharacter.CanUseSkill;
+        CanPlayerUseSkill(currentPlayer);
 
     public bool CanChooseReact => CanCurrentPlayerReact;
+    internal bool CanEndTurn => !gameComplete && !enemyPhase && !waitingForMovement;
     public bool IsPlayerFinished(PlayerMove player) => finishedPlayers.Contains(player);
+
+    internal bool CanSelectPlayer(PlayerMove player) =>
+        !gameComplete && !enemyPhase && !waitingForMovement && player != null &&
+        !finishedPlayers.Contains(player) && players.Contains(player);
+
+    internal bool HasPlayerMoved(PlayerMove player) => player == CurrentPlayer ? hasMoved : movedPlayers.Contains(player);
+
+    internal bool CanPlayerUseSkill(PlayerMove player) =>
+        player.TryGetComponent(out Character character) && character.CanUseSkill;
+
+    internal bool CanPlayerReact(PlayerMove player) =>
+        player.TryGetComponent(out Character character) && character.CanReact(player.GetCurrentTile());
 
     private void RaiseStateChanged()
     {
@@ -226,70 +239,49 @@ public class TurnGameManager : MonoBehaviour
         return int.TryParse(playerName[(index + 1)..], out int number) ? number : int.MaxValue;
     }
 
-    internal void CyclePlayer(bool forward)
+    internal PlayerMove FindNextSelectablePlayer(PlayerMove fromPlayer, bool forward, bool wrap = true)
     {
-        if (gameComplete || enemyPhase || waitingForMovement || players.Count == 0) return;
+        if (gameComplete || enemyPhase || waitingForMovement || players.Count == 0) return null;
 
         int direction = forward ? 1 : -1;
-        int currentIndex = players.IndexOf(currentPlayer);
+        int currentIndex = players.IndexOf(fromPlayer);
         int index = currentIndex >= 0 ? currentIndex : (forward ? -1 : 0);
         int candidates = currentIndex >= 0 ? players.Count - 1 : players.Count;
         for (int step = 0; step < candidates; step++)
         {
-            index = (index + direction + players.Count) % players.Count;
-            if (TrySelectPlayer(players[index])) return;
+            index += direction;
+            if (!wrap && (index < 0 || index >= players.Count)) return null;
+            index = (index + players.Count) % players.Count;
+            if (CanSelectPlayer(players[index])) return players[index];
         }
+        return null;
     }
 
     public bool TrySelectPlayer(PlayerMove player)
-{
-    if (gameComplete ||
-        enemyPhase ||
-        waitingForMovement ||
-        player == null ||
-        finishedPlayers.Contains(player) ||
-        !players.Contains(player))
-        return false;
-
-    // Finish selection before notifying the UI. Cancel* would raise StateChanged
-    // here and let the UI re-enter targeting before SelectPlayer clears its highlights.
-    actionMode = ActionMode.None;
-
-    currentPlayer = player;
-    currentPlayerSelected = true;
-
-    // เช็กว่าตัวนี้เดินไปแล้วหรือยัง
-    hasMoved = movedPlayers.Contains(player);
-
-    PlayerController.Instance?.SelectPlayer(player);
-
-    // =========================
-    // ยังไม่เดิน
-    // =========================
-    if (!hasMoved)
     {
-        PlayerController.Instance?.ShowMoveRange(player);
+        if (!CanSelectPlayer(player)) return false;
 
-        status =
-            player.name +
-            " selected: Move or Skill.";
+        // Commit the selection before StateChanged refreshes the HUD.
+        actionMode = ActionMode.None;
+        currentPlayer = player;
+        currentPlayerSelected = true;
+        hasMoved = movedPlayers.Contains(player);
+        PlayerController.Instance?.SelectPlayer(player);
+
+        if (!hasMoved)
+        {
+            PlayerController.Instance?.ShowMoveRange(player);
+            status = $"{player.name} selected: Move or Skill.";
+        }
+        else
+        {
+            if (SkipExhaustedSkill()) return true;
+            status = $"{player.name} selected: Skill, React, or Skip.";
+        }
+
+        RaiseStateChanged();
+        return true;
     }
-
-    // =========================
-    // เดินไปแล้ว
-    // =========================
-    else
-    {
-        if (SkipExhaustedSkill()) return true;
-
-        status =
-            player.name +
-            " selected: Skill, React, or Skip.";
-    }
-
-    RaiseStateChanged();
-    return true;
-}
 
     public void ChooseMove()
     {
@@ -400,7 +392,7 @@ public class TurnGameManager : MonoBehaviour
     public void ChooseEndTurn()
     {
         if (DiaryUI.IsOpen) return;
-        if (gameComplete || enemyPhase || waitingForMovement) return;
+        if (!CanEndTurn) return;
         actionMode = ActionMode.None;   // จบเทิร์นได้แม้กำลังเลือกเป้าหมายอยู่
         currentPlayer = null;
         currentPlayerSelected = false;

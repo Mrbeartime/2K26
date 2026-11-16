@@ -1386,6 +1386,8 @@ MonoBehaviour:
   - {fileID: 5589837644671514397}
   - {fileID: 927634664146868389}
   characterIconPrefab: {fileID: 7172699995892590812, guid: c211e21444eae474caf16360836c6841, type: 3}
+  characterIconDeathEffect: {fileID: 1002, guid: 90e8db9904004ad2bb463b1c7d0db427, type: 3}
+  endTurnButtonPrefab: {fileID: 1005, guid: 963db8cc851d4687ba843de74ce70c79, type: 3}
   characterIconSpacing: 105
   characterConnectorWidth: 3
   CharacterList:

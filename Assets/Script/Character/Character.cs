@@ -165,7 +165,7 @@ public class Character : Entity
         if (deathAnimator != null) deathAnimator.enabled = false;
     }
 
-    public virtual void ShowSkillRange()
+    public virtual void ShowSkillRange(bool preview = false)
     {
     }
     public virtual void Attack(Tile target) { }
