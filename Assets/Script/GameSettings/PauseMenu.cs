@@ -25,6 +25,7 @@ public class PauseMenu : MonoBehaviour
 
     private void Update()
     {
+        if (DiaryUI.IsOpen) return;
         if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
         if (settingsPanel != null && settingsPanel.activeSelf) CloseSettings();
         else if (isPaused) ResumeGame();
@@ -34,7 +35,7 @@ public class PauseMenu : MonoBehaviour
     public void PauseGame()
     {
         if (TurnGameManager.Instance != null && TurnGameManager.Instance.IsGameComplete) return;
-        if (!isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+        if (!isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.GameAudioManager.TimingEvent(ProjectD.Audio.AudioCue.Pause));
         isPaused = true;
         Time.timeScale = 0f;
         if (pauseButton != null) pauseButton.SetActive(false);
@@ -44,7 +45,7 @@ public class PauseMenu : MonoBehaviour
 
     public void ResumeGame()
     {
-        if (isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+        if (isPaused) ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.GameAudioManager.TimingEvent(ProjectD.Audio.AudioCue.Pause));
         isPaused = false;
         Time.timeScale = 1f;
         if (pausePanel != null) pausePanel.SetActive(false);

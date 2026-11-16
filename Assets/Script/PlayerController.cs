@@ -33,6 +33,11 @@ public class PlayerController : MonoBehaviour
     private float lastInteractClickTime;
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
+    private readonly List<Tile> actionPreviewTiles = new();
+    private static readonly Vector2Int[] SkillDirections =
+    {
+        Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+    };
 
     private void Awake()
     {
@@ -46,8 +51,10 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (DiaryUI.IsOpen) { ResetInteractClick(); pendingRightClickAttack = false; return; }
         if ((TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) ||
             Time.timeScale == 0 ||
+            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
             (UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()))
         {
@@ -92,16 +99,23 @@ public class PlayerController : MonoBehaviour
             pendingInteractPlayer != turnManager.CurrentPlayer)
             ResetInteractClick();
 
-        if (Mouse.current == null || mainCamera == null ||
-            !Mouse.current.leftButton.wasPressedThisFrame) return;
+        Mouse mouse = Mouse.current;
+        if (mouse == null || mainCamera == null) return;
 
-        if (turnManager.IsPointerOverTurnUI(Mouse.current.position.ReadValue()))
+        NewInGameUIManager hud = NewInGameUIManager.Instance;
+        InputAction select = hud?.GameplayInput?.Select;
+        if (!(select?.WasPressedThisFrame() ?? mouse.leftButton.wasPressedThisFrame)) return;
+        if (hud?.IsPreviewingAction == true &&
+            (turnManager.IsMoveTargeting || turnManager.IsSkillTargeting)) return;
+
+        Vector2 mousePosition = mouse.position.ReadValue();
+        if (turnManager.IsPointerOverTurnUI(mousePosition))
         {
             ResetInteractClick();
             return;
         }
 
-        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
         RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, ~0, QueryTriggerInteraction.Collide);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -194,8 +208,10 @@ public class PlayerController : MonoBehaviour
 
     private bool CanInteractFromWorld(TurnGameManager turnManager)
     {
-        return turnManager.CanChooseReact && InGameUIManager.Instance != null &&
-            InGameUIManager.Instance.IsInteractMode;
+        NewInGameUIManager newHud = NewInGameUIManager.Instance;
+        return turnManager.CanChooseReact && (newHud != null && newHud.isActiveAndEnabled
+            ? newHud.IsInteractMode
+            : InGameUIManager.Instance != null && InGameUIManager.Instance.IsInteractMode);
     }
 
     private bool HandleInteractClick(TurnGameManager turnManager, RaycastHit[] hits)
@@ -219,6 +235,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 Component prop = collider.GetComponentInParent<DoorSwitch>();
+                if (prop == null) prop = collider.GetComponentInParent<DiaryInteractable>();
                 if (prop == null) prop = collider.GetComponentInParent<FloorSwitch>();
                 // Some lever models are separate scene objects on the switch's tile.
                 if (prop == null) prop = collider.GetComponentInParent<PropInteractAnimation>();
@@ -261,7 +278,11 @@ public class PlayerController : MonoBehaviour
         pendingInteractPlayer = null;
     }
 
-    private void OnDisable() => ResetInteractClick();
+    private void OnDisable()
+    {
+        ResetInteractClick();
+        ClearActionPreview();
+    }
 
     private void HandleClick()
     {
@@ -321,9 +342,9 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Selected: " + player.name);
     }
 
-    public void ShowMoveRange(PlayerMove player)
+    public void ShowMoveRange(PlayerMove player, bool preview = false)
     {
-        ClearHighlights();
+        ClearHighlightLayer(preview);
 
         if (player == null ||
             GridManager.Instance == null ||
@@ -335,16 +356,15 @@ public class PlayerController : MonoBehaviour
         if (playerTile == null)
             return;
 
-        currentHighlightedTiles =
-            Pathfinder.Instance.GetAllReachableTiles(
-                playerTile,
-                player.GetComponent<Character>()
-            );
+        foreach (Tile tile in Pathfinder.Instance.GetAllReachableTiles(playerTile, player.GetComponent<Character>()))
+            AddHighlight(tile, Tile.HighlightType.Move, preview);
+    }
 
-        foreach (Tile tile in currentHighlightedTiles)
-        {
-            tile.ShowHighlight(Tile.HighlightType.Move);
-        }
+    internal void ShowInteractPreview(PlayerMove player)
+    {
+        ClearActionPreview();
+        Tile tile = player.GetCurrentTile();
+        if (tile != null) AddHighlight(tile, Tile.HighlightType.Skill, true);
     }
 
     private void HandleAttack()
@@ -406,17 +426,43 @@ public class PlayerController : MonoBehaviour
         currentHighlightedTiles.Clear();
     }
 
-    public void ShowRogueSkillRange(Tile origin, int range)
+    internal void ClearActionPreview()
     {
-        ClearHighlights();
-        if (!CanShowSelectedSkill()) return;
+        foreach (Tile tile in actionPreviewTiles)
+            if (tile != null) tile.SetPreviewHighlight(null);
+        actionPreviewTiles.Clear();
+    }
+
+    internal void ClearHighlightLayer(bool preview)
+    {
+        if (preview) ClearActionPreview();
+        else ClearHighlights();
+    }
+
+    private void AddHighlight(Tile tile, Tile.HighlightType type, bool preview)
+    {
+        if (preview)
+        {
+            actionPreviewTiles.Add(tile);
+            tile.SetPreviewHighlight(type);
+        }
+        else
+        {
+            currentHighlightedTiles.Add(tile);
+            tile.ShowHighlight(type);
+        }
+    }
+
+    public void ShowRogueSkillRange(Tile origin, int range, bool preview = false)
+    {
+        ClearHighlightLayer(preview);
+        if (!preview && !CanShowSelectedSkill()) return;
         if (origin == null) return;
         foreach (Tile tile in FindObjectsByType<Tile>())
         {
             Vector2Int delta = tile.gridPosition - origin.gridPosition;
             if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) > range) continue;
-            currentHighlightedTiles.Add(tile);
-            tile.ShowHighlight(Tile.HighlightType.Skill);
+            AddHighlight(tile, Tile.HighlightType.Skill, preview);
         }
     }
 
@@ -428,62 +474,31 @@ public class PlayerController : MonoBehaviour
             character.CanUseSkill && (manager == null || manager.CanChooseSkill);
     }
 
-    public void ShowSwordSkillRange(Tile origin)
+    public void ShowSwordSkillRange(Tile origin, bool preview = false)
     {
-        ClearHighlights();
+        ClearHighlightLayer(preview);
 
         if (origin == null || GridManager.Instance == null)
             return;
 
-        Vector2Int[] directions =
+        foreach (Vector2Int direction in SkillDirections)
         {
-        Vector2Int.up,
-        Vector2Int.down,
-        Vector2Int.left,
-        Vector2Int.right
-    };
+            Tile tile = GridManager.Instance.GetTile(origin.gridPosition + direction);
+            if (tile == null || GridManager.Instance.IsBlockedByWall(origin, tile)) continue;
 
-        foreach (Vector2Int direction in directions)
-        {
-            Tile tile =
-                GridManager.Instance.GetTile(
-                    origin.gridPosition + direction
-                );
-
-            if (tile == null)
-                continue;
-
-            // มีกำแพง/ประตูขวาง
-            if (GridManager.Instance.IsBlockedByWall(
-                origin,
-                tile))
-                continue;
-
-            currentHighlightedTiles.Add(tile);
-
-            tile.ShowHighlight(
-                Tile.HighlightType.Skill
-            );
+            AddHighlight(tile, Tile.HighlightType.Skill, preview);
         }
     }
 
-    public void ShowArcherSkillRange(Tile origin)
+    public void ShowArcherSkillRange(Tile origin, bool preview = false)
     {
-        ClearHighlights();
-        if (!CanShowSelectedSkill()) return;
+        ClearHighlightLayer(preview);
+        if (!preview && !CanShowSelectedSkill()) return;
 
         if (origin == null || GridManager.Instance == null)
             return;
 
-        Vector2Int[] directions =
-        {
-        Vector2Int.up,
-        Vector2Int.down,
-        Vector2Int.left,
-        Vector2Int.right
-    };
-
-        foreach (Vector2Int direction in directions)
+        foreach (Vector2Int direction in SkillDirections)
         {
             Tile currentTile = origin;
 
@@ -508,11 +523,7 @@ public class PlayerController : MonoBehaviour
                     break;
                 }
 
-                currentHighlightedTiles.Add(nextTile);
-
-                nextTile.ShowHighlight(
-                    Tile.HighlightType.Skill
-                );
+                AddHighlight(nextTile, Tile.HighlightType.Skill, preview);
 
                 currentTile = nextTile;
             }

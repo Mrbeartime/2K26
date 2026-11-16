@@ -46,22 +46,17 @@ public class Tile : MonoBehaviour
 
     private HighlightType currentHighlightType;
     private bool highlightRequested;
+    private HighlightType? previewHighlightType;
 
     public void SetCanShowHighlight(bool allowed)
     {
         canShowHighlight = allowed;
-        if (!allowed)
-        {
-            if (highlightObject != null) highlightObject.SetActive(false);
-        }
-        else if (highlightRequested)
-        {
-            ShowHighlight(currentHighlightType);
-        }
+        RefreshHighlight();
     }
 
     public bool IsHighlightShown(HighlightType type) =>
-        canShowHighlight && highlightObject != null && highlightObject.activeInHierarchy && currentHighlightType == type;
+        highlightRequested && canShowHighlight && highlightObject != null &&
+        highlightObject.activeInHierarchy && currentHighlightType == type;
 
     private void Awake()
     {
@@ -73,56 +68,39 @@ public class Tile : MonoBehaviour
     {
         highlightRequested = true;
         currentHighlightType = type;
-        if (!canShowHighlight)
+        RefreshHighlight();
+    }
+
+    internal void SetPreviewHighlight(HighlightType? type)
+    {
+        previewHighlightType = type;
+        RefreshHighlight();
+    }
+
+    private void RefreshHighlight()
+    {
+        if (highlightObject == null) return;
+
+        bool visible = canShowHighlight && (previewHighlightType.HasValue || highlightRequested);
+        highlightObject.SetActive(visible);
+        if (!visible) return;
+
+        var (color, opacity, glow) = (previewHighlightType ?? currentHighlightType) switch
         {
-            if (highlightObject != null) highlightObject.SetActive(false);
-            return;
-        }
-        if (highlightObject == null)
-            return;
-
-        highlightObject.SetActive(true);
-
-        Color targetColor = moveHighlightColor;
-
-        switch (type)
-        {
-            case HighlightType.Move:
-                targetColor = moveHighlightColor;
-                targetColor.a = moveHighlightOpacity;
-                break;
-
-            case HighlightType.Skill:
-                targetColor = skillHighlightColor;
-                targetColor.a = skillHighlightOpacity;
-                break;
-
-            case HighlightType.Enemy:
-                targetColor = enemyHighlightColor;
-                targetColor.a = enemyHighlightOpacity;
-                break;
-        }
-
-        float glow = type switch
-        {
-            HighlightType.Move => moveGlow,
-            HighlightType.Skill => skillGlow,
-            HighlightType.Enemy => enemyGlow,
-            _ => 0f
+            HighlightType.Move => (moveHighlightColor, moveHighlightOpacity, moveGlow),
+            HighlightType.Skill => (skillHighlightColor, skillHighlightOpacity, skillGlow),
+            HighlightType.Enemy => (enemyHighlightColor, enemyHighlightOpacity, enemyGlow),
+            _ => (moveHighlightColor, moveHighlightColor.a, 0f)
         };
-
-        SetHighlightColor(targetColor, glow);
-
+        color.a = opacity;
+        SetHighlightColor(color, glow);
     }
 
     // ปิด Highlight
     public void HideHighlight()
     {
         highlightRequested = false;
-        if (highlightObject != null)
-        {
-            highlightObject.SetActive(false);
-        }
+        RefreshHighlight();
     }
 
     // เก็บ ToggleHighlight เดิมไว้

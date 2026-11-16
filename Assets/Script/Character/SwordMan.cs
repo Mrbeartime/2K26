@@ -18,15 +18,13 @@ public class SwordMan : Character
             if (entity != this && entity.CurrentLocation == target.gridPosition) entity.ReceiveHit();
     }
 
-    public override void ShowSkillRange()
+    public override void ShowSkillRange(bool preview = false)
     {
         if (GridManager.Instance == null)
             return;
 
-        Tile origin =
-            GridManager.Instance.GetTile(CurrentLocation);
-
-        PlayerController.Instance?.ShowSwordSkillRange(origin);
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+        PlayerController.Instance?.ShowSwordSkillRange(origin, preview);
     }
 }
 

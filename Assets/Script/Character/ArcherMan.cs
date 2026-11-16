@@ -66,26 +66,22 @@ public class ArcherMan : Character
         projectile.enabled = true;
         projectile.Initialize(this, origin, direction, arrowSpeed);
         arrow.SetActive(true);
-        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.BowShot, position);
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.GameAudioManager.TimingEvent(ProjectD.Audio.AudioCue.BowShot), position);
         RecordSkillUse();
     }
 
-    public override void ShowSkillRange()
+    public override void ShowSkillRange(bool preview = false)
     {
         if (!CanUseSkill)
         {
-            PlayerController.Instance?.ClearHighlights();
+            PlayerController.Instance?.ClearHighlightLayer(preview);
             return;
         }
         if (GridManager.Instance == null)
             return;
 
-        Tile origin =
-            GridManager.Instance.GetTile(CurrentLocation);
-
-        PlayerController.Instance?.ShowArcherSkillRange(origin);
+        Tile origin = GridManager.Instance.GetTile(CurrentLocation);
+        PlayerController.Instance?.ShowArcherSkillRange(origin, preview);
     }
-
-    
 }
 

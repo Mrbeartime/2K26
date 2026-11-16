@@ -30,6 +30,7 @@ public class Enemy : Entity
 
     private void FinishDeath()
     {
+        if (TryGetComponent<EnemyDustVisual>(out var dust)) dust.Begin();
         base.RemoveAfterDeath();
     }
 

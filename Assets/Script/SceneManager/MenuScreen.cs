@@ -85,7 +85,7 @@ namespace ProjectD.Menus
             if (hasFocus && page == Page.LevelSelect) ReloadProgressFromJson();
         }
 
-        private static void PlayMenuSound() => ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.AudioCue.Pause);
+        private static void PlayMenuSound() => ProjectD.Audio.GameAudioManager.Instance?.PlayUI(ProjectD.Audio.GameAudioManager.TimingEvent(ProjectD.Audio.AudioCue.Pause));
         public void OpenLevelSelect() => GameSceneManager.OpenLevelSelect();
         public void OpenStart() { if (page == Page.LevelSelect) PlayMenuSound(); GameSceneManager.OpenStart(); }
         public void OpenGuide() => GameSceneManager.OpenGuide();
