@@ -204,7 +204,7 @@ GameObject:
   - component: {fileID: 3716794846468251679}
   - component: {fileID: 1498829102903370713}
   m_Layer: 0
-  m_Name: Filler
+  m_Name: Loading Track
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -221,13 +221,14 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 910002}
   m_Father: {fileID: 5767559509655400701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.1, y: 0.49}
-  m_AnchorMax: {x: 0.9, y: 0.51}
+  m_AnchorMin: {x: 0.1, y: 0.5}
+  m_AnchorMax: {x: 0.9, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3716794846468251679
 CanvasRenderer:
@@ -250,18 +251,93 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_Color: {r: 0.3, g: 0.3, b: 0.3, a: 1}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 3
+  m_Sprite: {fileID: 0}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &910001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910002}
+  - component: {fileID: 910003}
+  - component: {fileID: 910004}
+  m_Layer: 0
+  m_Name: Rogue
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &910002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1291808123032619827}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 0, y: -38.5}
+  m_SizeDelta: {x: 150, y: 180}
+  m_Pivot: {x: 0.5, y: 0}
+--- !u!222 &910003
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001}
+  m_CullTransparentMesh: 1
+--- !u!114 &910004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 6c3c2225992c20d43b096d10ff471c99, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -313,7 +389,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.LoadingScreen
   group: {fileID: 2434912682824037038}
-  filler: {fileID: 1498829102903370713}
+  rogue: {fileID: 910004}
+  rogueWalkFrames:
+  - {fileID: 21300000, guid: 6c3c2225992c20d43b096d10ff471c99, type: 3}
+  - {fileID: 21300000, guid: bcc9154be09a05f459b425337931f978, type: 3}
+  - {fileID: 21300000, guid: 0917ae1b19171f54b8b8147bb3c23eaf, type: 3}
+  - {fileID: 21300000, guid: 9a10f3081911ea240bc2cfbd4c575c70, type: 3}
+  - {fileID: 21300000, guid: 25bdfff5eddde364a8eb88c907d0a14e, type: 3}
+  - {fileID: 21300000, guid: 565d2969d5277254dbecaac789fc52e8, type: 3}
+  - {fileID: 21300000, guid: 8bdca903a61bec947ad45b110e2aee35, type: 3}
+  - {fileID: 21300000, guid: 192fd8a0d94477a4cbc29397526ecaa7, type: 3}
+  - {fileID: 21300000, guid: e1e3a27f67739d34596b88362e4f7262, type: 3}
+  - {fileID: 21300000, guid: 277dca59304fbae4f9725f0ba79305f4, type: 3}
+  - {fileID: 21300000, guid: e4199000e8c0c9e48a61ff81ba7db997, type: 3}
+  - {fileID: 21300000, guid: 5811e992141e5c34683d7eaf37e0c3af, type: 3}
+  - {fileID: 21300000, guid: cad6c2cb139077a4699737fed934ad46, type: 3}
+  - {fileID: 21300000, guid: 768129cfc07f3c043aa857b2eb3f39cf, type: 3}
+  - {fileID: 21300000, guid: cdf6984242aacbb4fa0453e05be1b0b4, type: 3}
+  - {fileID: 21300000, guid: d053504c766d85d418fb12d4a4fc3b3a, type: 3}
+  - {fileID: 21300000, guid: bb39a5fdbe4d44b43a2414ef46c502d9, type: 3}
+  - {fileID: 21300000, guid: 55da239f09814454e9046df08e584fa6, type: 3}
+  - {fileID: 21300000, guid: f89803b291779dd488d2be483a945008, type: 3}
+  - {fileID: 21300000, guid: fdd89082796f00e44ae61702fe912431, type: 3}
+  - {fileID: 21300000, guid: 404f08c30fe345747954022e06e330ee, type: 3}
+  - {fileID: 21300000, guid: 3a0089728af9d4e4a9e653bab9c15261, type: 3}
+  - {fileID: 21300000, guid: 9c507b168a0a015468a154d1913c334d, type: 3}
+  - {fileID: 21300000, guid: 7ea7162081c38af439ece036361f2ef5, type: 3}
+  - {fileID: 21300000, guid: 11d0f42932745d24ca670d3be06a0762, type: 3}
+  - {fileID: 21300000, guid: 009877ec49bc7134b811498fe15ed01e, type: 3}
+  - {fileID: 21300000, guid: 4a698658d425c7a48a2db94da7e91de7, type: 3}
+  - {fileID: 21300000, guid: f1c97e64ec3b9cc48a32ebe2bc01a658, type: 3}
+  - {fileID: 21300000, guid: 35eedef1a096071479da32d03369bd53, type: 3}
+  - {fileID: 21300000, guid: 616fa88ae07b08c4681b5f8b9ab760c2, type: 3}
+  - {fileID: 21300000, guid: ab5eb652ed1cb954995c607ad2adec62, type: 3}
+  - {fileID: 21300000, guid: 0b53b51bd3730d9488350e74299c5839, type: 3}
+  - {fileID: 21300000, guid: 85403456bfef11549b5b527cc958afc9, type: 3}
+  - {fileID: 21300000, guid: cd4eb08a7ce497c48b2b493497d40f09, type: 3}
+  - {fileID: 21300000, guid: 0933019504d34bb4fa1892fecb7e74a6, type: 3}
+  - {fileID: 21300000, guid: 575377dc07596174c85f668866d50538, type: 3}
+  - {fileID: 21300000, guid: 17519ca09a4e38143a1aa84365dba806, type: 3}
+  - {fileID: 21300000, guid: 834c4f257f9bb8749bb4296afd2bbb9c, type: 3}
+  - {fileID: 21300000, guid: 417737fec90ce7b4692f44a5ad4dd60b, type: 3}
+  - {fileID: 21300000, guid: b0459ba9266cba84a9394a9ad9473553, type: 3}
+  rogueWalkFrameRate: 24
   minShowTime: 1
   fadeTime: 0.25
   fillSpeed: 1.5
