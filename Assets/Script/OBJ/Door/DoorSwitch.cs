@@ -18,6 +18,7 @@ public class DoorSwitch : MonoBehaviour
 
     void Update()
     {
+        if (DiaryUI.IsOpen) return;
         if (playerNear && CanActivate && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             isOn = !isOn;
@@ -39,6 +40,7 @@ public class DoorSwitch : MonoBehaviour
     // ฟังก์ชันสั่งเปิด/ปิด ประตูทุกบานที่อยู่ในลิสต์
     private void ToggleAllDoors()
     {
+        ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.Lever, transform.position);
         SendSpikeState(isOn);
         if (interactionAnimations != null) foreach (var animation in interactionAnimations)
             if (animation != null) animation.SetActiveState(isOn);

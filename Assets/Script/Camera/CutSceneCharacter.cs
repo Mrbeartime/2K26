@@ -46,6 +46,7 @@ public class CutSceneCharacter : MonoBehaviour
         public CharacterFacing facing;
         public CharacterAnimationController animationController;
         public Animator animator;
+        public ProjectD.Audio.CharacterAudioEvents audioEvents;
         public bool animationWasEnabled;
         public bool rootMotionWasEnabled;
         public bool arrived;
@@ -200,6 +201,15 @@ public class CutSceneCharacter : MonoBehaviour
             animator = actor.GetComponentInChildren<Animator>()
         };
         state.animationWasEnabled = state.animationController != null && state.animationController.enabled;
+        if (state.animationController != null && state.animationController.CharacterAnimator != null)
+            state.animator = state.animationController.CharacterAnimator;
+        if (state.animator != null)
+        {
+            state.audioEvents = state.animator.GetComponent<ProjectD.Audio.CharacterAudioEvents>();
+            if (state.audioEvents == null)
+                state.audioEvents = state.animator.gameObject.AddComponent<ProjectD.Audio.CharacterAudioEvents>();
+            state.animator.SetBool(Moving, false);
+        }
         state.rootMotionWasEnabled = state.animator != null && state.animator.applyRootMotion;
         actors.Add(state);
         if (state.animationController != null) state.animationController.enabled = false;
@@ -218,7 +228,9 @@ public class CutSceneCharacter : MonoBehaviour
         {
             Vector3 target = state.route[state.nextStep].transform.position + state.offset;
             state.facing?.FaceTowards(target);
+            Vector3 previousPosition = state.actor.position;
             state.actor.position = Vector3.MoveTowards(state.actor.position, target, Mathf.Max(0.1f, walkSpeed) * Time.deltaTime);
+            state.audioEvents?.NotifyCutsceneMovement((state.actor.position - previousPosition).sqrMagnitude > 0f);
             if (Vector3.Distance(state.actor.position, target) <= 0.001f)
                 state.nextStep++;
         }
@@ -226,6 +238,7 @@ public class CutSceneCharacter : MonoBehaviour
         {
             state.actor.position = state.endPosition;
             state.arrived = true;
+            state.audioEvents?.NotifyCutsceneMovement(false);
             if (state.animator != null) state.animator.SetBool(Moving, false);
         }
     }
@@ -306,10 +319,12 @@ public class CutSceneCharacter : MonoBehaviour
     {
         if (!prepared) return;
         prepared = false;
+        if (closingDoor != null) closingDoor.StopDoorAudio();
         if (cutsceneCamera != null) cutsceneCamera.EndCutscene();
         cutsceneCamera = null;
         foreach (ActorState state in actors)
         {
+            state.audioEvents?.NotifyCutsceneMovement(false);
             if (state.actor != null) state.actor.position = state.endPosition;
             if (state.animator != null)
             {

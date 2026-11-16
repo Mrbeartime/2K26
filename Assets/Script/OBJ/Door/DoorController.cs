@@ -12,7 +12,8 @@ public class DoorController : MonoBehaviour
     private Vector3 openPosition;
     private readonly HashSet<string> activeRequests = new();
     private bool cutsceneClosed;
-    private bool audioWasOpen;
+    private bool audioMoving;
+    private bool audioDirectionOpen;
     public bool IsFullyClosed => !IsOpen &&
         (transform.localPosition - closedPosition).sqrMagnitude < 0.000001f;
 
@@ -23,17 +24,24 @@ public class DoorController : MonoBehaviour
     public void CloseForCutscene()
     {
         cutsceneClosed = true;
-        if (speed <= 0f || !isActiveAndEnabled) transform.localPosition = closedPosition;
+        if (speed <= 0f || !isActiveAndEnabled)
+        {
+            StopMovementAudio();
+            transform.localPosition = closedPosition;
+        }
     }
 
-    public void ReleaseCutsceneClose() => cutsceneClosed = false;
-
+    public void ReleaseCutsceneClose()
+    {
+        cutsceneClosed = false;
+    }
+    public void StopMovementAudio() => ProjectD.Audio.GameAudioManager.Instance?.StopDoorAudio(this);
+    private void OnDisable() { StopMovementAudio(); audioMoving = false; }
     void Awake()
     {
         // ยึดตำแหน่งที่คุณจัดวางโมเดลไว้ใน Scene เป็น "ตำแหน่งตอนปิดทึบ" เสมอ (จะได้กะระยะวางกำแพงง่ายๆ)
         closedPosition = transform.localPosition;
         openPosition = transform.localPosition + openOffset;
-        audioWasOpen = IsOpen;
 
         // ถ้าตั้งให้ Start Open พอเริ่มเกมปุ๊บ ให้ประตูเด้งขึ้นไปอยู่ตำแหน่งเปิด (เลื่อนไปตาม openOffset) ทันที
         if (startOpen)
@@ -44,18 +52,21 @@ public class DoorController : MonoBehaviour
 
     void Update()
     {
-        if (Time.deltaTime > 0f && speed > 0f)
-        {
-            if (IsOpen && !audioWasOpen && transform.localPosition != openPosition)
-                ProjectD.Audio.GameAudioManager.Instance?.PlaySFXAtPosition(ProjectD.Audio.AudioCue.DoorOpen, transform.position);
-            audioWasOpen = IsOpen;
-        }
-        Vector3 target = IsOpen ? openPosition : closedPosition;
-
+        bool opening = IsOpen;
+        Vector3 target = opening ? openPosition : closedPosition;
+        Vector3 previousPosition = transform.localPosition;
         transform.localPosition = Vector3.MoveTowards(
             transform.localPosition, target, speed * Time.deltaTime);
+        bool moved = transform.localPosition != previousPosition;
+        if (moved && (!audioMoving || audioDirectionOpen != opening))
+        {
+            StopMovementAudio();
+            ProjectD.Audio.GameAudioManager.Instance?.PlayDoorAudio(this, transform.position);
+        }
+        if (!moved || transform.localPosition == target) StopMovementAudio();
+        audioMoving = moved && transform.localPosition != target;
+        audioDirectionOpen = opening;
     }
-
     public void SetOpen(string sourceId, bool isActive)
     {
         // isActive คือสัญญาณที่ส่งมาจาก Switch หรือ PressurePlate
