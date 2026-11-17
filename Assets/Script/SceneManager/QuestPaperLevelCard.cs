@@ -10,6 +10,7 @@ namespace ProjectD.Menus
     {
         private QuestPaperDecoration decoration;
         private TMP_Text title;
+        private TMP_FontAsset inkTitleFont;
         private CanvasGroup group;
         private RectTransform rect;
         private Vector2 originalSize;
@@ -25,8 +26,7 @@ namespace ProjectD.Menus
             originalSize = rect.sizeDelta;
             foreach (var text in GetComponentsInChildren<TMP_Text>(true))
                 if (text.name == "Title") { title = text; break; }
-            if (title != null && GameSceneManager.Catalog.questTitleFont != null)
-                title.font = GameSceneManager.Catalog.questTitleFont;
+            if (title != null) inkTitleFont = title.font;
             group = GetComponent<CanvasGroup>();
             if (group == null) group = gameObject.AddComponent<CanvasGroup>();
             FitToSlot();
@@ -36,23 +36,28 @@ namespace ProjectD.Menus
         {
             LevelId = level.id;
             SecretId = null;
-            Bind(level.Title, level.description, level.paperSprite, unlocked);
+            Bind(level.Title, level.description, level.paperSprite, unlocked, GameSceneManager.IsCompleted(level.id));
         }
 
         public void BindSecret(SecretLevelDefinition level)
         {
             LevelId = 0;
             SecretId = level.id;
-            Bind(level.title, level.description, level.paperSprite, true);
+            Bind(level.title, level.description, level.paperSprite, true, LevelProgressStore.IsSecretCompleted(level.id));
         }
 
-        private void Bind(string label, string description, Sprite paperSprite, bool unlocked)
+        private void Bind(string label, string description, Sprite paperSprite, bool unlocked, bool completed)
         {
             gameObject.name = "QuestPaper - " + label;
             // Retain the prefab's ink decoration, paper styles and hover animation.
             decoration.ApplyDecoration(label?.Length ?? 0, description?.Length ?? 0, paperSprite);
-            // A readable title identifies the level; full details open when clicked.
-            if (title != null) title.text = label ?? string.Empty;
+            // Unfinished quests keep the prefab's decorative ink. Reveal names after completion.
+            if (title != null)
+            {
+                title.font = completed && GameSceneManager.Catalog.questTitleFont != null
+                    ? GameSceneManager.Catalog.questTitleFont : inkTitleFont;
+                if (completed) title.text = label ?? string.Empty;
+            }
             Button.interactable = unlocked;
             group.interactable = unlocked;
             group.alpha = unlocked ? 1f : 0.45f;
