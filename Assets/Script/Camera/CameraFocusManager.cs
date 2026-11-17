@@ -32,6 +32,12 @@ public class CameraFocusManager : MonoBehaviour
     [Header("Zoom")]
     [SerializeField, Min(0.01f)] private float zoomSmoothTime = 0.3f;
 
+    [Header("Action Zoom")]
+    [Tooltip("Temporarily zoom in when a player attacks, uses a skill, or interacts.")]
+    [SerializeField] private bool enableActionZoom = true;
+    [SerializeField, Min(0.01f)] private float actionZoomDuration = 0.8f;
+    private float actionZoomRemaining;
+
     [Header("Camera Rotation and Middle Mouse Pan")]
     [SerializeField] private bool enableCameraDrag = true;
     [SerializeField, Min(0.01f)] private float dragSensitivity = 1f;
@@ -134,6 +140,7 @@ public class CameraFocusManager : MonoBehaviour
 
     private void OnDisable()
     {
+        actionZoomRemaining = 0f;
         cameraInputs?.Camera.Disable();
         isPanning = false;
         CancelDragInput();
@@ -186,9 +193,20 @@ public class CameraFocusManager : MonoBehaviour
         scrollReturnPending = false;
     }
 
+    public void PlayActionZoom(Transform actor)
+    {
+        if (!enableActionZoom || !ready || !isActiveAndEnabled || cutsceneActive || actor == null) return;
+
+        EndManualPan();
+        desiredPosition = ClampToBounds(actor.position + Vector3.up * focusHeightOffset);
+        scrollReturnPending = false;
+        actionZoomRemaining = actionZoomDuration;
+    }
+
     public bool BeginCutscene(Transform target, float zoomFactor)
     {
         if (!ready || !isActiveAndEnabled || target == null || cutsceneActive) return false;
+        actionZoomRemaining = 0f;
         beforeCutscenePosition = desiredPosition;
         beforeCutsceneLens = desiredLens;
         cutsceneTarget = target;
@@ -263,6 +281,10 @@ public class CameraFocusManager : MonoBehaviour
         // Mouse Scroll Zoom
         HandleMouseWheelZoom();
 
+        // Manual camera input takes priority over the temporary action effect.
+        if (!enableActionZoom || isDragging || isPanning || scrollReturnPending)
+            actionZoomRemaining = 0f;
+
         desiredPosition = ClampToBounds(desiredPosition);
         float smoothTime = isDragging || isPanning ? dragSmoothTime
             : walking && !manualPanMode ? walkingSmoothTime : focusSmoothTime;
@@ -280,7 +302,14 @@ public class CameraFocusManager : MonoBehaviour
 
         var lens = gameCamera.Lens;
         float currentLens = orthographic ? lens.OrthographicSize : lens.FieldOfView;
-        float nextLens = Mathf.SmoothDamp(currentLens, desiredLens, ref lensVelocity, zoomSmoothTime);
+        // Overlay the effect so ending it restores the current gameplay zoom.
+        float targetLens = desiredLens;
+        if (enableActionZoom && !cutsceneActive && actionZoomRemaining > 0f)
+        {
+            targetLens *= focusZoomFactor;
+            actionZoomRemaining = Mathf.Max(0f, actionZoomRemaining - Time.deltaTime);
+        }
+        float nextLens = Mathf.SmoothDamp(currentLens, targetLens, ref lensVelocity, zoomSmoothTime);
 
         if (orthographic) lens.OrthographicSize = Mathf.Max(0.01f, nextLens);
         else lens.FieldOfView = Mathf.Clamp(nextLens, 1f, 179f);

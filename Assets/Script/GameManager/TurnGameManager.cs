@@ -375,6 +375,8 @@ public class TurnGameManager : MonoBehaviour
         Character character = CurrentPlayer.GetComponent<Character>();
         if (!character.React(CurrentPlayer.GetCurrentTile())) return;
 
+        CameraFocusManager.Instance?.PlayActionZoom(CurrentPlayer.transform);
+
         // เล่น Interact Animation
         CurrentPlayer.GetComponent<CharacterAnimationController>()?
             .PlayInteract();
@@ -521,6 +523,8 @@ public class TurnGameManager : MonoBehaviour
 
         if (character is ArcherMan && character.SkillsUsed == usesBefore) return;
 
+        CameraFocusManager.Instance?.PlayActionZoom(CurrentPlayer.transform);
+
         CurrentPlayer.GetComponent<CharacterAnimationController>()?
     .PlaySkill();
         EndCurrentPlayerAction("Skill");
@@ -554,6 +558,7 @@ public class TurnGameManager : MonoBehaviour
             status = "Rogue cannot unlock this door.";
             return;
         }
+        CameraFocusManager.Instance?.PlayActionZoom(CurrentPlayer.transform);
         CurrentPlayer.GetComponent<CharacterAnimationController>()?
     .PlaySkill();
         EndCurrentPlayerAction("Rogue Skill");
