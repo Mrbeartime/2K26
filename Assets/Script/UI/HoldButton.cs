@@ -43,6 +43,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
 
     internal void BeginKeyboardHold() => BeginHold(HoldSource.Keyboard);
+    internal void SetHoldDuration(float seconds) => holdDuration = seconds;
 
     internal void CancelKeyboardHold()
     {

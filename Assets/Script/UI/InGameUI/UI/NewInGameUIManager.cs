@@ -25,6 +25,7 @@ public class NewInGameUIManager : MonoBehaviour
     [SerializeField] private Color turnBarEmptyColor = new Color(1f, 1f, 1f, 0.19607843f);
     [SerializeField, Min(0f)] private float turnProgressDuration = 0.3f;
     public Canvas PauseUI;
+    [SerializeField] private KeysTip keyTips;
     [SerializeField] private OverlayUI guideOverlay;
     [SerializeField] private OverlayUI settingsOverlay;
 
@@ -111,6 +112,7 @@ public class NewInGameUIManager : MonoBehaviour
     private readonly List<(PlayerMove player, NewCharacterIcon icon, CanvasGroup group)> characterIcons = new();
     private readonly List<RectTransform> characterConnectors = new();
     private HoldButton endTurnButton;
+    private HoldButton resetHold;
     private CanvasGroup endTurnGroup;
     private Image endTurnImage;
     private TextMeshProUGUI endTurnLabel;
@@ -128,6 +130,12 @@ public class NewInGameUIManager : MonoBehaviour
 
     internal bool BlocksGameplayInput => isActiveAndEnabled &&
         (IsPaused || HasOpenChildOverlay);
+
+    internal bool CanNavigateSelection => isActiveAndEnabled && !BlocksGameplayInput &&
+        Time.timeScale > 0f && turnGameManager != null && turnGameManager.CanEndTurn;
+
+    internal bool IsChoosingAction => choosingAction;
+    internal bool IsEndTurnFocused => endTurnFocused;
 
     private bool HasOpenChildOverlay =>
         (guideOverlay != null && guideOverlay.gameObject.activeInHierarchy) ||
@@ -204,6 +212,13 @@ public class NewInGameUIManager : MonoBehaviour
             ActionUI.SetActive(false);
         }
         inputActions = new ProjectDInputAction();
+        resetHold = new GameObject("Reset Hold").AddComponent<HoldButton>();
+        resetHold.transform.SetParent(transform, false);
+        resetHold.SetHoldDuration(0.5f);
+        resetHold.HoldCompleted += () =>
+        {
+            if (CanResetLevel) ProjectD.Menus.GameSceneManager.ReloadCurrentScene();
+        };
     }
 
     private void OnEnable()
@@ -217,6 +232,7 @@ public class NewInGameUIManager : MonoBehaviour
         gameplay.ActionConfirm.canceled += OnReleaseConfirm;
         gameplay.Pause.performed += OnShowPauseUI;
         gameplay.Reset.performed += OnReset;
+        gameplay.Reset.canceled += OnReleaseReset;
         gameplay.Tips.performed += OnToggleTips;
         gameplay.Enable();
     }
@@ -226,6 +242,7 @@ public class NewInGameUIManager : MonoBehaviour
         StopTurnCharge();
         if (inputActions == null) return;
         if (endTurnButton != null) endTurnButton.CancelHold();
+        if (resetHold != null) resetHold.CancelKeyboardHold();
         PlayerController.Instance?.ClearActionPreview();
         if (pointerPreview) CloseActionList();
 
@@ -236,6 +253,7 @@ public class NewInGameUIManager : MonoBehaviour
         gameplay.ActionConfirm.canceled -= OnReleaseConfirm;
         gameplay.Pause.performed -= OnShowPauseUI;
         gameplay.Reset.performed -= OnReset;
+        gameplay.Reset.canceled -= OnReleaseReset;
         gameplay.Tips.performed -= OnToggleTips;
         gameplay.Disable();
     }
@@ -477,7 +495,7 @@ public class NewInGameUIManager : MonoBehaviour
             AlignToIconReference(rect, characterIconReferences, referenceIndex);
             characterIcons.Add((player, icon, GetOrAddCanvasGroup(icon.gameObject)));
 
-            icon.BindClick(() => SelectCharacterIcon(player));
+            icon.BindClick(() => OpenActionSelection(player));
             icon.BindHover(() => HoverCharacter(player), LeaveActionPreview);
         }
     }
@@ -872,7 +890,7 @@ public class NewInGameUIManager : MonoBehaviour
         pointerPreviewCloseAt = null;
     }
 
-    private void SelectCharacterIcon(PlayerMove player)
+    internal void OpenActionSelection(PlayerMove player, bool playSelectionSound = true)
     {
         if (!isActiveAndEnabled || BlocksGameplayInput || turnGameManager == null ||
             !turnGameManager.CanSelectPlayer(player)) return;
@@ -880,7 +898,12 @@ public class NewInGameUIManager : MonoBehaviour
         bool cancelTargeting = selectedAction != NoAction;
         OpenActionPreview(player, false);
         if (cancelTargeting) CancelPendingAction();
-        if (actionMenuPlayer == player && ActionUI != null && ActionUI.activeInHierarchy) PlaySelectionClick(true);
+        if (actionMenuPlayer != player || ActionUI == null || !ActionUI.activeInHierarchy) return;
+
+        choosingAction = true;
+        UpdateCharacterSelection();
+        UpdateActionFocusUI();
+        if (playSelectionSound) PlaySelectionClick(true);
     }
 
     private void PositionActionList(PlayerMove current)
@@ -1229,6 +1252,16 @@ public class NewInGameUIManager : MonoBehaviour
 
     public void GoBack()
     {
+        if (endTurnFocused)
+        {
+            endTurnFocused = false;
+            endTurnButton?.CancelKeyboardHold();
+            PlayerMove player = turnGameManager?.FindNextSelectablePlayer(null, forward: true);
+            if (player != null) OpenActionPreview(player, false);
+            UpdateEndTurnButton();
+            return;
+        }
+
         if (actionMenuPlayer == null || actionListClosing) return;
 
         bool cancelTargeting = selectedAction != NoAction;
@@ -1349,33 +1382,38 @@ public class NewInGameUIManager : MonoBehaviour
             return;
         }
 
-        if (direction <= 0f || choosingAction) return;
+        if (direction <= 0f || choosingAction || endTurnFocused) return;
 
         PlayerMove player = actionListClosing || actionMenuPlayer == null ? focusedCharacter : actionMenuPlayer;
-        if (!turnGameManager.CanSelectPlayer(player)) return;
-        OpenActionPreview(player, false);
-        if (actionMenuPlayer != player || ActionUI == null || !ActionUI.activeInHierarchy) return;
-
-        choosingAction = true;
-        UpdateCharacterSelection();
-        UpdateActionFocusUI();
-        PlaySelectionClick(true);
+        OpenActionSelection(player);
     }
+
+    private bool CanResetLevel => !BlocksGameplayInput && turnGameManager != null &&
+        !ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen;
 
     private void OnReset(InputAction.CallbackContext context)
     {
-        if (BlocksGameplayInput || turnGameManager == null ||
-            ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen) return;
-
-        ProjectD.Menus.GameSceneManager.ReloadCurrentScene();
+        if (!CanResetLevel) return;
+        resetHold.fillImage = keyTips != null ? keyTips.ResetFill : null;
+        resetHold.BeginKeyboardHold();
     }
+
+    private void OnReleaseReset(InputAction.CallbackContext context) => resetHold.CancelKeyboardHold();
 
     private void OnToggleTips(InputAction.CallbackContext context)
     {
-        if (guideOverlay == null || ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen ||
+        if (ProjectD.Menus.GameSceneManager.IsInGameSettingsOpen ||
             (settingsOverlay != null && settingsOverlay.gameObject.activeInHierarchy)) return;
 
-        if (!TryClosePauseOverlay(guideOverlay)) guideOverlay.ActivateOverlay();
+        if (TryClosePauseOverlay(guideOverlay)) return;
+
+        if (keyTips != null)
+        {
+            keyTips.ToggleVisibility();
+            return;
+        }
+
+        if (guideOverlay != null) guideOverlay.ActivateOverlay();
     }
 
     #endregion
@@ -1431,6 +1469,7 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (!CanResetLevel) resetHold?.CancelKeyboardHold();
         UpdateCharacterConnectors();
         UpdateEndTurnButton();
         UpdateActionPreviewLifetime();
