@@ -133,13 +133,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &100893 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 1741155984}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &100894 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
@@ -962,6 +957,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1 (4)
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.5057015
@@ -1002,9 +1001,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1 (4)
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -1021,10 +1020,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1050,13 +1045,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &287057560 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 287057556}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &306828205 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 34864856df14509448bbc9e14a1a2c55, type: 3}
@@ -1992,9 +1982,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1 (3)
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.3796375
+      value: -2.343702
       objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2002,7 +1996,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.1934524
+      value: -3.177452
       objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2032,9 +2026,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1 (3)
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -2051,10 +2045,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2080,13 +2070,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &470892771 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 470892767}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &472201976
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4173,6 +4158,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: CutsceneDoor
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.6057024
@@ -4213,9 +4202,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: CutsceneDoor
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -4233,10 +4222,6 @@ PrefabInstance:
       propertyPath: openOffset.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4245,11 +4230,6 @@ PrefabInstance:
 --- !u!4 &933851693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 933851692}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &933851694 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
   m_PrefabInstance: {fileID: 933851692}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &933851695 stripped
@@ -4261,13 +4241,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &933851696 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 933851692}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &941883974
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5057,6 +5032,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 2603997992453056987, guid: 7880236cd575bfb45bacba8dc109d5e6, type: 3}
+      propertyPath: firePoint
+      value: 
+      objectReference: {fileID: 1118215297}
     - target: {fileID: 2612031317580410636, guid: 7880236cd575bfb45bacba8dc109d5e6, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5414,6 +5393,11 @@ Transform:
 --- !u!1 &1118215296 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6753329494500835923, guid: 7880236cd575bfb45bacba8dc109d5e6, type: 3}
+  m_PrefabInstance: {fileID: 1118215294}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1118215297 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6763129249730831052, guid: 7880236cd575bfb45bacba8dc109d5e6, type: 3}
   m_PrefabInstance: {fileID: 1118215294}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1131458943
@@ -5914,6 +5898,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1 (5)
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.7636378
@@ -5954,9 +5942,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1 (5)
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -5973,10 +5961,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6681,13 +6665,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &1526548058 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 1781027306}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1528072497
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7002,13 +6981,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &1597185807 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 1902556480}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1613056447
 GameObject:
   m_ObjectHideFlags: 0
@@ -7453,13 +7427,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b92dc3d4f6b5a0548933e25afa72d970, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorController
---- !u!65 &1716485933 stripped
-BoxCollider:
-  m_CorrespondingSourceObject: {fileID: 7278461171528349426, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-  m_PrefabInstance: {fileID: 1341498691}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1721888579
 GameObject:
   m_ObjectHideFlags: 0
@@ -7500,6 +7469,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1 (2)
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.2202977
@@ -7540,9 +7513,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1 (2)
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -7559,10 +7532,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7673,6 +7642,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.379638
@@ -7713,9 +7686,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -7732,10 +7705,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8139,6 +8108,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 173490771}
     m_Modifications:
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_Name
+      value: Door1 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4435568907096555392, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.27963805
@@ -8179,13 +8156,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_Name
-      value: Door1 (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 3946735226112288058, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: m_IsActive
-      value: 1
+    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
+      propertyPath: speed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: startOpen
@@ -8202,10 +8175,6 @@ PrefabInstance:
     - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
       propertyPath: openOffset.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7509023216031387302, guid: 75cb688ba49959a458059b7d40033bd9, type: 3}
-      propertyPath: speed
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
