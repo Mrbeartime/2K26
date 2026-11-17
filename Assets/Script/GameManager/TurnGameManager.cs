@@ -257,7 +257,9 @@ public class TurnGameManager : MonoBehaviour
         return null;
     }
 
-    public bool TrySelectPlayer(PlayerMove player)
+    public bool TrySelectPlayer(PlayerMove player) => TrySelectPlayer(player, true);
+
+    public bool TrySelectPlayer(PlayerMove player, bool playSelectionSound)
     {
         if (!CanSelectPlayer(player)) return false;
 
@@ -266,7 +268,7 @@ public class TurnGameManager : MonoBehaviour
         currentPlayer = player;
         currentPlayerSelected = true;
         hasMoved = movedPlayers.Contains(player);
-        PlayerController.Instance?.SelectPlayer(player);
+        PlayerController.Instance?.SelectPlayer(player, playSelectionSound);
 
         if (!hasMoved)
         {

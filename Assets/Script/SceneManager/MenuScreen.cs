@@ -35,6 +35,8 @@ namespace ProjectD.Menus
             HideSettingsPanel();
             if (paperPanel != null) paperPanel.SetActive(false);
             ProjectD.Audio.ButtonAudioFeedback.BindMenu(settingsPanel);
+            if (page == Page.Start && gameObject.scene.path != GameSceneManager.SettingsScene)
+                ProjectD.Audio.ButtonAudioFeedback.BindMenu(mainPanel);
             if (page == Page.LevelSelect) SetupLevelSelection();
             RefreshSettingsLabels();
             if (gameObject.scene.path == GameSceneManager.SettingsScene) OpenSettings();
