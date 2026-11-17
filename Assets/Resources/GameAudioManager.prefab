@@ -290,5 +290,15 @@ MonoBehaviour:
     minimumInterval: 0
     minDistance: 1
     maxDistance: 20
+  - cue: 23
+    bus: 2
+    clips:
+    - {fileID: 8300000, guid: 9e5deaddb8e955846964f70c570b9ea3, type: 3}
+    volume: {x: 0.9, y: 0.9}
+    pitch: {x: 1, y: 1}
+    maxSimultaneous: 4
+    minimumInterval: 0
+    minDistance: 1
+    maxDistance: 20
   turnChangeDelay: 0
   clockTickDelay: 0.1

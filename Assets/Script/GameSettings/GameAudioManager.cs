@@ -217,11 +217,14 @@ namespace ProjectD.Audio
         }
         public bool PlayDoorAudio(Object door, Vector3 position) =>
             door != null && PlayPooled(AudioCue.DoorOpen, AudioBus.SFX, position, door);
+        public bool PlayDoorAudio(Object door, Vector3 position, AudioCue cue) =>
+            door != null && (cue == AudioCue.DoorOpen || cue == AudioCue.RogueDoorOpen) &&
+            PlayPooled(cue, AudioBus.SFX, position, door);
         public void StopDoorAudio(Object door)
         {
             if (door == null || voices == null) return;
             for (int i = 0; i < voices.Length; i++)
-                if (voices[i].owner == door && voices[i].cue == AudioCue.DoorOpen)
+                if (voices[i].owner == door && (voices[i].cue == AudioCue.DoorOpen || voices[i].cue == AudioCue.RogueDoorOpen))
                 { voices[i].source.Stop(); voices[i].owner = null; }
         }
         public bool PlayUI(AudioCue cue)
