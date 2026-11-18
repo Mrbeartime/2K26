@@ -24,8 +24,8 @@ public class TurnGameManager : MonoBehaviour
     [SerializeField, Min(1)] public int maximumTurns = 5;
     [SerializeField, Min(0f)] private float enemyPhaseDelay = 0.35f;
 
+    private bool enableTurnShake => ProjectD.Menus.GameSettings.CameraShakeEnabled;
     [Header("Turn Screen Shake")]
-    [SerializeField] private bool enableTurnShake = false;
     [SerializeField] private TurnScreenShake screenShake;
 
     [Header("Debug UI")]

@@ -32,9 +32,9 @@ public class CameraFocusManager : MonoBehaviour
     [Header("Zoom")]
     [SerializeField, Min(0.01f)] private float zoomSmoothTime = 0.3f;
 
+    // Shared with the Settings UI; there is no separate per-scene switch.
+    private bool enableActionZoom => ProjectD.Menus.GameSettings.ActionZoomEnabled;
     [Header("Action Zoom")]
-    [Tooltip("Temporarily zoom in when a player attacks, uses a skill, or interacts.")]
-    [SerializeField] private bool enableActionZoom = true;
     [SerializeField, Min(0.01f)] private float actionZoomDuration = 0.8f;
     private float actionZoomRemaining;
 

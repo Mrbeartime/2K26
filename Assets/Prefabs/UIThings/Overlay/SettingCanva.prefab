@@ -1032,6 +1032,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3496715111125255314}
+  - component: {fileID: 7190283645018273901}
   m_Layer: 5
   m_Name: Camera
   m_TagString: Untagged
@@ -2421,6 +2422,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7190283645018273901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1158081044108970952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8e1bd65897a45c9ac38021ddf3424ab, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.CameraSettingsUI
+  cameraShake: {fileID: 6310452126619897433}
+  actionZoom: {fileID: 7629020840073961025}
 --- !u!224 &3022176113348895431
 RectTransform:
   m_ObjectHideFlags: 0

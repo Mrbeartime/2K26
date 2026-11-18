@@ -6,6 +6,19 @@ namespace ProjectD.Menus
     public static class GameSettings
     {
         public static event System.Action AudioChanged;
+        public static event System.Action CameraChanged;
+        public static bool CameraShakeEnabled => PlayerPrefs.GetInt("Settings.Camera.Shake", 1) != 0;
+        public static bool ActionZoomEnabled => PlayerPrefs.GetInt("Settings.Camera.ActionZoom", 1) != 0;
+
+        public static void SetCameraShake(bool enabled) => SetCameraOption("Settings.Camera.Shake", enabled);
+        public static void SetActionZoom(bool enabled) => SetCameraOption("Settings.Camera.ActionZoom", enabled);
+
+        private static void SetCameraOption(string key, bool enabled)
+        {
+            PlayerPrefs.SetInt(key, enabled ? 1 : 0);
+            PlayerPrefs.Save();
+            CameraChanged?.Invoke();
+        }
         private static readonly string[] VolumeKeys = { "Settings.Audio.Master", "Settings.Audio.Music", "Settings.Audio.SFX", "Settings.Audio.UI" };
         private static float[] audioDefaults = { 100f, 80f, 100f, 100f };
 
@@ -13,6 +26,7 @@ namespace ProjectD.Menus
         private static void ResetAudioState()
         {
             AudioChanged = null;
+            CameraChanged = null;
             audioDefaults = new[] { 100f, 80f, 100f, 100f };
         }
 
