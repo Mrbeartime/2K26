@@ -1,7 +1,49 @@
 {
-  "version": 1,
-  "levels": [],
-  "unlockedSecrets": [],
-  "completedSecrets": [],
-  "questPaperPlacements": []
+    "version": 1,
+    "levels": [
+        {
+            "level": 1,
+            "completed": false,
+            "unlocked": true
+        },
+        {
+            "level": 2,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 3,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 4,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 5,
+            "completed": false,
+            "unlocked": false
+        }
+    ],
+    "unlockedSecrets": [],
+    "completedSecrets": [],
+    "questPaperLayoutVersion": 1,
+    "questPaperPlacements": [
+        {
+            "level": 1,
+            "page": 0,
+            "slot": 2,
+            "x": 0.831753134727478,
+            "y": 0.018299607560038568,
+            "rotation": -2.4609615802764894
+        }
+    ],
+    "questDepthDescriptions": [
+        {
+            "questId": "level:1",
+            "text": "นอนรอสมบัติได้เลย"
+        }
+    ]
 }
