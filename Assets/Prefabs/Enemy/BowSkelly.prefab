@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5444256332005570298
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6763129249730831052}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6763129249730831052
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5444256332005570298}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.464, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6265481015307032809}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5870948666594377474
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -74,7 +105,10 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: b7a4a0987c8e55e40b3a48e1164d4c46, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4d097fad0bc4fee44911df95dc7a4945, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6763129249730831052}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d097fad0bc4fee44911df95dc7a4945, type: 3}
       insertIndex: -1
@@ -178,7 +212,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
-  firePoint: {fileID: 6265481015307032809}
+  firePoint: {fileID: 6763129249730831052}
   arrowSpeed: 12
   rangeTiles: 5
   arrowRotationOffset: {x: 0, y: 0, z: 0}
@@ -234,3 +268,5 @@ MonoBehaviour:
   dustSize: 0.035
   driftSpeed: 0.15
   dustShader: {fileID: 4800000, guid: 0d188737ee8f4b2f810de7d688ca41f4, type: 3}
+  diagnosticLogs: 0
+  dustColor: {r: 0.32, g: 0.3, b: 0.28, a: 0.9}
