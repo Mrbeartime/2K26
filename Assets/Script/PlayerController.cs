@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     // เก็บรายการช่องที่กำลังแสดงสีอยู่
     private List<Tile> currentHighlightedTiles = new List<Tile>();
     private readonly List<Tile> actionPreviewTiles = new();
+    private bool actionPreviewActive;
     private static readonly Vector2Int[] SkillDirections =
     {
         Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
@@ -89,7 +90,7 @@ public class PlayerController : MonoBehaviour
         foreach (Tile tile in currentHighlightedTiles)
             if (tile != null && !range.Contains(tile)) tile.HideHighlight();
         foreach (Tile tile in range)
-            if (!currentHighlightedTiles.Contains(tile)) tile.ShowHighlight(Tile.HighlightType.Enemy);
+            if (!currentHighlightedTiles.Contains(tile)) tile.ShowHighlight(Tile.HighlightType.Enemy, actionPreviewActive);
         currentHighlightedTiles = range;
     }
 
@@ -179,7 +180,7 @@ public class PlayerController : MonoBehaviour
                     return;
                 }
                 if (turnManager.TrySelectPlayer(clickedPlayer) && turnManager.CurrentPlayer == clickedPlayer)
-                    hud?.OpenActionSelection(clickedPlayer, playSelectionSound: false);
+                    hud?.OpenActionSelection(clickedPlayer, playSelectionSound: false, confirmMove: true);
                 return;
             }
 
@@ -193,7 +194,7 @@ public class PlayerController : MonoBehaviour
             Tile tile = hit.collider.GetComponentInParent<Tile>();
             if (tile == null) continue;
 
-            if (turnManager.IsMoveTargeting && selectedPlayer == turnManager.CurrentPlayer && tile.isWalkable)
+            if (tile.isWalkable && turnManager.IsMoveTargeting && selectedPlayer == turnManager.CurrentPlayer)
             {
                 turnManager.MoveToTarget(tile);
                 return;
@@ -363,7 +364,7 @@ public class PlayerController : MonoBehaviour
 
     internal void ShowInteractPreview(PlayerMove player)
     {
-        ClearActionPreview();
+        BeginActionPreview();
         Tile tile = player.GetCurrentTile();
         if (tile != null) AddHighlight(tile, Tile.HighlightType.Skill, true);
     }
@@ -429,6 +430,26 @@ public class PlayerController : MonoBehaviour
 
     internal void ClearActionPreview()
     {
+        ClearPreviewTiles();
+        SetActionPreviewActive(false);
+    }
+
+    internal void BeginActionPreview()
+    {
+        SetActionPreviewActive(true);
+        ClearPreviewTiles();
+    }
+
+    private void SetActionPreviewActive(bool active)
+    {
+        if (actionPreviewActive == active) return;
+        actionPreviewActive = active;
+        foreach (Tile tile in currentHighlightedTiles)
+            if (tile != null) tile.SetMainHighlightSuppressed(active);
+    }
+
+    private void ClearPreviewTiles()
+    {
         foreach (Tile tile in actionPreviewTiles)
             if (tile != null) tile.SetPreviewHighlight(null);
         actionPreviewTiles.Clear();
@@ -436,7 +457,7 @@ public class PlayerController : MonoBehaviour
 
     internal void ClearHighlightLayer(bool preview)
     {
-        if (preview) ClearActionPreview();
+        if (preview) BeginActionPreview();
         else ClearHighlights();
     }
 
@@ -450,7 +471,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             currentHighlightedTiles.Add(tile);
-            tile.ShowHighlight(type);
+            tile.ShowHighlight(type, actionPreviewActive);
         }
     }
 
@@ -535,6 +556,7 @@ public class PlayerController : MonoBehaviour
         if (enemy == null || enemy.IsDead)
             return;
 
+        ClearActionPreview();
         // =========================
         // กดตัวเดิมซ้ำ = ปิด
         // =========================
@@ -575,6 +597,7 @@ public class PlayerController : MonoBehaviour
         if (trap == null)
             return;
 
+        ClearActionPreview();
         if (selectedArrowTrap == trap)
         {
             ClearHighlights();

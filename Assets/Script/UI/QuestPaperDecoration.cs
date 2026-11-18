@@ -14,8 +14,19 @@ public class QuestPaperDecoration : MonoBehaviour
     [SerializeField] private TMP_Text title;
     [SerializeField] private TMP_Text description;
     [SerializeField] private Image paperImage;
+    [SerializeField] private Image paperArtwork;
     [SerializeField, Tooltip("The first entry with a Sprite is the default paper.")]
     private List<PaperStyle> paperStyles = new();
+
+    internal TMP_Text Title => title;
+
+    internal Sprite FindPaperSprite(string name)
+    {
+        foreach (var style in paperStyles)
+            if (style?.sprite != null && string.Equals(style.sprite.name, name, System.StringComparison.OrdinalIgnoreCase))
+                return style.sprite;
+        return null;
+    }
 
     /// <summary>
     /// Apply the default paper and draw ink using the supplied character counts.
@@ -89,6 +100,8 @@ public class QuestPaperDecoration : MonoBehaviour
 
         if (paperImage != null)
             paperImage.sprite = selected.sprite;
+        if (paperArtwork != null)
+            paperArtwork.sprite = selected.sprite;
 
         ApplyTextLayout(title, selected.titleArea, selected.minFontSize, selected.titleMaxFontSize);
         ApplyTextLayout(description, selected.descriptionArea, selected.minFontSize, selected.descriptionMaxFontSize);

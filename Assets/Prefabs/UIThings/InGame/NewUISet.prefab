@@ -692,7 +692,7 @@ RectTransform:
   m_GameObject: {fileID: 3515184438780522204}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.0059, y: 1.0059, z: 1.0059}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6598183598287450839}
@@ -1479,6 +1479,9 @@ MonoBehaviour:
   keyTips: {fileID: 6332457486213474073}
   guideOverlay: {fileID: 7288044272210536441}
   settingsOverlay: {fileID: 2791649940447709685}
+  turnTextSlideDistance: 80
+  turnTextOutDuration: 0.15
+  turnTextInDuration: 0.2
   fadeTime: 0.2
   blackScreen: {fileID: 4330826467767740078}
   pauseDimAlpha: 0.6
@@ -1504,19 +1507,19 @@ MonoBehaviour:
     portrait: {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
     skillName: Slash
     signatureIcon: {fileID: 21300000, guid: 4d5d9a1a145bd5f4880d15b34cef2108, type: 3}
-    signatureIconSelected: {fileID: 0}
+    signatureIconSelected: {fileID: 21300000, guid: 48819f6bc7a7fff4c8b78ecc75a5d081, type: 3}
   - character: {fileID: 0}
     characterType: 2
     portrait: {fileID: 21300000, guid: 6cb2b3a04b964b94eabfb4a08b71fb08, type: 3}
     skillName: Bow Shot
     signatureIcon: {fileID: 21300000, guid: 30962a5d7e680784ab2dcbc402de22ad, type: 3}
-    signatureIconSelected: {fileID: 0}
+    signatureIconSelected: {fileID: 21300000, guid: a52a5f438b3205f4d93d98d24f9db620, type: 3}
   - character: {fileID: 0}
     characterType: 3
     portrait: {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
     skillName: Lockpick
     signatureIcon: {fileID: 21300000, guid: 8fa7a9bc792e1a9419e0e51413913cbd, type: 3}
-    signatureIconSelected: {fileID: 0}
+    signatureIconSelected: {fileID: 21300000, guid: 5a4129cfa08ff884d960e3c0413d9c08, type: 3}
   actionPositionReference: {fileID: 6717037583670382440}
   actionIconReferences:
   - {fileID: 3970385606278830606}
@@ -1524,7 +1527,9 @@ MonoBehaviour:
   - {fileID: 8947328298243112665}
   actionIconPrefab: {fileID: 1484386631360572155, guid: ca9fc6d7e762ac94eb10bb29cdf92aea, type: 3}
   moveActionIcon: {fileID: 21300000, guid: 47ad3bb850f5ac44398fad6d508f9cba, type: 3}
+  moveActionIconConfirmed: {fileID: 21300000, guid: 1a7ede80a72323b40bf05f4d0f0efac4, type: 3}
   interactActionIcon: {fileID: 21300000, guid: e7a72aa601d2b664eb0e2cd905fa9b2d, type: 3}
+  interactActionIconConfirmed: {fileID: 21300000, guid: e5121a7c51fef3b438d84f92497bf912, type: 3}
   actionOuterOffset: {x: -40, y: 65}
   actionHoverExitDelay: 0.25
   actionOpeningDuration: 0.25

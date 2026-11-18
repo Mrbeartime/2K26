@@ -45,50 +45,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.MenuScreen
   page: 1
+  boardPaperArea: {fileID: 0}
+  boardSlotCapacity: 4
+  collectionScroll: {fileID: 0}
   mainPanel: {fileID: 0}
   settingsPanel: {fileID: 0}
   soundLabel: {fileID: 0}
   fullscreenLabel: {fileID: 0}
-  levelButtons:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  levelLabels:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   activeProgressJsonPath: 
   firstLevelCompleted: 0
-  levelDescriptions:
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
-  - Reach the exit before your turns run out.
   paperPanel: {fileID: 0}
   paperTitle: {fileID: 0}
   paperDescription: {fileID: 0}
   playButton: {fileID: 0}
-  paperLevelButtons:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  paperLevelLabels:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  previousPageButton: {fileID: 0}
-  nextPageButton: {fileID: 0}
-  pageLabel: {fileID: 0}
-  secretLevels:
-  - id: SecretLevel1
-    title: Secret Level
-    description: A bonus challenge. Reach the exit within three turns.
-    scenePath: Assets/Scenes/Mon/SceneGame/SecretLevel1.unity
-    requiredCompletedLevel: 5

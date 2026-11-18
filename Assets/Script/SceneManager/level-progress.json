@@ -1,32 +1,7 @@
 {
-    "version": 1,
-    "levels": [
-        {
-            "level": 1,
-            "completed": true,
-            "unlocked": true
-        },
-        {
-            "level": 2,
-            "completed": true,
-            "unlocked": true
-        },
-        {
-            "level": 3,
-            "completed": false,
-            "unlocked": true
-        },
-        {
-            "level": 4,
-            "completed": false,
-            "unlocked": true
-        },
-        {
-            "level": 5,
-            "completed": false,
-            "unlocked": true
-        }
-    ],
-    "unlockedSecrets": [],
-    "completedSecrets": []
+  "version": 1,
+  "levels": [],
+  "unlockedSecrets": [],
+  "completedSecrets": [],
+  "questPaperPlacements": []
 }

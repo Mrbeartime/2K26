@@ -46,7 +46,7 @@ namespace ProjectD.Menus
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void InitializeCatalog() { _ = Catalog; }
+        private static void InitializeCatalog() => Catalog?.InvalidateQuestData();
         public static string StartScene => Catalog != null ? Catalog.startScene.Path : string.Empty;
         public static string SettingsScene => Catalog != null ? Catalog.settingsScene.Path : string.Empty;
         public static string SelectScene => Catalog != null ? Catalog.levelSelectScene.Path : string.Empty;
@@ -71,8 +71,11 @@ namespace ProjectD.Menus
             {
                 if (Catalog == null) return 0;
                 for (int i = Catalog.Levels.Count - 1; i >= 0; i--)
-                    if (IsUnlocked(Catalog.Levels[i].id)) return Catalog.Levels[i].id;
-                return Catalog.firstLevelId;
+                {
+                    var level = Catalog.Levels[i];
+                    if (level != null && IsUnlocked(level.id)) return level.id;
+                }
+                return 0;
             }
         }
 
@@ -84,21 +87,25 @@ namespace ProjectD.Menus
             if (Catalog == null) return false;
             var level = Catalog.FindLevelByScene(path);
             if (level != null) return LevelProgressStore.CompleteLevel(level.id);
-            foreach (var secret in Catalog.SecretLevels)
-                if (!string.IsNullOrEmpty(path) && secret.scene.Path == path)
-                    return LevelProgressStore.CompleteSecret(secret.id);
-            return false;
+            var secret = Catalog.FindSecretLevelByScene(path);
+            return secret != null && LevelProgressStore.CompleteSecret(secret.id);
         }
 
         public static void OpenStart() => Load(StartScene);
         public static void OpenLevelSelect() => Load(SelectScene);
         public static void OpenGuide() => Load(GuideScene);
-        public static void OpenSecretLevel(string path) => Load(path);
+        public static void OpenSecretLevel(string path) => OpenSecret(path, false);
         public static void ReloadCurrentScene() => Load(SceneManager.GetActiveScene().path);
         public static void OpenLevel(int id) { if (IsUnlocked(id)) Load(LevelPath(id)); }
         // Only the LevelSelect Play button uses the Loading scene.
         public static bool OpenLevelFromSelect(int id) => IsUnlocked(id) && Load(LevelPath(id), true);
-        public static bool OpenSecretFromSelect(string path) => Load(path, true);
+        public static bool OpenSecretFromSelect(string path) => OpenSecret(path, true);
+
+        private static bool OpenSecret(string path, bool showLoading)
+        {
+            var secret = Catalog?.FindSecretLevelByScene(path);
+            return secret != null && IsSecretUnlocked(secret.id) && Load(path, showLoading);
+        }
 
         public static bool Load(string path, bool showLoading = false)
         {

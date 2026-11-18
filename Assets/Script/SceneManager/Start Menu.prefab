@@ -49,23 +49,12 @@ MonoBehaviour:
   settingsPanel: {fileID: 0}
   soundLabel: {fileID: 0}
   fullscreenLabel: {fileID: 0}
-  levelButtons: []
-  levelLabels: []
   activeProgressJsonPath: 
   firstLevelCompleted: 0
-  levelDescriptions:
-  - 
-  - 
-  - 
-  - 
-  - 
   paperPanel: {fileID: 0}
   paperTitle: {fileID: 0}
   paperDescription: {fileID: 0}
   playButton: {fileID: 0}
-  paperLevelButtons: []
-  paperLevelLabels: []
   previousPageButton: {fileID: 0}
   nextPageButton: {fileID: 0}
   pageLabel: {fileID: 0}
-  secretLevels: []

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,16 +19,27 @@ namespace ProjectD.Menus
         public static bool IsLoading { get; private set; }
         public float Progress { get; private set; }
 
+        [Serializable]
+        private sealed class CharacterWalk
+        {
+            public Sprite portrait;
+            public Sprite[] frames;
+            public float verticalOffset;
+        }
+
         [Header("UI (objects in the Loading scene/prefab)")]
         [SerializeField] private CanvasGroup group;
-        [SerializeField] private Image rogue;
-        [SerializeField] private Sprite[] rogueWalkFrames;
-        [SerializeField, Min(1f)] private float rogueWalkFrameRate = 24f;
+        [SerializeField] private Image runnerTemplate;
+        [SerializeField] private CharacterWalk[] characterWalks = Array.Empty<CharacterWalk>();
+        [SerializeField, Min(1f)] private float walkFrameRate = 24f;
+        [SerializeField, Min(0f)] private float runnerSpacing = 70f;
         [SerializeField] private TMP_Text progressLabel;
         [Header("Timing")]
         [SerializeField, Min(0f)] private float minShowTime = 1f;
         [SerializeField, Min(0f)] private float fadeTime = 0.25f;
         [SerializeField, Min(0.01f)] private float fillSpeed = 1.5f;
+        private readonly List<(Image Image, Sprite[] Frames)> runners = new();
+        private RectTransform runnerTrack;
         private AsyncOperation pendingLoad;
         private float walkStartedAt;
 
@@ -77,8 +89,50 @@ namespace ProjectD.Menus
                 canvas.sortingOrder = 32700;
             }
             if (group != null) { group.alpha = 1f; group.blocksRaycasts = true; group.interactable = true; }
+            CreateRunners(destination);
             walkStartedAt = Time.unscaledTime;
             SetProgress(0f);
+        }
+
+        private void CreateRunners(string path)
+        {
+            if (runnerTemplate == null) return;
+            runnerTemplate.gameObject.SetActive(false);
+            runnerTrack = (RectTransform)runnerTemplate.rectTransform.parent;
+
+            // Use the same portraits as the selected Quest Paper, in the same order.
+            var catalog = GameSceneManager.Catalog;
+            var level = catalog?.FindLevelByScene(path);
+            var secret = catalog?.FindSecretLevelByScene(path);
+            if (level == null && secret == null)
+            {
+                if (characterWalks.Length > 0) AddRunner(characterWalks[0]);
+                return;
+            }
+
+            var portraits = level != null ? level.characterAvailable : secret.characterAvailable;
+            if (portraits == null) return;
+            foreach (var portrait in portraits)
+            {
+                if (portrait == null) continue;
+                foreach (var walk in characterWalks)
+                {
+                    if (walk?.portrait != portrait) continue;
+                    AddRunner(walk);
+                    break;
+                }
+            }
+        }
+
+        private void AddRunner(CharacterWalk walk)
+        {
+            if (walk?.portrait == null || walk.frames == null || walk.frames.Length == 0 || walk.frames[0] == null) return;
+            var image = Instantiate(runnerTemplate, runnerTrack, false);
+            image.name = walk.portrait.name;
+            image.sprite = walk.frames[0];
+            image.rectTransform.anchoredPosition += Vector2.up * walk.verticalOffset;
+            image.gameObject.SetActive(true);
+            runners.Add((image, walk.frames));
         }
 
         private IEnumerator Start()
@@ -138,17 +192,20 @@ namespace ProjectD.Menus
         private void SetProgress(float value)
         {
             Progress = Mathf.Clamp01(value);
-            if (rogue != null)
+            int followerCount = runners.Count - 1;
+            float spacing = followerCount > 0 ? Mathf.Min(runnerSpacing, runnerTrack.rect.width / followerCount) : 0f;
+            int frame = Mathf.FloorToInt((Time.unscaledTime - walkStartedAt) * walkFrameRate);
+            for (int i = 0; i < runners.Count; i++)
             {
-                RectTransform rect = rogue.rectTransform;
+                var (image, frames) = runners[i];
+                RectTransform rect = image.rectTransform;
                 rect.anchorMin = new Vector2(Progress, rect.anchorMin.y);
                 rect.anchorMax = new Vector2(Progress, rect.anchorMax.y);
 
-                if (Progress < 1f && rogueWalkFrames != null && rogueWalkFrames.Length > 0)
-                {
-                    int frame = Mathf.FloorToInt((Time.unscaledTime - walkStartedAt) * rogueWalkFrameRate);
-                    rogue.sprite = rogueWalkFrames[frame % rogueWalkFrames.Length];
-                }
+                // Keep the whole group on the track, from the last runner at the start to the leader at the finish.
+                float offset = spacing * (followerCount * (1f - Progress) - i);
+                rect.anchoredPosition = new Vector2(offset, rect.anchoredPosition.y);
+                if (Progress < 1f) image.sprite = frames[frame % frames.Length];
             }
             if (progressLabel != null) progressLabel.text = Mathf.RoundToInt(Progress * 100f) + "%";
         }

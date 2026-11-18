@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,41 +7,30 @@ namespace ProjectD.Menus
 {
     public partial class MenuScreen
     {
-        private QuestPaperLevelCard[] boardPapers;
-        private QuestPaperLevelCard[] collectionPapers;
+        private readonly List<QuestPaperLevelCard> boardPapers = new List<QuestPaperLevelCard>();
+        private readonly List<QuestPaperLevelCard> collectionPapers = new List<QuestPaperLevelCard>();
+        private readonly List<(Image Outline, Image Portrait)> detailCharacterIcons = new();
+        private static readonly System.Random depthDescriptionRandom = new System.Random();
 
-        private void SetupQuestPapers()
+        private QuestPaperLevelCard GetPaper(List<QuestPaperLevelCard> papers, RectTransform area, int index)
         {
-            if (Catalog == null || Catalog.questPaperPrefab == null) return;
-            // Existing buttons become layout slots editable in the scene Hierarchy.
-            // Only the visual/button inside each slot is replaced by the shared prefab.
-            boardPapers = ReplaceWithQuestPapers(levelButtons);
-            collectionPapers = ReplaceWithQuestPapers(paperLevelButtons);
+            if (area == null) return null;
+            if (index < papers.Count) return papers[index];
+
+            var prefab = Catalog?.questPaperPrefab;
+            if (prefab == null) return null;
+
+            var instance = Instantiate(prefab, area);
+            if (!instance.TryGetComponent<QuestPaperLevelCard>(out var card))
+                card = instance.gameObject.AddComponent<QuestPaperLevelCard>();
+            papers.Add(card);
+            return card;
         }
 
-        private QuestPaperLevelCard[] ReplaceWithQuestPapers(Button[] slots)
+        private static void HidePapers(List<QuestPaperLevelCard> papers, int visibleCount)
         {
-            var papers = new QuestPaperLevelCard[slots == null ? 0 : slots.Length];
-            for (int i = 0; i < papers.Length; i++)
-            {
-                var slot = slots[i];
-                if (slot == null) continue;
-                EnsureTextCanRender(slot.transform);
-                // Disable the old visuals before adding the new paper beneath this slot.
-                foreach (var graphic in slot.GetComponentsInChildren<Graphic>(true)) graphic.enabled = false;
-                var oldAnimator = slot.GetComponent<Animator>();
-                if (oldAnimator != null) oldAnimator.enabled = false;
-                slot.enabled = false;
-                slot.gameObject.SetActive(true);
-
-                var paper = Instantiate(Catalog.questPaperPrefab, slot.transform);
-                paper.name = "QuestPaper";
-                var card = paper.gameObject.AddComponent<QuestPaperLevelCard>();
-                card.Initialize(paper);
-                papers[i] = card;
-                slots[i] = card.Button;
-            }
-            return papers;
+            for (int i = visibleCount; i < papers.Count; i++)
+                papers[i].gameObject.SetActive(false);
         }
 
         private static void EnsureTextCanRender(Transform slot)
@@ -58,17 +49,82 @@ namespace ProjectD.Menus
             }
         }
 
-        private void RefreshBoardPaper(int slot, int id)
+        private void ShowDetails(string title, string description, Sprite[] characterIcons, int depth, string questId)
         {
-            if (boardPapers == null || slot >= boardPapers.Length || boardPapers[slot] == null || id == 0) return;
-            boardPapers[slot].BindLevel(Catalog.FindLevel(id), GameSceneManager.IsUnlocked(id));
+            paperView = PaperView.Details;
+            SetPaperVisible();
+            if (paperTitle != null) paperTitle.text = title;
+            if (paperDescription != null) paperDescription.text = description;
+            if (paperMetadata != null) paperMetadata.SetActive(true);
+            if (paperDepth != null)
+                paperDepth.text = LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => PickDepthDescription(depth))
+                    ?? "ยังไม่มีรายงานความยากของภารกิจนี้";
+            RefreshDetailCharacterIcons(characterIcons);
+            if (collectionScroll != null) collectionScroll.gameObject.SetActive(false);
+            if (playButton != null) playButton.gameObject.SetActive(true);
         }
 
-        private void RefreshCollectionPaper(int slot, int entry, bool completed)
+        private string PickDepthDescription(int depth)
         {
-            if (collectionPapers == null || slot >= collectionPapers.Length || collectionPapers[slot] == null) return;
-            if (completed) collectionPapers[slot].BindLevel(Catalog.FindLevel(entry), GameSceneManager.IsUnlocked(entry));
-            else collectionPapers[slot].BindSecret(Catalog.SecretLevels[entry]);
+            var source = Catalog?.questDepthDescriptions;
+            if (source == null) return null;
+
+            int targetDepth = Mathf.Clamp(depth, 0, 10);
+            var options = new List<string>();
+            foreach (var line in source.text.Split('\n'))
+            {
+                int separator = line.IndexOf('|');
+                if (separator <= 0 || !int.TryParse(line.Substring(0, separator), out int optionDepth) || optionDepth != targetDepth)
+                    continue;
+
+                string text = line.Substring(separator + 1).Trim();
+                if (text.Length > 0) options.Add(text);
+            }
+            return options.Count == 0 ? null : options[depthDescriptionRandom.Next(options.Count)];
+        }
+
+        private void RefreshDetailCharacterIcons(Sprite[] sprites)
+        {
+            if (paperCharacterIcons == null) return;
+
+            int count = 0;
+            foreach (var sprite in sprites ?? Array.Empty<Sprite>())
+            {
+                if (sprite == null) continue;
+
+                if (count == detailCharacterIcons.Count)
+                {
+                    var icon = new GameObject("Character Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                    icon.layer = paperCharacterIcons.gameObject.layer;
+                    icon.transform.SetParent(paperCharacterIcons, false);
+                    var outline = icon.GetComponent<Image>();
+                    outline.preserveAspect = true;
+                    outline.raycastTarget = false;
+                    var outlineMaterial = Catalog?.questCharacterIconMaterial;
+                    outline.material = outlineMaterial;
+                    outline.enabled = outlineMaterial != null;
+                    icon.GetComponent<LayoutElement>().preferredWidth = 100f;
+                    icon.AddComponent<SpriteOutlinePadding>();
+
+                    var portrait = new GameObject("Portrait", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                    portrait.gameObject.layer = icon.layer;
+                    var rect = portrait.rectTransform;
+                    rect.SetParent(icon.transform, false);
+                    rect.anchorMin = Vector2.zero;
+                    rect.anchorMax = Vector2.one;
+                    rect.offsetMin = rect.offsetMax = Vector2.zero;
+                    portrait.preserveAspect = true;
+                    portrait.raycastTarget = false;
+                    detailCharacterIcons.Add((outline, portrait));
+                }
+
+                var (iconOutline, iconPortrait) = detailCharacterIcons[count++];
+                iconOutline.sprite = iconPortrait.sprite = sprite;
+                iconOutline.gameObject.SetActive(true);
+            }
+
+            for (int i = count; i < detailCharacterIcons.Count; i++)
+                detailCharacterIcons[i].Outline.gameObject.SetActive(false);
         }
     }
 }

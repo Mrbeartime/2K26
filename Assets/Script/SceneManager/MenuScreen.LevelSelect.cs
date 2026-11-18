@@ -1,5 +1,6 @@
-using System;
 using System.Collections.Generic;
+using ProjectD.Audio;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,66 +8,64 @@ namespace ProjectD.Menus
 {
     public partial class MenuScreen
     {
-        [Header("Board slots (Hierarchy order, no fixed level limit)")]
-        [SerializeField] private Button[] levelButtons;
-        [SerializeField] private Button[] boardHoverButtons;
-        [SerializeField] private Button secretHoverButton;
-        [SerializeField] private Text[] levelLabels;
+        [Header("QuestPaper layout")]
+        [SerializeField] private RectTransform boardPaperArea;
+        [SerializeField, Min(1)] private int boardSlotCapacity = 4;
+        [SerializeField] private bool saveBoardPaperPlacements;
+        [SerializeField] private ScrollRect collectionScroll;
         [Header("Level progress source (runtime)")]
         [SerializeField] private string activeProgressJsonPath;
         [SerializeField] private bool firstLevelCompleted;
         [Header("Paper panel (Hierarchy objects)")]
         [SerializeField] private GameObject paperPanel;
-        [SerializeField] private Text paperTitle;
-        [SerializeField] private Text paperDescription;
+        [SerializeField] private TMP_Text paperTitle;
+        [SerializeField] private TMP_Text paperDescription;
+        [SerializeField] private GameObject paperMetadata;
+        [SerializeField] private TMP_Text paperDepth;
+        [SerializeField] private RectTransform paperCharacterIcons;
         [SerializeField] private Button playButton;
-        [SerializeField] private Button[] paperLevelButtons;
-        [SerializeField] private Text[] paperLevelLabels;
-        [SerializeField] private GameObject previousPageButton;
-        [SerializeField] private GameObject nextPageButton;
-        [SerializeField] private Text pageLabel;
-
-        // Keep old serialized data readable; edit level descriptions/secrets in SceneCatalog now.
-        [Serializable] public class SecretLevel
-        {
-            public string id, title, description, scenePath;
-            public int requiredCompletedLevel;
-        }
-        [SerializeField, HideInInspector] private string[] levelDescriptions;
-        [SerializeField, HideInInspector] private SecretLevel[] secretLevels;
 
         private enum PaperView { Closed, Completed, Secret, Details }
         private PaperView paperView;
         private PaperView detailReturnView;
-        private readonly List<int> entries = new List<int>();
-        private readonly List<int> visibleLevels = new List<int>();
-        private int paperPage;
+        private readonly List<LevelDefinition> boardLevels = new List<LevelDefinition>();
+        private readonly List<LevelDefinition> completedLevels = new List<LevelDefinition>();
+        private readonly List<SecretLevelDefinition> unlockedSecrets = new List<SecretLevelDefinition>();
         private int selectedLevel;
         private SecretLevelDefinition selectedSecret;
         private float nextProgressCheck;
         private int appliedProgressRevision = -1;
         private int appliedCatalogRevision = -1;
         private SceneCatalog Catalog => GameSceneManager.Catalog;
+        private bool IsPaperCollection => paperView == PaperView.Completed || paperView == PaperView.Secret;
+        private const int CollectionVisibleSlots = 4;
 
         private void SetupLevelSelection()
         {
-            SetupQuestPapers();
             BindButton(playButton, PlaySelectedLevel);
-            if (boardHoverButtons != null)
-                foreach (var button in boardHoverButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button);
-            ProjectD.Audio.ButtonAudioFeedback.BindBellHover(secretHoverButton);
-            for (int i = 0; levelButtons != null && i < levelButtons.Length; i++)
+            if (mainPanel != null)
             {
-                int slot = i;
-                BindButton(levelButtons[i], () => OpenLevelSlot(slot));
-                ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(levelButtons[i]);
+                foreach (var button in mainPanel.GetComponentsInChildren<Button>(true))
+                {
+                    for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+                    {
+                        if (button.onClick.GetPersistentTarget(i) != this) continue;
+                        switch (button.onClick.GetPersistentMethodName(i))
+                        {
+                            case nameof(OpenCompleted): ButtonAudioFeedback.BindLevelHover(button); break;
+                            case nameof(OpenSecret): ButtonAudioFeedback.BindBellHover(button); break;
+                        }
+                    }
+                }
             }
-            for (int i = 0; paperLevelButtons != null && i < paperLevelButtons.Length; i++)
-            {
-                int slot = i;
-                BindButton(paperLevelButtons[i], () => OpenPaperSlot(slot));
-            }
+            EnsureTextCanRender(boardPaperArea);
+            if (collectionScroll != null) EnsureTextCanRender(collectionScroll.transform);
             ReloadProgressFromJson();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus) ReloadProgressFromJson();
         }
 
         private void CheckProgressChanges()
@@ -91,92 +90,77 @@ namespace ProjectD.Menus
             activeProgressJsonPath = LevelProgressStore.SaveFilePath;
             firstLevelCompleted = Catalog != null && GameSceneManager.IsCompleted(Catalog.firstLevelId);
             RefreshBoard();
-            if (paperView == PaperView.Completed || paperView == PaperView.Secret) OpenCollection(paperView, false);
+            if (IsPaperCollection) OpenCollection(paperView, false);
             else if (paperView == PaperView.Details &&
                 (selectedSecret == null ? !GameSceneManager.IsUnlocked(selectedLevel) : !IsSecretUnlocked(selectedSecret))) ClosePaper();
             appliedProgressRevision = LevelProgressStore.Revision;
             appliedCatalogRevision = Catalog != null ? Catalog.Revision : -1;
         }
 
+#if UNITY_EDITOR
         [ContextMenu("Progress/Open Active JSON")]
         public void OpenActiveProgressJson()
         {
-#if UNITY_EDITOR
-            const string path = "Assets/Script/SceneManager/level-progress.json";
+            string path = UnityEditor.FileUtil.GetProjectRelativePath(LevelProgressStore.SaveFilePath);
             UnityEditor.AssetDatabase.ImportAsset(path);
             UnityEditor.AssetDatabase.OpenAsset(UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(path));
-#endif
         }
+#endif
 
         private void RefreshBoard()
         {
-            visibleLevels.Clear();
-            if (Catalog != null)
-                foreach (var level in Catalog.Levels)
-                    if (!GameSceneManager.IsCompleted(level.id)) visibleLevels.Add(level.id);
-            for (int i = 0; levelButtons != null && i < levelButtons.Length; i++)
+            boardLevels.Clear();
+            var catalog = Catalog;
+            bool useSavedPlacements = saveBoardPaperPlacements && Application.isPlaying &&
+                boardPaperArea != null && catalog != null;
+            if (catalog != null)
+                foreach (var level in catalog.Levels)
+                    if (level != null && !GameSceneManager.IsCompleted(level.id) &&
+                        (!useSavedPlacements || GameSceneManager.IsUnlocked(level.id))) boardLevels.Add(level);
+
+            int capacity = Mathf.Max(boardSlotCapacity, boardLevels.Count);
+            var placements = useSavedPlacements
+                ? LevelProgressStore.GetOrCreateQuestPaperPlacements(boardLevels, capacity)
+                : null;
+
+            int visibleCount = 0;
+            foreach (var level in boardLevels)
             {
-                bool visible = i < visibleLevels.Count;
-                int id = visible ? visibleLevels[i] : 0;
-                bool unlocked = visible && GameSceneManager.IsUnlocked(id);
-                if (levelButtons[i] != null)
-                {
-                    levelButtons[i].gameObject.SetActive(visible);
-                    levelButtons[i].interactable = unlocked;
-                    var colors = levelButtons[i].colors;
-                    colors.disabledColor = new Color(0.38f, 0.38f, 0.38f, 1f);
-                    levelButtons[i].colors = colors;
-                }
-                if (visible) RefreshBoardPaper(i, id);
-                if (levelLabels != null && i < levelLabels.Length && levelLabels[i] != null)
-                {
-                    levelLabels[i].text = visible ? Catalog.FindLevel(id).Title + (unlocked ? string.Empty : "\nLocked") : string.Empty;
-                    levelLabels[i].color = unlocked ? new Color(0.19f, 0.14f, 0.08f, 1f) : new Color(0.92f, 0.92f, 0.92f, 1f);
-                }
+                var paper = GetPaper(boardPapers, boardPaperArea, visibleCount);
+                if (paper == null) break;
+
+                if (placements == null) paper.PlaceIn(boardPaperArea, visibleCount, capacity);
+                else paper.PlaceOnBoard(boardPaperArea, placements[level.id], capacity);
+                paper.BindLevel(level, useSavedPlacements || GameSceneManager.IsUnlocked(level.id), false, () => OpenLevel(level.id));
+                visibleCount++;
             }
+
+            HidePapers(boardPapers, visibleCount);
         }
 
-        private void OpenLevelSlot(int slot)
+        public void OpenLevel(int levelId)
         {
-            if (slot >= 0 && slot < visibleLevels.Count) ShowLevelDetails(visibleLevels[slot]);
-        }
-
-        private void ShowLevelDetails(int id)
-        {
-            if (Catalog == null || !GameSceneManager.IsUnlocked(id)) return;
-            var level = Catalog.FindLevel(id);
-            if (level == null) return;
+            var level = Catalog?.FindLevel(levelId);
+            if (level == null || !GameSceneManager.IsUnlocked(levelId)) return;
             detailReturnView = paperView == PaperView.Completed ? PaperView.Completed : PaperView.Closed;
-            selectedLevel = id;
+            selectedLevel = levelId;
             selectedSecret = null;
-            ShowDetails(level.Title, level.description);
-        }
-
-        private void ShowDetails(string title, string description)
-        {
-            paperView = PaperView.Details;
-            SetPaperVisible();
-            if (paperTitle != null) paperTitle.text = title;
-            if (paperDescription != null) paperDescription.text = description;
-            SetCollectionControls(false);
-            if (playButton != null) playButton.gameObject.SetActive(true);
+            ShowDetails(level.Title, level.description, level.characterAvailable, level.depth, $"level:{level.id}");
         }
 
         private void PlaySelectedLevel()
         {
             if (paperView != PaperView.Details) return;
-            if (selectedSecret == null) { PlayMenuSound(); GameSceneManager.OpenLevelFromSelect(selectedLevel); }
-            else if (IsSecretUnlocked(selectedSecret)) { PlayMenuSound(); GameSceneManager.OpenSecretFromSelect(selectedSecret.scene.Path); }
+            if (selectedSecret != null && !IsSecretUnlocked(selectedSecret)) return;
+            PlayMenuSound();
+            if (selectedSecret == null) GameSceneManager.OpenLevelFromSelect(selectedLevel);
+            else GameSceneManager.OpenSecretFromSelect(selectedSecret.scene.Path);
         }
 
-        private static bool IsSecretUnlocked(SecretLevelDefinition level) => level != null &&
-            (GameSceneManager.IsSecretUnlocked(level.id) ||
-             (level.requiredCompletedLevel > 0 && GameSceneManager.IsCompleted(level.requiredCompletedLevel)));
+        private static bool IsSecretUnlocked(SecretLevelDefinition level) => level != null && GameSceneManager.IsSecretUnlocked(level.id);
 
         public void OpenCompleted() => OpenCollection(PaperView.Completed, true);
         public void OpenSecret() => OpenCollection(PaperView.Secret, true);
-        public void PreviousPaperPage() { paperPage = Mathf.Max(0, paperPage - 1); RefreshPaperCollection(); }
-        public void NextPaperPage() { paperPage++; RefreshPaperCollection(); }
 
         public void ClosePaper()
         {
@@ -194,68 +178,76 @@ namespace ProjectD.Menus
             if (paperPanel != null) paperPanel.SetActive(true);
         }
 
-        private void OpenCollection(PaperView view, bool resetPage)
+        private void OpenCollection(PaperView view, bool resetScroll)
         {
-            if (Catalog == null) return;
-            if (paperLevelButtons != null)
-                foreach (var button in paperLevelButtons) ProjectD.Audio.ButtonAudioFeedback.BindLevelHover(button, view == PaperView.Completed);
+            var catalog = Catalog;
+            if (catalog == null) return;
+            bool completed = view == PaperView.Completed;
             paperView = view;
-            if (resetPage) paperPage = 0;
-            entries.Clear();
-            if (view == PaperView.Completed)
+            if (completed)
             {
-                foreach (var level in Catalog.Levels) if (GameSceneManager.IsCompleted(level.id)) entries.Add(level.id);
+                completedLevels.Clear();
+                foreach (var level in catalog.Levels)
+                    if (level != null && GameSceneManager.IsCompleted(level.id)) completedLevels.Add(level);
             }
             else
-                for (int i = 0; i < Catalog.SecretLevels.Count; i++) if (IsSecretUnlocked(Catalog.SecretLevels[i])) entries.Add(i);
+            {
+                unlockedSecrets.Clear();
+                foreach (var secret in catalog.SecretLevels)
+                    if (IsSecretUnlocked(secret)) unlockedSecrets.Add(secret);
+            }
+
             SetPaperVisible();
-            RefreshPaperCollection();
+            RefreshPaperCollection(resetScroll);
         }
 
-        private int PaperCapacity => Mathf.Max(1, paperLevelButtons == null ? 0 : paperLevelButtons.Length);
-        private void RefreshPaperCollection()
+        private void RefreshPaperCollection(bool resetScroll)
         {
-            int pages = Mathf.Max(1, (entries.Count + PaperCapacity - 1) / PaperCapacity);
-            paperPage = Mathf.Clamp(paperPage, 0, pages - 1);
             bool completed = paperView == PaperView.Completed;
+            int entryCount = completed ? completedLevels.Count : unlockedSecrets.Count;
             if (paperTitle != null) paperTitle.text = completed ? "Complete" : "Secret";
-            if (paperDescription != null) paperDescription.text = entries.Count == 0
+            if (paperDescription != null) paperDescription.text = entryCount == 0
                 ? (completed ? "No completed levels yet." : "No secret levels unlocked yet.") : "Select a paper to view its details.";
+            if (paperMetadata != null) paperMetadata.SetActive(false);
             if (playButton != null) playButton.gameObject.SetActive(false);
-            SetCollectionControls(true);
-            for (int i = 0; paperLevelButtons != null && i < paperLevelButtons.Length; i++)
+
+            if (collectionScroll == null || collectionScroll.content == null || collectionScroll.viewport == null) return;
+            collectionScroll.gameObject.SetActive(true);
+            collectionScroll.StopMovement();
+            var content = collectionScroll.content;
+            float viewportWidth = collectionScroll.viewport.rect.width;
+            int slots = Mathf.Max(CollectionVisibleSlots, entryCount);
+            float contentWidth = viewportWidth * slots / CollectionVisibleSlots;
+            content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, contentWidth);
+            float left = resetScroll ? 0f : Mathf.Clamp(content.anchoredPosition.x, viewportWidth - contentWidth, 0f);
+            content.anchoredPosition = new Vector2(left, 0f);
+
+            int visibleCount = 0;
+            for (; visibleCount < entryCount; visibleCount++)
             {
-                int index = paperPage * PaperCapacity + i;
-                bool visible = index < entries.Count;
-                if (paperLevelButtons[i] != null) paperLevelButtons[i].gameObject.SetActive(visible);
-                if (visible) RefreshCollectionPaper(i, entries[index], completed);
-                if (visible && paperLevelLabels != null && i < paperLevelLabels.Length && paperLevelLabels[i] != null)
-                    paperLevelLabels[i].text = completed ? Catalog.FindLevel(entries[index]).Title : Catalog.SecretLevels[entries[index]].title;
+                var paper = GetPaper(collectionPapers, content, visibleCount);
+                if (paper == null) break;
+                paper.PlaceIn(content, visibleCount, slots);
+                if (completed)
+                {
+                    var level = completedLevels[visibleCount];
+                    paper.BindLevel(level, GameSceneManager.IsUnlocked(level.id), true, () => OpenLevel(level.id));
+                }
+                else
+                {
+                    var level = unlockedSecrets[visibleCount];
+                    paper.BindSecret(level, () => OpenSecretDetails(level));
+                }
             }
-            if (previousPageButton != null) previousPageButton.SetActive(paperPage > 0);
-            if (nextPageButton != null) nextPageButton.SetActive(paperPage + 1 < pages);
-            if (pageLabel != null) { pageLabel.gameObject.SetActive(pages > 1); pageLabel.text = (paperPage + 1) + " / " + pages; }
+            HidePapers(collectionPapers, visibleCount);
         }
 
-        private void SetCollectionControls(bool visible)
+        private void OpenSecretDetails(SecretLevelDefinition level)
         {
-            if (paperLevelButtons != null) foreach (Button button in paperLevelButtons) if (button != null) button.gameObject.SetActive(visible);
-            if (previousPageButton != null) previousPageButton.SetActive(visible);
-            if (nextPageButton != null) nextPageButton.SetActive(visible);
-            if (pageLabel != null) pageLabel.gameObject.SetActive(visible);
-        }
-
-        private void OpenPaperSlot(int slot)
-        {
-            int index = paperPage * PaperCapacity + slot;
-            if (slot < 0 || slot >= PaperCapacity || index >= entries.Count) return;
-            if (paperView == PaperView.Completed) ShowLevelDetails(entries[index]);
-            else if (paperView == PaperView.Secret)
-            {
-                selectedSecret = Catalog.SecretLevels[entries[index]];
-                detailReturnView = PaperView.Secret;
-                ShowDetails(selectedSecret.title, selectedSecret.description);
-            }
+            if (!IsSecretUnlocked(level)) return;
+            selectedSecret = level;
+            detailReturnView = PaperView.Secret;
+            ShowDetails(level.title, level.description, level.characterAvailable, level.depth, $"secret:{level.id}");
         }
     }
 }

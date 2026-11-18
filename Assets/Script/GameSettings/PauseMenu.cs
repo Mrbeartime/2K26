@@ -1,15 +1,15 @@
 using ProjectD.Menus;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PauseMenu : MonoBehaviour
 {
     [SerializeField] private GameObject pauseButton;
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject settingsPanel;
-    [SerializeField] private Text soundLabel;
-    [SerializeField] private Text fullscreenLabel;
+    [SerializeField] private TMP_Text soundLabel;
+    [SerializeField] private TMP_Text fullscreenLabel;
 
     private bool isPaused;
 

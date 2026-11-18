@@ -38,8 +38,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainScene/Menus/Loading.unity
     guid: 45a2c1c427324126a36b7bba1d2e2d75
-  - enabled: 0
-    path: Assets/Scenes/Bom/Level5_NewUI.unity
-    guid: f08670ab3d444f8db98d2a35eab99dbc
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

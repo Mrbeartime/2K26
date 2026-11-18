@@ -32,8 +32,8 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _CornerRadius: 5
-    - _OutlineOpacity: 1
-    - _OutlineThickness: 10
+    - _OutlineOpacity: 0.7
+    - _OutlineThickness: 5
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -42,6 +42,6 @@ Material:
     - _UseSourceImageAlpha: 1
     - _UseUIAlphaClip: 0
     m_Colors:
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -8,25 +8,36 @@
         },
         {
             "level": 2,
-            "completed": true,
+            "completed": false,
             "unlocked": true
         },
         {
             "level": 3,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
             "level": 4,
             "completed": false,
-            "unlocked": true
+            "unlocked": false
         },
         {
             "level": 5,
             "completed": false,
-            "unlocked": true
+            "unlocked": false
         }
     ],
     "unlockedSecrets": [],
-    "completedSecrets": []
+    "completedSecrets": [],
+    "questPaperLayoutVersion": 1,
+    "questPaperPlacements": [
+        {
+            "level": 2,
+            "page": 0,
+            "slot": 2,
+            "x": 0.22038695216178895,
+            "y": 0.6855206489562988,
+            "rotation": -0.42550331354141238
+        }
+    ]
 }

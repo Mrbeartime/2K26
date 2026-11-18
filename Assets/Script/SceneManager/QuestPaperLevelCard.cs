@@ -1,3 +1,5 @@
+using System;
+using ProjectD.Audio;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +8,7 @@ namespace ProjectD.Menus
 {
     /// <summary>Connects a QuestPaper prefab instance to one catalog entry.</summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(Button), typeof(QuestPaperDecoration), typeof(CanvasGroup))]
     public class QuestPaperLevelCard : MonoBehaviour
     {
         private QuestPaperDecoration decoration;
@@ -14,64 +17,121 @@ namespace ProjectD.Menus
         private CanvasGroup group;
         private RectTransform rect;
         private Vector2 originalSize;
-        public Button Button { get; private set; }
-        public int LevelId { get; private set; }
-        public string SecretId { get; private set; }
+        private Quaternion originalRotation;
+        private Button button;
+        private Action onSelected;
 
-        public void Initialize(QuestPaperDecoration paper)
+        private void Awake() => Initialize();
+
+        private void Initialize()
         {
-            decoration = paper;
-            Button = GetComponent<Button>();
+            if (button != null) return;
+            decoration = GetComponent<QuestPaperDecoration>();
+            button = GetComponent<Button>();
             rect = (RectTransform)transform;
             originalSize = rect.sizeDelta;
-            foreach (var text in GetComponentsInChildren<TMP_Text>(true))
-                if (text.name == "Title") { title = text; break; }
+            originalRotation = rect.localRotation;
+            title = decoration.Title;
             if (title != null) inkTitleFont = title.font;
             group = GetComponent<CanvasGroup>();
-            if (group == null) group = gameObject.AddComponent<CanvasGroup>();
-            FitToSlot();
+            button.onClick.AddListener(Select);
         }
 
-        public void BindLevel(LevelDefinition level, bool unlocked)
+        private void OnDestroy()
         {
-            LevelId = level.id;
-            SecretId = null;
-            Bind(level.Title, level.description, level.paperSprite, unlocked, GameSceneManager.IsCompleted(level.id));
+            if (button != null) button.onClick.RemoveListener(Select);
         }
 
-        public void BindSecret(SecretLevelDefinition level)
+        private void Select()
         {
-            LevelId = 0;
-            SecretId = level.id;
-            Bind(level.title, level.description, level.paperSprite, true, LevelProgressStore.IsSecretCompleted(level.id));
+            if (button.IsActive() && button.IsInteractable()) onSelected?.Invoke();
         }
 
-        private void Bind(string label, string description, Sprite paperSprite, bool unlocked, bool completed)
+        public void BindLevel(LevelDefinition level, bool unlocked, bool completed, Action select)
         {
+            Bind(level.Title, level.description, level.paperSprite, unlocked, completed, select);
+            ButtonAudioFeedback.BindLevelHover(button);
+        }
+
+        public void BindSecret(SecretLevelDefinition level, Action select)
+        {
+            Bind(level.title, level.description, level.paperSprite, true, LevelProgressStore.IsSecretCompleted(level.id), select);
+            ButtonAudioFeedback.BindLevelHover(button, false);
+        }
+
+        private void Bind(string label, string description, Sprite paperSprite, bool unlocked, bool completed, Action select)
+        {
+            Initialize();
+            onSelected = select;
             gameObject.name = "QuestPaper - " + label;
             // Retain the prefab's ink decoration, paper styles and hover animation.
             decoration.ApplyDecoration(label?.Length ?? 0, description?.Length ?? 0, paperSprite);
             // Unfinished quests keep the prefab's decorative ink. Reveal names after completion.
             if (title != null)
             {
-                title.font = completed && GameSceneManager.Catalog.questTitleFont != null
-                    ? GameSceneManager.Catalog.questTitleFont : inkTitleFont;
+                var readableFont = GameSceneManager.Catalog?.questTitleFont;
+                title.font = completed && readableFont != null ? readableFont : inkTitleFont;
                 if (completed) title.text = label ?? string.Empty;
             }
-            Button.interactable = unlocked;
+            button.interactable = unlocked;
             group.interactable = unlocked;
             group.alpha = unlocked ? 1f : 0.45f;
-            FitToSlot();
+            gameObject.SetActive(true);
         }
 
-        private void FitToSlot()
+        internal void PlaceIn(RectTransform area, int slot, int capacity)
         {
-            if (!(transform.parent is RectTransform slot) || originalSize.x <= 0 || originalSize.y <= 0) return;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            Initialize();
+            if (originalSize.x <= 0 || originalSize.y <= 0) return;
+            float width = area.rect.width / capacity * 0.86f;
+            float scale = Mathf.Min(width / originalSize.x, area.rect.height / originalSize.y);
+            Place(new Vector2((slot + 0.5f) / capacity, 0.5f), Mathf.Max(0.001f, scale), originalRotation);
+        }
+
+        internal void PlaceOnBoard(RectTransform area, QuestPaperPlacement placement, int capacity)
+        {
+            Initialize();
+            int columns = QuestPaperPlacement.ColumnsFor(capacity);
+            float slotWidth = area.rect.width / columns;
+            float areaHeight = area.rect.height;
+            if (originalSize.x <= 0f || originalSize.y <= 0f || slotWidth <= 0f || areaHeight <= 0f) return;
+
+            // The hover animation scales the paper artwork by about 6%.
+            const float hoverScale = 1.06f;
+            float radians = placement.rotation * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(radians);
+            float sin = Mathf.Abs(Mathf.Sin(radians));
+            float rotatedWidth = (originalSize.x * cos + originalSize.y * sin) * hoverScale;
+            float rotatedHeight = (originalSize.x * sin + originalSize.y * cos) * hoverScale;
+            float scale = Mathf.Min(slotWidth * 0.82f / rotatedWidth, areaHeight * 0.50f / rotatedHeight);
+            float halfWidth = rotatedWidth * scale / (2f * slotWidth);
+            float halfHeight = rotatedHeight * scale / (2f * areaHeight);
+
+            bool centerColumn = placement.slot == columns / 2;
+            float horizontalSample = centerColumn ? Mathf.Lerp(0.43f, 0.57f, placement.x) : placement.x;
+            float xInSlot = Mathf.Lerp(0.04f + halfWidth, 0.96f - halfWidth, horizontalSample);
+
+            var canvas = area.GetComponentInParent<Canvas>(true)?.rootCanvas;
+            var canvasRect = canvas != null ? (RectTransform)canvas.transform : null;
+            float screenCenterY = canvasRect != null
+                ? area.InverseTransformPoint(canvasRect.TransformPoint(canvasRect.rect.center)).y
+                : area.rect.center.y;
+            float centerYInArea = (screenCenterY - area.rect.yMin) / areaHeight;
+            float verticalVariation = centerColumn ? 0.06f : 0.20f;
+            // Keep each rotated footprint in its own column and clear of the controls below.
+            float yInArea = Mathf.Clamp(centerYInArea + (placement.y - 0.5f) * verticalVariation,
+                0.25f + halfHeight, 0.96f - halfHeight);
+            Place(new Vector2((placement.slot + xInSlot) / columns, yInArea), scale, Quaternion.Euler(0f, 0f, placement.rotation));
+        }
+
+        private void Place(Vector2 anchor, float scale, Quaternion rotation)
+        {
+            rect.anchorMin = rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = originalSize;
-            float scale = Mathf.Min(slot.rect.width / originalSize.x, slot.rect.height / originalSize.y);
-            rect.localScale = Vector3.one * Mathf.Max(0.001f, scale);
+            rect.localScale = Vector3.one * scale;
+            rect.localRotation = rotation;
         }
     }
 }

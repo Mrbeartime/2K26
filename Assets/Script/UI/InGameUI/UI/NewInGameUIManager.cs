@@ -29,6 +29,13 @@ public class NewInGameUIManager : MonoBehaviour
     [SerializeField] private OverlayUI guideOverlay;
     [SerializeField] private OverlayUI settingsOverlay;
 
+    [Header("Turn Text Animation")]
+    [SerializeField, Min(1f)] private float turnTextStartSize = 150f;
+    [SerializeField, Min(1f)] private float turnTextEndSize = 250f;
+    [SerializeField, Min(0f)] private float turnTextSlideDistance = 80f;
+    [SerializeField, Min(0f)] private float turnTextOutDuration = 0.15f;
+    [SerializeField, Min(0f)] private float turnTextInDuration = 0.2f;
+
     [Header("Pause Manager")]
     [SerializeField] private float fadeTime = 0.2f;
     [Tooltip("Full-screen black Image. Fades to Pause Dim Alpha while paused.")]
@@ -61,7 +68,9 @@ public class NewInGameUIManager : MonoBehaviour
     private Image[] actionIconReferences;
     [SerializeField] private NewCharacterIcon actionIconPrefab;
     [SerializeField] private Sprite moveActionIcon;
+    [SerializeField] private Sprite moveActionIconConfirmed;
     [SerializeField] private Sprite interactActionIcon;
+    [SerializeField] private Sprite interactActionIconConfirmed;
     [SerializeField] private Vector2 actionOuterOffset = new Vector2(-40f, 65f);
     [SerializeField, Min(0f), Tooltip("Time allowed to cross the gap between a character and its actions.")]
     private float actionHoverExitDelay = 0.25f;
@@ -85,7 +94,7 @@ public class NewInGameUIManager : MonoBehaviour
         public string skillName;
         [Tooltip("Signature icon in the normal state.")]
         public Sprite signatureIcon;
-        [Tooltip("Optional. Uses the normal Signature icon when empty.")]
+        [Tooltip("Signature icon after confirmation. Uses the normal icon when empty.")]
         public Sprite signatureIconSelected;
     }
 
@@ -103,6 +112,12 @@ public class NewInGameUIManager : MonoBehaviour
 
     private ProjectDInputAction inputActions;
     private TurnGameManager turnGameManager;
+    private Color? turnLimitNormalColor;
+    private int? turnTextTarget;
+    private Color turnTextTargetColor;
+    private float turnTextTargetSize;
+    private float turnTextRestX;
+    private Coroutine turnTextRoutine;
     private int pendingTurnBarRound;
     private readonly List<TurnBarSlot> turnBarSlots = new();
     private TurnScheduleData hazardSchedule;
@@ -136,6 +151,7 @@ public class NewInGameUIManager : MonoBehaviour
 
     internal bool IsChoosingAction => choosingAction;
     internal bool IsEndTurnFocused => endTurnFocused;
+    internal bool CanUseSpacebar => CanConfirmHighlightedAction || CanHoldEndTurnWithSpacebar;
 
     private bool HasOpenChildOverlay =>
         (guideOverlay != null && guideOverlay.gameObject.activeInHierarchy) ||
@@ -174,12 +190,13 @@ public class NewInGameUIManager : MonoBehaviour
     private float? actionTransitionStartedAt;
     private bool actionListClosing;
     private Sprite defaultSignatureIcon;
-    private Sprite focusedSignatureIcon;
+    private Sprite confirmedSignatureIcon;
 
     private bool confirmingAction;
     private bool actionPreviewsBlocked;
     private int lastSelectFrame = -1;
     private int lastSelectId = NoAction;
+    private PlayerMove lastSelectPlayer;
 
     public bool IsPaused { get; private set; }
     private OverlayUI pauseOverlay;
@@ -239,6 +256,7 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (StopTurnTextAnimation()) ApplyTurnLimitText();
         StopTurnCharge();
         if (inputActions == null) return;
         if (endTurnButton != null) endTurnButton.CancelHold();
@@ -495,7 +513,7 @@ public class NewInGameUIManager : MonoBehaviour
             AlignToIconReference(rect, characterIconReferences, referenceIndex);
             characterIcons.Add((player, icon, GetOrAddCanvasGroup(icon.gameObject)));
 
-            icon.BindClick(() => OpenActionSelection(player));
+            icon.BindClick(() => OpenActionSelection(player, confirmMove: true));
             icon.BindHover(() => HoverCharacter(player), LeaveActionPreview);
         }
     }
@@ -550,10 +568,10 @@ public class NewInGameUIManager : MonoBehaviour
         if (gameManager == null) return;
 
         int turnsLeft = gameManager.TurnsLeft;
-        if (TurnLimitText != null) TurnLimitText.text = turnsLeft.ToString();
+        int maximumTurns = Mathf.Max(1, gameManager.maximumTurns);
+        UpdateTurnLimitText(turnsLeft, maximumTurns);
         if (turnProgressTrack == null || turnBarPrefab == null) return;
 
-        int maximumTurns = Mathf.Max(1, gameManager.maximumTurns);
         int completedRounds = Mathf.Clamp(maximumTurns - turnsLeft, 0, maximumTurns);
         if (pendingTurnBarRound <= completedRounds || gameManager.IsGameComplete)
             pendingTurnBarRound = 0;
@@ -572,6 +590,88 @@ public class NewInGameUIManager : MonoBehaviour
                 slot.Fill = null;
             }
         }
+    }
+
+    private void UpdateTurnLimitText(int turnsLeft, int maximumTurns)
+    {
+        if (TurnLimitText == null) return;
+
+        Color normalColor = turnLimitNormalColor ??= TurnLimitText.color;
+        turnTextTargetColor = normalColor;
+        if (turnsLeft < Mathf.CeilToInt(maximumTurns / 4f))
+            turnTextTargetColor = Color.red;
+        else if (turnsLeft < Mathf.FloorToInt(maximumTurns / 2f))
+            turnTextTargetColor = Color.yellow;
+        turnTextTargetColor.a = normalColor.a;
+        float turnProgress = 1f - (float)turnsLeft / maximumTurns;
+        turnTextTargetSize = Mathf.Lerp(turnTextStartSize, turnTextEndSize, turnProgress);
+
+        bool changed = turnTextTarget != turnsLeft;
+        if (!changed && turnTextRoutine != null) return;
+        bool animate = changed && turnTextTarget.HasValue && isActiveAndEnabled && Application.isPlaying &&
+            (turnTextOutDuration > 0f || turnTextInDuration > 0f);
+        turnTextTarget = turnsLeft;
+        StopTurnTextAnimation();
+
+        if (animate)
+        {
+            turnTextRestX = TurnLimitText.rectTransform.anchoredPosition.x;
+            turnTextRoutine = StartCoroutine(AnimateTurnText());
+        }
+        else
+        {
+            ApplyTurnLimitText();
+        }
+    }
+
+    private IEnumerator AnimateTurnText()
+    {
+        yield return SlideTurnText(false);
+        ApplyTurnLimitText();
+        SetTurnTextVisual(-turnTextSlideDistance, 0f);
+        yield return SlideTurnText(true);
+        ApplyTurnLimitText();
+        turnTextRoutine = null;
+    }
+
+    private IEnumerator SlideTurnText(bool entering)
+    {
+        float duration = entering ? turnTextInDuration : turnTextOutDuration;
+        float distance = entering ? -turnTextSlideDistance : turnTextSlideDistance;
+        for (float elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+        {
+            float progress = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+            float opacity = entering ? progress : 1f - progress;
+            SetTurnTextVisual(distance * (1f - opacity), opacity);
+            yield return null;
+        }
+        SetTurnTextVisual(entering ? 0f : distance, entering ? 1f : 0f);
+    }
+
+    private bool StopTurnTextAnimation()
+    {
+        if (turnTextRoutine == null) return false;
+        StopCoroutine(turnTextRoutine);
+        turnTextRoutine = null;
+        SetTurnTextVisual(0f, 1f);
+        return true;
+    }
+
+    private void ApplyTurnLimitText()
+    {
+        if (TurnLimitText == null) return;
+        TurnLimitText.text = turnTextTarget.Value.ToString();
+        TurnLimitText.color = turnTextTargetColor;
+        TurnLimitText.fontSize = turnTextTargetSize;
+    }
+
+    private void SetTurnTextVisual(float offset, float opacity)
+    {
+        if (TurnLimitText == null) return;
+        RectTransform rect = TurnLimitText.rectTransform;
+        Vector2 position = rect.anchoredPosition;
+        rect.anchoredPosition = new Vector2(turnTextRestX + offset, position.y);
+        TurnLimitText.alpha = turnTextTargetColor.a * opacity;
     }
 
     internal IEnumerator AnimateTurnProgress(TurnGameManager gameManager)
@@ -890,7 +990,7 @@ public class NewInGameUIManager : MonoBehaviour
         pointerPreviewCloseAt = null;
     }
 
-    internal void OpenActionSelection(PlayerMove player, bool playSelectionSound = true)
+    internal void OpenActionSelection(PlayerMove player, bool playSelectionSound = true, bool confirmMove = false)
     {
         if (!isActiveAndEnabled || BlocksGameplayInput || turnGameManager == null ||
             !turnGameManager.CanSelectPlayer(player)) return;
@@ -904,6 +1004,8 @@ public class NewInGameUIManager : MonoBehaviour
         UpdateCharacterSelection();
         UpdateActionFocusUI();
         if (playSelectionSound) PlaySelectionClick(true);
+        if (confirmMove && CanNavigateSelection && !DiaryUI.IsOpen && availableActions.Contains(ActionMove))
+            SelectAction(ActionMove, playConfirmationSound: false);
     }
 
     private void PositionActionList(PlayerMove current)
@@ -956,6 +1058,7 @@ public class NewInGameUIManager : MonoBehaviour
     private void UpdateActionFocusUI()
     {
         int highlightedAction = HighlightedAction;
+        int confirmedAction = ConfirmedAction;
         for (int actionId = 0; actionId < actionIcons.Length; actionId++)
         {
             bool available = availableActions.Contains(actionId);
@@ -966,8 +1069,7 @@ public class NewInGameUIManager : MonoBehaviour
             bool selected = actionId == highlightedAction;
             icon.SetSelected(selected);
             icon.SetFocused(selected);
-            if (actionId == ActionSignature)
-                icon.SetPortrait(selected ? focusedSignatureIcon : defaultSignatureIcon);
+            icon.SetPortrait(GetActionSprite(actionId, actionId == confirmedAction));
         }
         UpdateActionPreview();
         UpdateActionIconLayout();
@@ -976,23 +1078,43 @@ public class NewInGameUIManager : MonoBehaviour
     private int HighlightedAction => hoveredAction != NoAction ? hoveredAction :
         choosingAction ? FocusedAction : NoAction;
 
-    internal bool IsPreviewingAction
+    private bool CanUseActionMenu => isActiveAndEnabled && !BlocksGameplayInput &&
+        !actionListClosing && !confirmingAction && actionMenuPlayer != null &&
+        ActionUI != null && ActionUI.activeInHierarchy && turnGameManager != null;
+
+    private int ConfirmedAction
     {
         get
         {
-            if (!isActiveAndEnabled || BlocksGameplayInput || actionListClosing || confirmingAction ||
-                actionMenuPlayer == null || ActionUI == null || !ActionUI.activeInHierarchy || turnGameManager == null)
-                return false;
+            if (turnGameManager == null || actionMenuPlayer == null ||
+                actionMenuPlayer != turnGameManager.CurrentPlayer) return NoAction;
 
-            return HighlightedAction switch
-            {
-                ActionMove => actionMenuPlayer != turnGameManager.CurrentPlayer || !turnGameManager.IsMoveTargeting,
-                ActionSignature => actionMenuPlayer != turnGameManager.CurrentPlayer || !turnGameManager.IsSkillTargeting,
-                ActionInteract => true,
-                _ => false
-            };
+            if (turnGameManager.IsMoveTargeting) return ActionMove;
+            if (turnGameManager.IsSkillTargeting) return ActionSignature;
+            return selectedAction == ActionInteract ? ActionInteract : NoAction;
         }
     }
+
+    private Sprite GetActionSprite(int actionId, bool confirmed)
+    {
+        var (normalSprite, confirmedSprite) = actionId switch
+        {
+            ActionMove => (moveActionIcon, moveActionIconConfirmed),
+            ActionInteract => (interactActionIcon, interactActionIconConfirmed),
+            _ => (defaultSignatureIcon, confirmedSignatureIcon)
+        };
+        return confirmed && confirmedSprite != null ? confirmedSprite : normalSprite;
+    }
+
+    private bool CanConfirmHighlightedAction => CanNavigateSelection && !DiaryUI.IsOpen &&
+        CanUseActionMenu &&
+        (HighlightedAction == ActionInteract || ((HighlightedAction is ActionMove or ActionSignature) && HighlightedAction != ConfirmedAction));
+
+    private bool CanHoldEndTurnWithSpacebar => CanNavigateSelection && endTurnFocused &&
+        endTurnButton != null && HighlightedAction == NoAction;
+
+    internal bool IsPreviewingAction => CanUseActionMenu &&
+        HighlightedAction != NoAction && HighlightedAction != ConfirmedAction;
 
     private void UpdateActionPreview()
     {
@@ -1011,7 +1133,7 @@ public class NewInGameUIManager : MonoBehaviour
                 playerController.ShowMoveRange(actionMenuPlayer, preview: true);
                 break;
             case ActionSignature:
-                playerController.ClearActionPreview();
+                playerController.BeginActionPreview();
                 if (actionMenuPlayer.TryGetComponent(out Character character)) character.ShowSkillRange(preview: true);
                 break;
             case ActionInteract:
@@ -1120,8 +1242,7 @@ public class NewInGameUIManager : MonoBehaviour
         actionIcons[ActionSignature].SetLabel(title + count);
 
         defaultSignatureIcon = entry?.signatureIcon;
-        focusedSignatureIcon = entry?.signatureIconSelected;
-        if (focusedSignatureIcon == null) focusedSignatureIcon = defaultSignatureIcon;
+        confirmedSignatureIcon = entry?.signatureIconSelected;
     }
 
     private CharacterEntry FindCharacterEntry(PlayerMove player, Character character)
@@ -1163,19 +1284,21 @@ public class NewInGameUIManager : MonoBehaviour
 
     #region Action Selection
 
-    public void SelectAction(int actionId)
+    public void SelectAction(int actionId) => SelectAction(actionId, playConfirmationSound: true);
+
+    private void SelectAction(int actionId, bool playConfirmationSound)
     {
-        if (actionMenuPlayer == null || actionListClosing || confirmingAction || !isActiveAndEnabled || BlocksGameplayInput ||
-            ActionUI == null || !ActionUI.activeInHierarchy || turnGameManager == null) return;
+        if (!CanUseActionMenu) return;
 
         int index = availableActions.IndexOf(actionId);
         if (index < 0) return;
 
-        if (Time.frameCount == lastSelectFrame && actionId == lastSelectId) return;
+        PlayerMove player = actionMenuPlayer;
+        if (Time.frameCount == lastSelectFrame && actionId == lastSelectId && player == lastSelectPlayer) return;
         lastSelectFrame = Time.frameCount;
         lastSelectId = actionId;
+        lastSelectPlayer = player;
 
-        PlayerMove player = actionMenuPlayer;
         confirmingAction = true;
         try
         {
@@ -1197,7 +1320,7 @@ public class NewInGameUIManager : MonoBehaviour
             bool canExecute = actionId == ActionMove ? turnGameManager.CanChooseMove :
                 actionId == ActionInteract ? turnGameManager.CanChooseReact :
                 actionId == ActionSignature && turnGameManager.CanChooseSkill;
-            if (canExecute) PlaySelectionClick();
+            if (canExecute && playConfirmationSound) PlaySelectionClick();
             ConfirmAction(actionId);
         }
         finally
@@ -1265,6 +1388,9 @@ public class NewInGameUIManager : MonoBehaviour
         if (actionMenuPlayer == null || actionListClosing) return;
 
         bool cancelTargeting = selectedAction != NoAction;
+        int confirmedAction = ConfirmedAction;
+        if (confirmedAction != NoAction)
+            actionIcons[confirmedAction].SetPortrait(GetActionSprite(confirmedAction, false));
         int previousHighlight = HighlightedAction;
         hoveredAction = NoAction;
         PlayerController.Instance?.ClearActionPreview();
@@ -1341,9 +1467,8 @@ public class NewInGameUIManager : MonoBehaviour
 
     private void OnConfirmAction(InputAction.CallbackContext context)
     {
-        int action = HighlightedAction;
-        if (action != NoAction) SelectAction(action);
-        else if (endTurnFocused && CanUseEndTurnButton && endTurnButton != null)
+        if (CanConfirmHighlightedAction) SelectAction(HighlightedAction);
+        else if (CanHoldEndTurnWithSpacebar)
             endTurnButton.BeginKeyboardHold();
     }
 

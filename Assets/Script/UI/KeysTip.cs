@@ -15,26 +15,35 @@ public class KeysTip : MonoBehaviour
 
     [SerializeField, Min(0f)] private float rowSpacing = 70f;
 
-    private (RectTransform Row, float Bottom, float Right)[] rows;
-    private (bool CameraFree, bool CanSelect, bool ActionOrEndTurnFocused)? displayedState;
+    private enum Visibility { Always, Camera, Character, ActionOrEndTurn, Selection, Confirm }
+
+    private (RectTransform Row, float Bottom, float Right, Visibility Visibility)[] rows;
+    private (bool CameraFree, bool CanSelect, bool ActionOrEndTurnFocused, bool CanConfirm)? displayedState;
     private Sprite resetFillSprite;
     internal Image ResetFill { get; private set; }
 
     private void Awake()
     {
-        // List the tips from top to bottom, in the same order as the visibility flags.
-        RectTransform[] prefabs =
+        // List the tips from top to bottom.
+        (RectTransform Prefab, Visibility Visibility)[] tips =
         {
-            navigateSelectionTip, chooseActionTip, returnTip, confirmSelectionTip,
-            showPositionsTip, resetTip, pauseTip, toggleTipsTip
+            (navigateSelectionTip, Visibility.Selection),
+            (chooseActionTip, Visibility.Character),
+            (returnTip, Visibility.ActionOrEndTurn),
+            (confirmSelectionTip, Visibility.Confirm),
+            (showPositionsTip, Visibility.Camera),
+            (resetTip, Visibility.Always),
+            (pauseTip, Visibility.Always),
+            (toggleTipsTip, Visibility.Always)
         };
 
-        rows = new (RectTransform, float, float)[prefabs.Length];
-        for (int i = 0; i < prefabs.Length; i++)
+        rows = new (RectTransform, float, float, Visibility)[tips.Length];
+        for (int i = 0; i < tips.Length; i++)
         {
-            if (prefabs[i] == null) continue;
-            RectTransform row = Instantiate(prefabs[i], transform, false);
-            row.name = prefabs[i].name;
+            (RectTransform prefab, Visibility visibility) = tips[i];
+            if (prefab == null) continue;
+            RectTransform row = Instantiate(prefab, transform, false);
+            row.name = prefab.name;
             row.anchorMin = row.anchorMax = new Vector2(1f, 0f);
 
             // Use the authored graphics so the margins exclude the empty part of the prefab root.
@@ -45,8 +54,8 @@ public class KeysTip : MonoBehaviour
             float right = GetCaptionRightEdge(row, caption, bounds.max.x);
             // Convert row-local measurements to anchoredPosition units.
             Vector3 scale = row.localScale;
-            rows[i] = (row, bounds.min.y * scale.y, right * scale.x);
-            if (prefabs[i] == resetTip) ResetFill = CreateResetFill(row);
+            rows[i] = (row, bounds.min.y * scale.y, right * scale.x, visibility);
+            if (prefab == resetTip) ResetFill = CreateResetFill(row);
             row.gameObject.SetActive(false);
         }
     }
@@ -109,23 +118,27 @@ public class KeysTip : MonoBehaviour
         bool cameraFree = CameraFocusManager.Instance?.CanAcceptManualInput == true;
         bool canSelect = hud != null && hud.CanNavigateSelection;
         bool actionOrEndTurnFocused = canSelect && (hud.IsChoosingAction || hud.IsEndTurnFocused);
-        var state = (cameraFree, canSelect, actionOrEndTurnFocused);
+        bool canConfirm = hud != null && hud.CanUseSpacebar;
+        var state = (cameraFree, canSelect, actionOrEndTurnFocused, canConfirm);
         if (displayedState == state) return;
         displayedState = state;
-
-        bool[] visible =
-        {
-            canSelect, canSelect && !actionOrEndTurnFocused, actionOrEndTurnFocused, actionOrEndTurnFocused,
-            cameraFree, true, true, true
-        };
 
         float y = 0f;
         bool firstVisibleRow = true;
         for (int i = rows.Length - 1; i >= 0; i--)
         {
-            (RectTransform row, float bottom, float right) = rows[i];
+            (RectTransform row, float bottom, float right, Visibility visibility) = rows[i];
             if (row == null) continue;
-            if (visible[i])
+            bool visible = visibility switch
+            {
+                Visibility.Camera => cameraFree,
+                Visibility.Character => canSelect && !actionOrEndTurnFocused,
+                Visibility.ActionOrEndTurn => actionOrEndTurnFocused,
+                Visibility.Selection => canSelect,
+                Visibility.Confirm => canConfirm,
+                _ => true
+            };
+            if (visible)
             {
                 if (firstVisibleRow)
                 {
@@ -135,7 +148,7 @@ public class KeysTip : MonoBehaviour
                 row.anchoredPosition = new Vector2(-right, y);
                 y += rowSpacing;
             }
-            row.gameObject.SetActive(visible[i]);
+            row.gameObject.SetActive(visible);
         }
     }
 }

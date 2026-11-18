@@ -1,21 +1,22 @@
-using UnityEngine;
-
 namespace ProjectD.Menus
 {
     public partial class MenuScreen
     {
+        private bool IsSettingsScene => gameObject.scene.path == GameSceneManager.SettingsScene;
         private bool IsSettingsVisible => settingsPanel != null && settingsPanel.activeInHierarchy;
+        private OverlayUI SettingsOverlay => settingsPanel != null ? settingsPanel.GetComponentInParent<OverlayUI>(true) : null;
+        private bool SettingsCancelPressed => IsSettingsVisible && SettingsOverlay?.CancelPressedThisFrame == true;
 
         public void OpenSettings()
         {
-            if (LoadingScreen.IsLoading && gameObject.scene.path != GameSceneManager.SettingsScene) return;
+            if (LoadingScreen.IsLoading && !IsSettingsScene) return;
             if (settingsPanel == null)
             {
                 GameSceneManager.OpenInGameSettings();
                 return;
             }
             if (mainPanel != null) mainPanel.SetActive(false);
-            settingsPanel.GetComponentInParent<OverlayUI>(true)?.ActivateOverlay();
+            SettingsOverlay?.ActivateOverlay();
             settingsPanel.SetActive(true);
             RefreshSettingsLabels();
         }
@@ -29,7 +30,7 @@ namespace ProjectD.Menus
                 GameSceneManager.CloseInGameSettings();
                 return;
             }
-            if (gameObject.scene.path == GameSceneManager.SettingsScene)
+            if (IsSettingsScene)
             {
                 GameSceneManager.OpenStart();
                 return;
@@ -40,7 +41,7 @@ namespace ProjectD.Menus
         private void HideSettingsPanel()
         {
             if (settingsPanel == null) return;
-            settingsPanel.GetComponentInParent<OverlayUI>(true)?.DeactivateOverlay();
+            SettingsOverlay?.DeactivateOverlay();
             settingsPanel.SetActive(false);
         }
 

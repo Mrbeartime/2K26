@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectD.Menus;
@@ -9,11 +11,31 @@ using UnityEngine;
 [CustomEditor(typeof(SceneCatalog))]
 public class SceneCatalogEditor : Editor
 {
+    private readonly SceneCatalogQuestTextEditor questEditor = new();
+    private bool showSceneRegistrations;
+
     public override void OnInspectorGUI()
     {
-        EditorGUILayout.HelpBox("Add levels here. Keep each ID permanent. Sync Build Settings after assigning a new scene.", MessageType.Info);
-        DrawDefaultInspector();
-        if (GUILayout.Button("Sync Scenes To Build Settings")) Sync((SceneCatalog)target);
+        var catalog = (SceneCatalog)target;
+        EditorGUILayout.HelpBox("Register scenes here with permanent IDs, then sync Build Settings.", MessageType.Info);
+        if (catalog.questData == null)
+        {
+            DrawDefaultInspector();
+        }
+        else
+        {
+            serializedObject.Update();
+            DrawPropertiesExcluding(serializedObject, "m_Script", "levels", "secretLevels");
+            showSceneRegistrations = EditorGUILayout.Foldout(showSceneRegistrations, "Scene registrations and fallback values", true);
+            if (showSceneRegistrations)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("levels"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("secretLevels"), true);
+            }
+            serializedObject.ApplyModifiedProperties();
+            if (catalog.questData != null) questEditor.Draw(catalog);
+        }
+        if (GUILayout.Button("Sync Scenes To Build Settings")) Sync(catalog);
     }
 
     public static void Sync(SceneCatalog catalog)
@@ -42,6 +64,34 @@ public class SceneCatalogEditor : Editor
     }
 }
 
+[CustomPropertyDrawer(typeof(LevelDefinition))]
+[CustomPropertyDrawer(typeof(SecretLevelDefinition))]
+internal sealed class SceneCatalogLevelDrawer : PropertyDrawer
+{
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        EditorGUI.PropertyField(position, property, GetLevelLabel(property, label), true);
+    }
+
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    {
+        return EditorGUI.GetPropertyHeight(property, GetLevelLabel(property, label), true);
+    }
+
+    private static GUIContent GetLevelLabel(SerializedProperty property, GUIContent label)
+    {
+        string path = property.propertyPath;
+        int indexStart = path.LastIndexOf('[') + 1;
+        if (indexStart > 0 && path.EndsWith("]", StringComparison.Ordinal) &&
+            int.TryParse(path.AsSpan(indexStart, path.Length - indexStart - 1), out int index))
+        {
+            return new GUIContent($"Level {index + 1}", label?.tooltip);
+        }
+
+        return label;
+    }
+}
+
 // Report missing scenes before shipping a build instead of leaving a broken load button.
 public class SceneCatalogBuildCheck : IPreprocessBuildWithReport
 {
@@ -62,10 +112,9 @@ public class SceneCatalogBuildCheck : IPreprocessBuildWithReport
         foreach (var level in catalog.Levels)
             if (level == null || level.id < 1 || !ids.Add(level.id) || string.IsNullOrEmpty(level.scene.Path))
                 throw new BuildFailedException("SceneCatalog has an empty scene or duplicate/invalid level ID.");
-        if (catalog.FindLevel(catalog.firstLevelId) == null)
-            throw new BuildFailedException("SceneCatalog: First Level ID does not exist.");
         foreach (string path in catalog.ScenePaths().Distinct())
             if (!EditorBuildSettings.scenes.Any(scene => scene.enabled && scene.path == path))
                 throw new BuildFailedException("Scene missing from Build Settings: " + path + ". Select SceneCatalog and click Sync Scenes To Build Settings.");
     }
 }
+#endif

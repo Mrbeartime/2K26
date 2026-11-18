@@ -46,6 +46,7 @@ public class Tile : MonoBehaviour
 
     private HighlightType currentHighlightType;
     private bool highlightRequested;
+    private bool mainHighlightSuppressed;
     private HighlightType? previewHighlightType;
 
     public void SetCanShowHighlight(bool allowed)
@@ -55,7 +56,8 @@ public class Tile : MonoBehaviour
     }
 
     public bool IsHighlightShown(HighlightType type) =>
-        highlightRequested && canShowHighlight && highlightObject != null &&
+        highlightRequested && !mainHighlightSuppressed && !previewHighlightType.HasValue &&
+        canShowHighlight && highlightObject != null &&
         highlightObject.activeInHierarchy && currentHighlightType == type;
 
     private void Awake()
@@ -64,10 +66,20 @@ public class Tile : MonoBehaviour
     }
 
     // ใช้อันนี้เวลาต้องการเปิด Highlight พร้อมกำหนดประเภท
-    public void ShowHighlight(HighlightType type)
+    public void ShowHighlight(HighlightType type) => ShowHighlight(type, false);
+
+    internal void ShowHighlight(HighlightType type, bool suppressed)
     {
         highlightRequested = true;
+        mainHighlightSuppressed = suppressed;
         currentHighlightType = type;
+        RefreshHighlight();
+    }
+
+    internal void SetMainHighlightSuppressed(bool suppressed)
+    {
+        if (mainHighlightSuppressed == suppressed) return;
+        mainHighlightSuppressed = suppressed;
         RefreshHighlight();
     }
 
@@ -81,7 +93,7 @@ public class Tile : MonoBehaviour
     {
         if (highlightObject == null) return;
 
-        bool visible = canShowHighlight && (previewHighlightType.HasValue || highlightRequested);
+        bool visible = canShowHighlight && (previewHighlightType.HasValue || (highlightRequested && !mainHighlightSuppressed));
         highlightObject.SetActive(visible);
         if (!visible) return;
 
@@ -100,6 +112,7 @@ public class Tile : MonoBehaviour
     public void HideHighlight()
     {
         highlightRequested = false;
+        mainHighlightSuppressed = false;
         RefreshHighlight();
     }
 
