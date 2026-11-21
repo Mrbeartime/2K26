@@ -41,7 +41,14 @@ public class RangedEnemy : Enemy
         onAttack.Invoke();
     }
 
-    private bool HasAdventurerInSight(Transform muzzle)
+    public override bool HasChargeTarget()
+    {
+        if (IsDead || !Aggression || !isActiveAndEnabled ||
+            GridManager.Instance == null || arrowPrefab == null) return false;
+        return HasAdventurerInSight(firePoint != null ? firePoint : transform, false);
+    }
+
+    private bool HasAdventurerInSight(Transform muzzle, bool includeFreshCorpses = true)
     {
         Physics.SyncTransforms();
         float range = Mathf.Max(1, rangeTiles) * GridManager.Instance.TileSize;
@@ -57,7 +64,7 @@ public class RangedEnemy : Enemy
         Ray ray = new Ray(muzzle.position, muzzle.forward);
         foreach (Character character in FindObjectsByType<Character>())
         {
-            if (!character.IsDead || !character.IsFreshCorpse || killedPlayers.Contains(character) ||
+            if (!includeFreshCorpses || !character.IsDead || !character.IsFreshCorpse || killedPlayers.Contains(character) ||
                 character.gameObject.scene != gameObject.scene) continue;
             Bounds bounds = character.CorpseSightBounds;
             bounds.Expand(radius * 2f);

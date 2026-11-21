@@ -10,6 +10,9 @@ public class EnemyAnimationController : MonoBehaviour
 
     private Enemy enemy;
     private bool configured;
+    private bool hasChargeParameter;
+    private float nextChargeCheck;
+    private static readonly int ChargeHash = Animator.StringToHash("IsCharging");
     private bool deathStarted;
     private Action deathFinished;
     private static readonly int AttackHash = Animator.StringToHash("Attack");
@@ -26,6 +29,7 @@ public class EnemyAnimationController : MonoBehaviour
         bool death = false;
         foreach (AnimatorControllerParameter parameter in animator.parameters)
         {
+            hasChargeParameter |= parameter.nameHash == ChargeHash && parameter.type == AnimatorControllerParameterType.Bool;
             attack |= parameter.nameHash == AttackHash && parameter.type == AnimatorControllerParameterType.Trigger;
             death |= parameter.nameHash == DeadHash && parameter.type == AnimatorControllerParameterType.Bool;
         }
@@ -42,6 +46,37 @@ public class EnemyAnimationController : MonoBehaviour
     private void OnEnable()
     {
         enemy.onAttack.AddListener(PlayAttack);
+        nextChargeCheck = 0f;
+    }
+
+    private void Update()
+    {
+        if (!configured || !hasChargeParameter || animator == null ||
+            !animator.isActiveAndEnabled || Time.timeScale == 0f) return;
+        if (enemy.IsDead || deathStarted)
+        {
+            SetCharging(false);
+            return;
+        }
+        // Limit physics/range queries while still responding during player movement.
+        if (Time.time < nextChargeCheck) return;
+        nextChargeCheck = Time.time + 0.1f;
+        if (enemy.HasChargeTarget()) PlayCharge();
+        else StopCharge();
+    }
+
+    public void PlayCharge()
+    {
+        if (!isActiveAndEnabled || !configured || enemy == null || enemy.IsDead || deathStarted) return;
+        SetCharging(true);
+    }
+
+    public void StopCharge() => SetCharging(false);
+
+    private void SetCharging(bool charging)
+    {
+        if (animator != null && hasChargeParameter)
+            animator.SetBool(ChargeHash, charging);
     }
 
     public void PlayAttack()
@@ -57,6 +92,7 @@ public class EnemyAnimationController : MonoBehaviour
             return false;
 
         deathStarted = true;
+        SetCharging(false);
         deathFinished = onFinished;
         animator.ResetTrigger(AttackHash);
         animator.SetBool(DeadHash, true);
@@ -94,6 +130,7 @@ public class EnemyAnimationController : MonoBehaviour
     private void OnDisable()
     {
         if (enemy != null) enemy.onAttack.RemoveListener(PlayAttack);
+        SetCharging(false);
         StopAllCoroutines();
         // A disabled visual cannot finish playing; do not leave an invisible corpse behind.
         CompleteDeath();

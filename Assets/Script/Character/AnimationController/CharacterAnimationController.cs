@@ -6,6 +6,9 @@ public class CharacterAnimationController : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private PlayerMove playerMove;
+    private Character character;
+    private bool hasChargeParameter;
+    private static readonly int ChargeHash = Animator.StringToHash("IsCharging");
     public Animator CharacterAnimator => animator;
 
     private static readonly int IsMoving =
@@ -25,11 +28,16 @@ public class CharacterAnimationController : MonoBehaviour
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
+        character = GetComponent<Character>();
 
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
         }
+        if (animator != null && animator.runtimeAnimatorController != null)
+            foreach (AnimatorControllerParameter parameter in animator.parameters)
+                hasChargeParameter |= parameter.nameHash == ChargeHash &&
+                    parameter.type == AnimatorControllerParameterType.Bool;
         if (animator != null && animator.GetComponent<ProjectD.Audio.CharacterAudioEvents>() == null)
             animator.gameObject.AddComponent<ProjectD.Audio.CharacterAudioEvents>();
     }
@@ -41,14 +49,38 @@ public class CharacterAnimationController : MonoBehaviour
 
         // กำลังเดิน = Walk
         // หยุดเดิน = Idle
-        animator.SetBool(IsMoving, playerMove.IsMoving());
+        bool moving = playerMove.IsMoving();
+        animator.SetBool(IsMoving, !isDead && moving);
+        TurnGameManager manager = TurnGameManager.Instance;
+        bool shouldCharge = !isDead && character != null && character.CanUseSkill && !moving &&
+            manager != null && manager.CurrentPlayer == playerMove &&
+            manager.IsSkillTargeting && manager.CanChooseSkill;
+        if (shouldCharge) PlayCharge();
+        else StopCharge();
     }
+
+    public void PlayCharge()
+    {
+        if (!isActiveAndEnabled || isDead || character == null || character.IsDead) return;
+        SetCharging(true);
+    }
+
+    public void StopCharge() => SetCharging(false);
+
+    private void SetCharging(bool charging)
+    {
+        if (animator != null && hasChargeParameter)
+            animator.SetBool(ChargeHash, charging);
+    }
+
+    private void OnDisable() => SetCharging(false);
 
     public void PlaySkill()
     {
         if (animator == null)
             return;
 
+        SetCharging(false);
         animator.SetTrigger(UseSkill);
     }
 
@@ -57,6 +89,7 @@ public class CharacterAnimationController : MonoBehaviour
         if (animator == null)
             return;
 
+        SetCharging(false);
         animator.SetTrigger(InteractHash);
     }
 
@@ -66,6 +99,7 @@ public class CharacterAnimationController : MonoBehaviour
             return;
 
         isDead = true;
+        SetCharging(false);
 
         if (animator == null)
             return;
