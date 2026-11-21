@@ -3,18 +3,18 @@
     "levels": [
         {
             "level": 1,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
             "level": 2,
             "completed": false,
-            "unlocked": false
+            "unlocked": true
         },
         {
             "level": 3,
             "completed": false,
-            "unlocked": false
+            "unlocked": true
         },
         {
             "level": 4,
@@ -32,13 +32,34 @@
     "questPaperLayoutVersion": 1,
     "questPaperPlacements": [
         {
-            "level": 1,
+            "level": 2,
             "page": 0,
             "slot": 2,
-            "x": 0.831753134727478,
-            "y": 0.018299607560038568,
-            "rotation": -2.4609615802764894
+            "x": 0.28961828351020815,
+            "y": 0.8610959649085999,
+            "rotation": 4.774177074432373
+        },
+        {
+            "level": 3,
+            "page": 0,
+            "slot": 3,
+            "x": 0.7970618605613709,
+            "y": 0.8569111227989197,
+            "rotation": 4.873144149780273
         }
     ],
-    "questDepthDescriptions": []
+    "questDepthDescriptions": [
+        {
+            "questId": "level:1",
+            "text": "นอนรอสมบัติได้เลย"
+        },
+        {
+            "questId": "level:2",
+            "text": "เหมาะกับการอุ่นเครื่อง"
+        },
+        {
+            "questId": "level:3",
+            "text": "ส่งมือใหม่ไปได้"
+        }
+    ]
 }

@@ -432,7 +432,8 @@ public class CameraFocusManager : MonoBehaviour
         Ray to = mainCamera.ScreenPointToRay(pointer);
         if (!ground.Raycast(from, out float fromDistance) ||
             !ground.Raycast(to, out float toDistance)) return;
-        Vector3 shift = (from.GetPoint(fromDistance) - to.GetPoint(toDistance)) * dragSensitivity;
+        Vector3 shift = (from.GetPoint(fromDistance) - to.GetPoint(toDistance)) * dragSensitivity
+            * ProjectD.Menus.GameSettings.PanSensitivity;
         shift.y = 0f;
         desiredPosition = ClampToBounds(desiredPosition + shift);
     }

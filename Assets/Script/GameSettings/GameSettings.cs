@@ -9,6 +9,20 @@ namespace ProjectD.Menus
         public static event System.Action CameraChanged;
         public static bool CameraShakeEnabled => PlayerPrefs.GetInt("Settings.Camera.Shake", 1) != 0;
         public static bool ActionZoomEnabled => PlayerPrefs.GetInt("Settings.Camera.ActionZoom", 1) != 0;
+        public const float MinPanSensitivity = 0.25f;
+        public const float MaxPanSensitivity = 2f;
+        public static float PanSensitivity => ClampPanSensitivity(PlayerPrefs.GetFloat("Settings.Camera.PanSensitivity", 1f));
+
+        private static float ClampPanSensitivity(float value) =>
+            float.IsFinite(value) ? Mathf.Clamp(value, MinPanSensitivity, MaxPanSensitivity) : 1f;
+
+        public static void SetPanSensitivity(float value)
+        {
+            PlayerPrefs.SetFloat("Settings.Camera.PanSensitivity", ClampPanSensitivity(value));
+            CameraChanged?.Invoke();
+        }
+
+        public static void SaveCameraSettings() => PlayerPrefs.Save();
 
         public static void SetCameraShake(bool enabled) => SetCameraOption("Settings.Camera.Shake", enabled);
         public static void SetActionZoom(bool enabled) => SetCameraOption("Settings.Camera.ActionZoom", enabled);
