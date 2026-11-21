@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using ProjectD.Audio;
 using TMPro;
 using UnityEngine;
@@ -35,6 +36,17 @@ namespace ProjectD.Menus
             if (title != null) inkTitleFont = title.font;
             group = GetComponent<CanvasGroup>();
             button.onClick.AddListener(Select);
+        }
+
+        private void OnEnable()
+        {
+            // The controller starts in PopIn (Entry -> PopIn -> Normal). Only a brand-new paper keeps it (PlayPopIn),
+            // so every other paper starts straight in Normal.
+            if (TryGetComponent(out Animator animator) && animator.runtimeAnimatorController != null)
+            {
+                animator.Play("Normal", 0, 0f);
+                animator.Update(0f);
+            }
         }
 
         private void OnDestroy()
@@ -79,12 +91,31 @@ namespace ProjectD.Menus
             gameObject.SetActive(true);
         }
 
-        /// <summary>Plays the Animator's 'PopIn' state. Call after Bind, when the paper is active.</summary>
+        /// <summary>
+        /// Plays the Animator's 'PopIn' state. Call after Bind, when the paper is active.
+        /// The paper waits, hidden on the first frame, until the scene change (fade / loading screen) has finished,
+        /// so the pop-in is seen instead of playing behind the fade.
+        /// </summary>
         internal void PlayPopIn()
         {
             if (!TryGetComponent(out Animator animator) || animator.runtimeAnimatorController == null || !animator.isActiveAndEnabled) return;
             animator.Update(0f);   // use up the Normal trigger the Button sends when the paper is enabled
             animator.Play("PopIn", 0, 0f);
+            animator.Update(0f);   // first frame: paper hidden
+            animator.speed = 0f;
+            StartCoroutine(ResumeWhenSceneVisible(animator));
+        }
+
+        private static IEnumerator ResumeWhenSceneVisible(Animator animator)
+        {
+            while (GameSceneManager.IsChangingScene) yield return null;
+            animator.speed = 1f;
+        }
+
+        private void OnDisable()
+        {
+            // Pooled papers must never keep a paused Animator.
+            if (TryGetComponent(out Animator animator)) animator.speed = 1f;
         }
 
         internal void PlaceIn(RectTransform area, int slot, int capacity)
