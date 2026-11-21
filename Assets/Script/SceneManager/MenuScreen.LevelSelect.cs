@@ -124,18 +124,25 @@ namespace ProjectD.Menus
                 : null;
 
             int visibleCount = 0;
+            var newPapers = new List<int>();   // levels whose paper pops in for the first time
             foreach (var level in boardLevels)
             {
-                var paper = GetPaper(boardPapers, boardPaperArea, visibleCount);
+                var paper = boardPapers.Get(boardPaperArea, visibleCount);
                 if (paper == null) break;
 
                 if (placements == null) paper.PlaceIn(boardPaperArea, visibleCount, capacity);
                 else paper.PlaceOnBoard(boardPaperArea, placements[level.id], capacity);
                 paper.BindLevel(level, useSavedPlacements || GameSceneManager.IsUnlocked(level.id), false, () => OpenLevel(level.id));
+                if (placements != null && !placements[level.id].popInPlayed)
+                {
+                    paper.PlayPopIn();
+                    newPapers.Add(level.id);
+                }
                 visibleCount++;
             }
 
-            HidePapers(boardPapers, visibleCount);
+            if (newPapers.Count > 0) LevelProgressStore.MarkQuestPaperPopIn(newPapers);
+            boardPapers.HideFrom(visibleCount);
         }
 
         public void OpenLevel(int levelId)
@@ -225,7 +232,7 @@ namespace ProjectD.Menus
             int visibleCount = 0;
             for (; visibleCount < entryCount; visibleCount++)
             {
-                var paper = GetPaper(collectionPapers, content, visibleCount);
+                var paper = collectionPapers.Get(content, visibleCount);
                 if (paper == null) break;
                 paper.PlaceIn(content, visibleCount, slots);
                 if (completed)
@@ -239,7 +246,7 @@ namespace ProjectD.Menus
                     paper.BindSecret(level, () => OpenSecretDetails(level));
                 }
             }
-            HidePapers(collectionPapers, visibleCount);
+            collectionPapers.HideFrom(visibleCount);
         }
 
         private void OpenSecretDetails(SecretLevelDefinition level)

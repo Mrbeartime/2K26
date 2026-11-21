@@ -1096,6 +1096,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SwordMan
   CanKill: 1
   skillsUsed: 0
+  deathAnimator: {fileID: 0}
+  corpseOffset: {x: 0.2, y: 0, z: 0.2}
+  fallbackCorpseRotation: {x: 0, y: 0, z: 90}
   movementRange: 3
 --- !u!1001 &211654801
 PrefabInstance:
@@ -2311,6 +2314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 136e625c3bfde924ea9c381f3fbe50d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinBox
+  completionTarget: 0
 --- !u!65 &566181152
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4025,8 +4029,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: PAUSE
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4745,6 +4749,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArcherMan
   CanKill: 1
   skillsUsed: 0
+  deathAnimator: {fileID: 0}
+  corpseOffset: {x: 0.2, y: 0, z: 0.2}
+  fallbackCorpseRotation: {x: 0, y: 0, z: 90}
   movementRange: 3
   skillUsesPerLevel: 1
   arrowPrefab: {fileID: 3213522603776357480, guid: 7c02c43467214f14096a8f94b2cbb674, type: 3}
@@ -4961,6 +4968,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af6433eb50c9cf545b341d4d4314494d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  interactDoubleClickInterval: 0.3
 --- !u!4 &1221775766
 Transform:
   m_ObjectHideFlags: 0
@@ -6121,6 +6129,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorSwitch
   doors:
   - {fileID: 1120113301}
+  spikeTraps: []
+  interactionAnimations: []
 --- !u!1001 &1694356304
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6356,6 +6366,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Rogue
   CanKill: 1
   skillsUsed: 0
+  deathAnimator: {fileID: 0}
+  corpseOffset: {x: 0.2, y: 0, z: 0.2}
+  fallbackCorpseRotation: {x: 0, y: 0, z: 90}
   movementRange: 3
   skillUsesPerLevel: 1
   LockpickIsAvailable: 1
@@ -7476,8 +7489,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f76ed9a5d624afe9b1575ed8369d85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnGameManager
+  turnScheduleData: {fileID: 0}
+  entranceCutscene: {fileID: 0}
   maximumTurns: 13
   enemyPhaseDelay: 0.35
+  screenShake: {fileID: 0}
   showTestUI: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -331,6 +331,14 @@ PrefabInstance:
       propertyPath: positionAnchor
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4003, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+    - target: {fileID: 4003, guid: ef2fab5ea83749128d4678be98ea7ab9, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

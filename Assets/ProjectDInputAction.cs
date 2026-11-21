@@ -1390,7 +1390,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                     ""name"": ""Pan"",
                     ""type"": ""Button"",
                     ""id"": ""ac8ce076-8acb-45e9-bd5e-4d4c5be5bf8c"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false,
@@ -1421,7 +1421,7 @@ public partial class @ProjectDInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""5c9af326-117f-4d35-98ad-76203922669a"",
-                    ""path"": ""<Mouse>/middleButton"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",

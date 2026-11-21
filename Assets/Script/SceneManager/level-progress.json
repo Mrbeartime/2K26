@@ -3,18 +3,18 @@
     "levels": [
         {
             "level": 1,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
             "level": 2,
             "completed": false,
-            "unlocked": false
+            "unlocked": true
         },
         {
             "level": 3,
             "completed": false,
-            "unlocked": false
+            "unlocked": true
         },
         {
             "level": 4,
@@ -32,12 +32,22 @@
     "questPaperLayoutVersion": 1,
     "questPaperPlacements": [
         {
-            "level": 1,
+            "level": 2,
             "page": 0,
             "slot": 2,
-            "x": 0.831753134727478,
-            "y": 0.018299607560038568,
-            "rotation": -2.4609615802764894
+            "x": 0.6595390439033508,
+            "y": 0.8174882531166077,
+            "rotation": 1.8383489847183228,
+            "popInPlayed": true
+        },
+        {
+            "level": 3,
+            "page": 0,
+            "slot": 1,
+            "x": 0.6163066625595093,
+            "y": 0.3479842245578766,
+            "rotation": -3.8425240516662599,
+            "popInPlayed": true
         }
     ],
     "questDepthDescriptions": [

@@ -124,6 +124,8 @@ public class NewInGameUIManager : MonoBehaviour
     private readonly List<RectTransform> hazardEvents = new();
 
     private const int MaximumCharacterIcons = 5;
+    // Dead characters' HUD icons are hidden, not destroyed, so they can still be read later.
+    private readonly List<GameObject> hiddenCharacterIcons = new();
     private readonly List<(PlayerMove player, NewCharacterIcon icon, CanvasGroup group)> characterIcons = new();
     private readonly List<RectTransform> characterConnectors = new();
     private HoldButton endTurnButton;
@@ -426,10 +428,24 @@ public class NewInGameUIManager : MonoBehaviour
                 effect.localScale = icon.localScale;
             }
 
-            RemoveGraphic(icon);
+            HideDeadIcon(icon);
             characterIcons[i] = (entry.player, null, null);
         }
         UpdateCharacterSelection();
+    }
+
+    private void HideDeadIcon(RectTransform icon)
+    {
+        if (icon == null) return;
+        // Remove raycast first so the hidden icon can never catch a click or hover.
+        foreach (Graphic graphic in icon.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+        if (icon.TryGetComponent(out Button button)) button.interactable = false;
+        CanvasGroup group = GetOrAddCanvasGroup(icon.gameObject);
+        group.blocksRaycasts = false;
+        group.interactable = false;
+        icon.gameObject.SetActive(false);
+        hiddenCharacterIcons.Add(icon.gameObject);
     }
 
     private void UpdateCharacterSelection()
@@ -448,7 +464,7 @@ public class NewInGameUIManager : MonoBehaviour
             bool selectable = canSelectCharacters && !turnGameManager.IsPlayerFinished(entry.player);
             entry.icon.SetSelected(selected);
             entry.icon.SetFocused(selected && selectable && !actionsFocused);
-            entry.group.alpha = selectable ? 1f : 0.5f;
+            entry.group.alpha = selectable ? 1f : 50f / 255f;
         }
     }
 
@@ -522,6 +538,9 @@ public class NewInGameUIManager : MonoBehaviour
     {
         foreach (var entry in characterIcons)
             if (entry.icon != null) RemoveGraphic(entry.icon.transform);
+        foreach (GameObject hidden in hiddenCharacterIcons)
+            if (hidden != null) Destroy(hidden);
+        hiddenCharacterIcons.Clear();
         foreach (RectTransform connector in characterConnectors)
             RemoveGraphic(connector);
         characterIcons.Clear();

@@ -79,6 +79,14 @@ namespace ProjectD.Menus
             gameObject.SetActive(true);
         }
 
+        /// <summary>Plays the Animator's 'PopIn' state. Call after Bind, when the paper is active.</summary>
+        internal void PlayPopIn()
+        {
+            if (!TryGetComponent(out Animator animator) || animator.runtimeAnimatorController == null || !animator.isActiveAndEnabled) return;
+            animator.Update(0f);   // use up the Normal trigger the Button sends when the paper is enabled
+            animator.Play("PopIn", 0, 0f);
+        }
+
         internal void PlaceIn(RectTransform area, int slot, int capacity)
         {
             Initialize();

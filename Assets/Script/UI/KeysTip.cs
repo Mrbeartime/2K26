@@ -12,13 +12,14 @@ public class KeysTip : MonoBehaviour
     [SerializeField] private RectTransform returnTip;
     [SerializeField] private RectTransform navigateSelectionTip;
     [SerializeField] private RectTransform confirmSelectionTip;
+    [SerializeField] private RectTransform cameraPanRotateTip;
 
     [SerializeField, Min(0f)] private float rowSpacing = 70f;
 
-    private enum Visibility { Always, Camera, Character, ActionOrEndTurn, Selection, Confirm }
+    private enum Visibility { Always, Camera, CameraPanRotate, Character, ActionOrEndTurn, Selection, Confirm }
 
     private (RectTransform Row, float Bottom, float Right, Visibility Visibility)[] rows;
-    private (bool CameraFree, bool CanSelect, bool ActionOrEndTurnFocused, bool CanConfirm)? displayedState;
+    private (bool CameraFree, bool CanPanRotate, bool CanSelect, bool ActionOrEndTurnFocused, bool CanConfirm)? displayedState;
     private Sprite resetFillSprite;
     internal Image ResetFill { get; private set; }
 
@@ -27,6 +28,7 @@ public class KeysTip : MonoBehaviour
         // List the tips from top to bottom.
         (RectTransform Prefab, Visibility Visibility)[] tips =
         {
+            (cameraPanRotateTip, Visibility.CameraPanRotate),
             (navigateSelectionTip, Visibility.Selection),
             (chooseActionTip, Visibility.Character),
             (returnTip, Visibility.ActionOrEndTurn),
@@ -115,11 +117,13 @@ public class KeysTip : MonoBehaviour
     private void Refresh()
     {
         NewInGameUIManager hud = NewInGameUIManager.Instance;
-        bool cameraFree = CameraFocusManager.Instance?.CanAcceptManualInput == true;
+        CameraFocusManager camera = CameraFocusManager.Instance;
+        bool cameraFree = camera?.CanAcceptManualInput == true;
+        bool canPanRotate = camera != null && camera.CanRotateCamera && camera.CanPanCamera;
         bool canSelect = hud != null && hud.CanNavigateSelection;
         bool actionOrEndTurnFocused = canSelect && (hud.IsChoosingAction || hud.IsEndTurnFocused);
         bool canConfirm = hud != null && hud.CanUseSpacebar;
-        var state = (cameraFree, canSelect, actionOrEndTurnFocused, canConfirm);
+        var state = (cameraFree, canPanRotate, canSelect, actionOrEndTurnFocused, canConfirm);
         if (displayedState == state) return;
         displayedState = state;
 
@@ -132,6 +136,7 @@ public class KeysTip : MonoBehaviour
             bool visible = visibility switch
             {
                 Visibility.Camera => cameraFree,
+                Visibility.CameraPanRotate => canPanRotate,
                 Visibility.Character => canSelect && !actionOrEndTurnFocused,
                 Visibility.ActionOrEndTurn => actionOrEndTurnFocused,
                 Visibility.Selection => canSelect,

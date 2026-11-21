@@ -370,6 +370,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1910855798202658176, guid: 7e31407788084bd0a9f8a53eb737bc2b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+    - target: {fileID: 1910855798202658176, guid: 7e31407788084bd0a9f8a53eb737bc2b, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4294967295
       objectReference: {fileID: 0}
@@ -497,6 +501,10 @@ PrefabInstance:
       propertyPath: m_fontColor.r
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3419440829065598188, guid: 7e31407788084bd0a9f8a53eb737bc2b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
     - target: {fileID: 3419440829065598188, guid: 7e31407788084bd0a9f8a53eb737bc2b, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4294967295
@@ -1207,8 +1215,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u0E1B\u0E23\u0E30\u0E0A\u0E38\u0E21\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
-  m_sharedMaterial: {fileID: -4158309724629822136, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1618,8 +1626,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E17\u0E35\u0E48\u0E1C\u0E48\u0E32\u0E19\u0E41\u0E25\u0E49\u0E27"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
-  m_sharedMaterial: {fileID: -4158309724629822136, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2578,7 +2586,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1800000027}
   - component: {fileID: 1800000028}
-  - component: {fileID: 1800000029}
   m_Layer: 5
   m_Name: Paper Panel
   m_TagString: Untagged
@@ -2614,36 +2621,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1800000026}
   m_CullTransparentMesh: 1
---- !u!114 &1800000029
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1800000026}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.82}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1800000030
 GameObject:
   m_ObjectHideFlags: 0
@@ -2704,7 +2681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.39215687}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2786,10 +2763,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level Name
+  m_text: "\u0E0A\u0E37\u0E37\u0E48\u0E2D\u0E40\u0E04\u0E27\u0E2A"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
-  m_sharedMaterial: {fileID: 8550532163986673608, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
+  m_sharedMaterial: {fileID: -6596904834127086767, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2892,8 +2869,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 190}
-  m_SizeDelta: {x: 600, y: 250}
+  m_AnchoredPosition: {x: 0, y: 242}
+  m_SizeDelta: {x: 600, y: 214}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1800000040
 CanvasRenderer:
@@ -2923,10 +2900,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Select a paper to view its details.
+  m_text: "\u0E04\u0E33\u0E2D\u0E18\u0E34\u0E1A\u0E32\u0E22\u0E40\u0E04\u0E27\u0E2A\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3031,7 +3008,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: -637}
+  m_AnchoredPosition: {x: -0, y: -707}
   m_SizeDelta: {x: 220, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1800000080
@@ -3068,7 +3045,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 10}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1800000082
@@ -3099,10 +3076,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Play
+  m_text: "\u0E40\u0E23\u0E34\u0E48\u0E21\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
+  m_sharedMaterial: {fileID: -1214496838778695026, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3403,8 +3380,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E40\u0E1A\u0E32 \u0E46 \u0E40\u0E2B\u0E21\u0E32\u0E30\u0E01\u0E31\u0E1A\u0E01\u0E32\u0E23\u0E2D\u0E38\u0E48\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
-  m_sharedMaterial: {fileID: 8550532163986673608, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3428,7 +3405,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 37.75
+  m_fontSize: 40
   m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3507,7 +3484,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 32}
+  m_AnchoredPosition: {x: 0, y: 82}
   m_SizeDelta: {x: 1020, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1800000128
@@ -3538,10 +3515,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Party Member
+  m_text: "\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01\u0E1B\u0E32\u0E23\u0E4C\u0E15\u0E35\u0E49"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3643,7 +3620,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -58}
+  m_AnchoredPosition: {x: 0, y: -20}
   m_SizeDelta: {x: 1020, y: 112}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1800000132

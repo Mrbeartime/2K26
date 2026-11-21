@@ -54,7 +54,7 @@ namespace ProjectD.Menus
         public static string LoadingScene => Catalog != null ? Catalog.loadingScene.Path : string.Empty;
         public static int LevelCount => Catalog != null ? Catalog.Levels.Count : 0;
         public static bool IsInGameSettingsOpen => InGameSettingsSession.IsOpen;
-        public static bool IsChangingScene => LoadingScreen.IsLoading || (pendingNavigation != null && !pendingNavigation.isDone);
+        public static bool IsChangingScene => SceneFade.IsBusy || LoadingScreen.IsLoading || (pendingNavigation != null && !pendingNavigation.isDone);
         public static int ActiveLevel => Catalog != null ? Catalog.FindLevelByScene(SceneManager.GetActiveScene().path)?.id ?? 0 : 0;
         public static string LevelPath(int id) => Catalog != null ? Catalog.FindLevel(id)?.scene.Path ?? string.Empty : string.Empty;
         public static bool IsUnlocked(int id) => LevelProgressStore.IsUnlocked(id);
@@ -116,7 +116,12 @@ namespace ProjectD.Menus
                 Debug.LogError("Cannot load scene. Check SceneCatalog and Build Settings: " + path);
                 return false;
             }
-            if (showLoading) return LoadingScreen.TryLoad(path);
+            // Every scene change fades to black (0.5 s), loads, then fades back in (0.5 s).
+            return SceneFade.Run(() => showLoading ? LoadingScreen.TryLoad(path) : LoadNow(path));
+        }
+
+        private static bool LoadNow(string path)
+        {
             InGameSettingsSession.LeaveForSceneChange();
             Time.timeScale = 1f;
             try
