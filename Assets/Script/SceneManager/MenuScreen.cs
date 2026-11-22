@@ -3,6 +3,8 @@ using ProjectD.Audio;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -40,8 +42,21 @@ namespace ProjectD.Menus
             HideSettingsPanel();
             if (paperPanel != null) paperPanel.SetActive(false);
             ButtonAudioFeedback.BindMenu(settingsPanel);
-            if (page == Page.Start && !isSettingsScene) ButtonAudioFeedback.BindMenu(mainPanel);
-            if (page == Page.LevelSelect) SetupLevelSelection();
+            if (page == Page.Start && !isSettingsScene && mainPanel != null)
+            {
+                ButtonAudioFeedback.BindMenu(mainPanel);
+                foreach (var b in mainPanel.GetComponentsInChildren<Button>(true))
+                    if (b.GetComponent<SelectedButtonBold>() == null) b.gameObject.AddComponent<SelectedButtonBold>();
+                // Hold buttons (Exit) quit once the fill completes.
+                foreach (var hold in mainPanel.GetComponentsInChildren<HoldButton>(true))
+                    hold.HoldCompleted += ExitGame;
+                BindSpaceSubmit();
+            }
+            if (page == Page.LevelSelect)
+            {
+                SetupLevelSelection();
+                BindSpaceSubmit();
+            }
             if (!isSettingsScene || settingsPanel == null) RefreshSettingsLabels();
             if (isSettingsScene) OpenSettings();
         }
@@ -61,6 +76,28 @@ namespace ProjectD.Menus
             if (backPressed && MenuInput.ConsumeBack()) GoBack();
         }
 
+        // Nothing selected: a navigation key / Space selects the first button (after the EventSystem has handled the key).
+        // Start page: the top button. Level select: the leftmost QuestPaper / Complete / Secret button.
+        private void LateUpdate()
+        {
+            if (uiInput == null || GameSceneManager.IsInGameSettingsOpen || EventSystem.current == null) return;
+            var root = page == Page.LevelSelect && paperPanel != null && paperPanel.activeInHierarchy ? paperPanel : mainPanel;
+            if (root == null || !root.activeInHierarchy) return;
+            var selected = EventSystem.current.currentSelectedGameObject;
+            if (selected != null && selected.activeInHierarchy) return;   // a hidden panel leaves a stale selection
+            var k = Keyboard.current;
+            if (k == null || !(k.spaceKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame
+                || k.leftArrowKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame
+                || k.wKey.wasPressedThisFrame || k.aKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame || k.dKey.wasPressedThisFrame)) return;
+            Button first = null;
+            foreach (var b in root.GetComponentsInChildren<Button>(false))
+            {
+                if (!b.IsInteractable()) continue;
+                if (first == null || (page == Page.LevelSelect && b.transform.position.x < first.transform.position.x)) first = b;
+            }
+            if (first != null) EventSystem.current.SetSelectedGameObject(first.gameObject);
+        }
+
         public void GoBack()
         {
             if (IsSettingsVisible || IsSettingsScene)
@@ -75,6 +112,27 @@ namespace ProjectD.Menus
             else if (page == Page.LevelSelect) OpenStart();
         }
 
+        // Same input as the Pause overlay: its UI map has Space as Submit (the scene's default asset does not).
+        private ProjectDInputAction uiInput;
+
+        private void BindSpaceSubmit()
+        {
+            var module = FindFirstObjectByType<InputSystemUIInputModule>();
+            if (module == null) return;
+            uiInput = new ProjectDInputAction();
+            uiInput.UI.Enable();
+            module.actionsAsset = uiInput.asset;
+            uiInput.UI.Submit.started += OnSubmitStarted;
+            uiInput.UI.Submit.canceled += OnSubmitCanceled;
+        }
+
+        // Space/Enter on the selected Hold button (Exit) starts the hold; release cancels it.
+        private void OnSubmitStarted(InputAction.CallbackContext _) =>
+            EventSystem.current?.currentSelectedGameObject?.GetComponent<HoldButton>()?.BeginKeyboardHold();
+
+        private void OnSubmitCanceled(InputAction.CallbackContext _) =>
+            EventSystem.current?.currentSelectedGameObject?.GetComponent<HoldButton>()?.CancelKeyboardHold();
+
         private void BindButton(Button button, UnityAction action)
         {
             if (button == null) return;
@@ -84,6 +142,7 @@ namespace ProjectD.Menus
 
         private void OnDestroy()
         {
+            uiInput?.Dispose();
             foreach (var binding in bindings)
                 if (binding.button != null) binding.button.onClick.RemoveListener(binding.action);
         }

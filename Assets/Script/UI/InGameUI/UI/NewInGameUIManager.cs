@@ -135,6 +135,9 @@ public class NewInGameUIManager : MonoBehaviour
     private TextMeshProUGUI endTurnLabel;
     private Color endTurnNormalColor;
     private bool endTurnFocused;
+    [Tooltip("Extra seconds needed to skip the turn by holding Space when the Skip button is not selected.")]
+    [SerializeField, Min(0f)] private float unfocusedSkipHoldExtra = 0.3f;
+    private float endTurnBaseHold;
 
     private sealed class TurnBarSlot
     {
@@ -559,6 +562,7 @@ public class NewInGameUIManager : MonoBehaviour
         endTurnImage = endTurnButton.GetComponent<Image>();
         endTurnLabel = endTurnButton.GetComponentInChildren<TextMeshProUGUI>(true);
         if (endTurnImage != null) endTurnNormalColor = endTurnImage.color;
+        endTurnBaseHold = endTurnButton.HoldDuration;
         endTurnButton.HoldCompleted += OnClickEndTurn;
         endTurnButton.HoldStarted += StartTurnCharge;
         endTurnButton.HoldCanceled += StopTurnCharge;
@@ -1132,6 +1136,10 @@ public class NewInGameUIManager : MonoBehaviour
     private bool CanHoldEndTurnWithSpacebar => CanNavigateSelection && endTurnFocused &&
         endTurnButton != null && HighlightedAction == NoAction;
 
+    // Space can also skip without selecting Skip first, but takes a little longer.
+    private bool CanHoldSkipWithoutSelecting => CanNavigateSelection && !endTurnFocused && !DiaryUI.IsOpen &&
+        endTurnButton != null && CanUseEndTurnButton && HighlightedAction == NoAction;
+
     internal bool IsPreviewingAction => CanUseActionMenu &&
         HighlightedAction != NoAction && HighlightedAction != ConfirmedAction;
 
@@ -1466,6 +1474,7 @@ public class NewInGameUIManager : MonoBehaviour
     private void OnNavigateSelection(InputAction.CallbackContext context)
     {
         if (BlocksGameplayInput || turnGameManager == null) return;
+        if (!endTurnFocused) endTurnButton?.CancelKeyboardHold();
 
         float direction = context.ReadValue<float>();
         if (direction == 0f) return;
@@ -1488,7 +1497,15 @@ public class NewInGameUIManager : MonoBehaviour
     {
         if (CanConfirmHighlightedAction) SelectAction(HighlightedAction);
         else if (CanHoldEndTurnWithSpacebar)
-            endTurnButton.BeginKeyboardHold();
+            BeginSkipHold(false);
+        else if (CanHoldSkipWithoutSelecting)
+            BeginSkipHold(true);
+    }
+
+    private void BeginSkipHold(bool slower)
+    {
+        endTurnButton.SetHoldDuration(endTurnBaseHold + (slower ? unfocusedSkipHoldExtra : 0f));
+        endTurnButton.BeginKeyboardHold();
     }
 
     private void OnReleaseConfirm(InputAction.CallbackContext context)
@@ -1518,6 +1535,7 @@ public class NewInGameUIManager : MonoBehaviour
     private void OnChangeSelectionMode(InputAction.CallbackContext context)
     {
         if (BlocksGameplayInput || turnGameManager == null) return;
+        if (!endTurnFocused) endTurnButton?.CancelKeyboardHold();
 
         float direction = context.ReadValue<float>();
         if (direction < 0f)

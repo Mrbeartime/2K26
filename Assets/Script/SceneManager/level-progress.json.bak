@@ -8,7 +8,7 @@
         },
         {
             "level": 2,
-            "completed": false,
+            "completed": true,
             "unlocked": true
         },
         {
@@ -19,7 +19,7 @@
         {
             "level": 4,
             "completed": false,
-            "unlocked": false
+            "unlocked": true
         },
         {
             "level": 5,
@@ -32,28 +32,36 @@
     "questPaperLayoutVersion": 1,
     "questPaperPlacements": [
         {
-            "level": 2,
-            "page": 0,
-            "slot": 2,
-            "x": 0.3237629532814026,
-            "y": 0.6707838773727417,
-            "rotation": -1.2095893621444703,
-            "popInPlayed": false
-        },
-        {
             "level": 3,
             "page": 0,
-            "slot": 3,
-            "x": 0.46162736415863039,
-            "y": 0.825417697429657,
-            "rotation": -2.8248379230499269,
+            "slot": 1,
+            "x": 0.09595536440610886,
+            "y": 0.07131938636302948,
+            "rotation": 2.421370267868042,
+            "popInPlayed": true
+        },
+        {
+            "level": 4,
+            "page": 0,
+            "slot": 2,
+            "x": 0.12257634103298187,
+            "y": 0.5173969268798828,
+            "rotation": -4.072285175323486,
             "popInPlayed": false
         }
     ],
     "questDepthDescriptions": [
         {
             "questId": "level:1",
-            "text": "เดินสำรวจได้สบาย ๆ"
+            "text": "เหมาะกับการอุ่นเครื่อง"
+        },
+        {
+            "questId": "level:3",
+            "text": "สบายใจได้ไม่ครณามือ"
+        },
+        {
+            "questId": "level:2",
+            "text": "นอนรอสมบัติได้เลย"
         }
     ]
 }

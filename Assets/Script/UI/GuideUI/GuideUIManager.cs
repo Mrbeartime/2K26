@@ -1,4 +1,6 @@
 using System;
+using ProjectD.Audio;
+using ProjectD.Menus;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -49,6 +51,7 @@ public class GuideUIManager : MonoBehaviour
     {
         _inputAction = new ProjectDInputAction();
         SetupBookmarks();
+        SetupButtonSounds();
         if (videoPlayer != null) video = videoPlayer.GetComponent<VideoPlayer>();
     }
 
@@ -74,8 +77,98 @@ public class GuideUIManager : MonoBehaviour
         }
     }
 
+    // All Guide buttons use the TurnPages sound (cues GuideTurnPage / GuideTurnPageHover).
+    private void SetupButtonSounds()
+    {
+        foreach (Button button in GetComponentsInChildren<Button>(true))
+        {
+            ButtonAudioFeedback.BindCustom(button, AudioCue.GuideTurnPageHover, AudioCue.GuideTurnPage);
+            if (Array.IndexOf(bookmarkButtons, button) < 0)
+                StyleTitleButton(button);
+        }
+    }
+
+    // Same selected / hover look as the Start menu buttons: faint white highlight behind the button + bold label.
+    private static void StyleTitleButton(Button button)
+    {
+        if (button.targetGraphic is Image image) image.color = Color.white;
+        button.transition = Selectable.Transition.ColorTint;
+        ColorBlock colors = button.colors;
+        colors.normalColor = new Color(1f, 1f, 1f, 0f);
+        colors.highlightedColor = new Color(1f, 1f, 1f, 0.2f);
+        colors.pressedColor = new Color(1f, 1f, 1f, 0.5f);
+        colors.selectedColor = new Color(1f, 1f, 1f, 0.35f);
+        colors.disabledColor = new Color(1f, 1f, 1f, 0f);
+        colors.colorMultiplier = 1f;
+        colors.fadeDuration = 0.1f;
+        button.colors = colors;
+        if (button.GetComponent<SelectedButtonBold>() == null)
+            button.gameObject.AddComponent<SelectedButtonBold>();
+    }
+
+    private bool restoreNavigationEvents;
+
+    // Keyboard: A/D change bookmark, W/S change title (shown immediately). ESC is handled by the scene/overlay.
+    // The EventSystem's own WASD navigation is turned off meanwhile so keys are not handled twice.
+    private void Update()
+    {
+        Keyboard k = Keyboard.current;
+        if (k == null || pages == null) return;
+
+        if (k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame) StepPage(-1);
+        else if (k.dKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame) StepPage(1);
+        else if (k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame) StepTitle(-1);
+        else if (k.sKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame) StepTitle(1);
+    }
+
+    private void StepPage(int step)
+    {
+        int count = pages.Length;
+        ChangePage((currentPage + step + count) % count);
+        GameAudioManager.Instance?.PlayLevelClick(AudioCue.GuideTurnPage);
+        SelectTitle(0);
+    }
+
+    private Button[] CurrentTitleButtons()
+    {
+        GameObject page = pages[currentPage];
+        if (page == null) return Array.Empty<Button>();
+        return Array.FindAll(page.GetComponentsInChildren<Button>(false), b => b.IsInteractable());
+    }
+
+    private int HighlightedTitleIndex(Button[] titles)
+    {
+        GameObject selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        return selected == null ? -1 : Array.FindIndex(titles, b => b.gameObject == selected);
+    }
+
+    private void SelectTitle(int index)
+    {
+        Button[] titles = CurrentTitleButtons();
+        if (titles.Length == 0 || EventSystem.current == null) return;
+        Button target = titles[Mathf.Clamp(index, 0, titles.Length - 1)];
+        EventSystem.current.SetSelectedGameObject(target.gameObject);
+        // Highlighting a title also shows it, so no confirm key is needed.
+        int entry = Array.IndexOf(pages[currentPage].GetComponentsInChildren<Button>(false), target);
+        if (entry >= 0) ChangeTitle(entry);
+    }
+
+    private void StepTitle(int step)
+    {
+        Button[] titles = CurrentTitleButtons();
+        if (titles.Length == 0) return;
+        int current = HighlightedTitleIndex(titles);
+        // First press only highlights the first title.
+        SelectTitle(current < 0 ? 0 : (current + step + titles.Length) % titles.Length);
+    }
+
     private void OnEnable()
     {
+        if (EventSystem.current != null && EventSystem.current.sendNavigationEvents)
+        {
+            EventSystem.current.sendNavigationEvents = false;
+            restoreNavigationEvents = true;
+        }
         if (bookmarkHovered == null) return;
         for (int i = 0; i < bookmarkHovered.Length; i++)
             SetBookmarkHovered(i, false);
@@ -102,6 +195,9 @@ public class GuideUIManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (restoreNavigationEvents && EventSystem.current != null)
+            EventSystem.current.sendNavigationEvents = true;
+        restoreNavigationEvents = false;
         if (video != null) video.Stop();
     }
 
