@@ -1908,6 +1908,79 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b28cbef201156964cbac15d5283257f2, type: 3}
+--- !u!1001 &575006140
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.9437203
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.2270007
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2117866651250457191, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4319323602260278502, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4934984112338202611, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3cb13717202d4e7888bd51339e52c12b, type: 2}
+    - target: {fileID: 6241583339095864201, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8973394659268787139, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_Name
+      value: Drifting Mist
+      objectReference: {fileID: 0}
+    - target: {fileID: 9148473835277884160, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
 --- !u!1 &579688267
 GameObject:
   m_ObjectHideFlags: 0
@@ -4712,6 +4785,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ResultUISet
       objectReference: {fileID: 0}
+    - target: {fileID: 1395446177167853119, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4258884643099974202, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 774.6503
@@ -5243,3 +5320,4 @@ SceneRoots:
   - {fileID: 784598554}
   - {fileID: 1269427554}
   - {fileID: 7038640239364258513}
+  - {fileID: 575006140}
