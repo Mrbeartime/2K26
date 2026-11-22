@@ -125,6 +125,23 @@ public class Enemy : Entity
         if (occupiedTile != null) occupiedTile.ClearOccupant(gameObject);
     }
 
+    // Visual readiness only; attacking remains owned by the enemy turn.
+    public virtual bool HasChargeTarget()
+    {
+        if (IsDead || !Aggression || !isActiveAndEnabled || GridManager.Instance == null)
+            return false;
+
+        List<Tile> range = GetAttackRange();
+        foreach (Character target in FindObjectsByType<Character>())
+        {
+            if (target == null || target.IsDead || !target.isActiveAndEnabled ||
+                target.gameObject.scene != gameObject.scene) continue;
+            foreach (Tile tile in range)
+                if (tile.gridPosition == target.CurrentLocation) return true;
+        }
+        return false;
+    }
+
     public virtual List<Tile> GetAttackRange()
     {
         List<Tile> tiles = new List<Tile>();
