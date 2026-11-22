@@ -4809,6 +4809,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1963963842}
     m_Modifications:
+    - target: {fileID: 2675828360641152764, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4641623090113507351, guid: 9f528ff0f28713849a4a3e4b55398653, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -5703,6 +5707,10 @@ PrefabInstance:
     - target: {fileID: 1395446177167853119, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
       propertyPath: m_Name
       value: ResultUISet
+      objectReference: {fileID: 0}
+    - target: {fileID: 1395446177167853119, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4258884643099974202, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
       propertyPath: m_LocalPosition.x
