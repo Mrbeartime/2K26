@@ -69,8 +69,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
-  m_sharedMaterial: {fileID: -4158309724629822136, guid: d63f48a86ec90f24585348c3b39621b3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -206,8 +206,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Interact
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -343,8 +343,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Signature
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1554,8 +1554,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Move
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1761,6 +1761,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HoldButton
   holdDuration: 0.5
+  completedFillDuration: 0
   fillImage: {fileID: 0}
 --- !u!1 &5553784714097158173
 GameObject:

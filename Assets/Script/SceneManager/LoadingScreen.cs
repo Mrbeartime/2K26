@@ -36,7 +36,7 @@ namespace ProjectD.Menus
         [SerializeField] private TMP_Text progressLabel;
         [Header("Timing")]
         [SerializeField, Min(0f)] private float minShowTime = 1f;
-        [SerializeField, Min(0f)] private float fadeTime = 0.25f;
+        [SerializeField, Min(0f)] private float fadeTime = 0.5f;
         [SerializeField, Min(0.01f)] private float fillSpeed = 1.5f;
         private readonly List<(Image Image, Sprite[] Frames)> runners = new();
         private RectTransform runnerTrack;

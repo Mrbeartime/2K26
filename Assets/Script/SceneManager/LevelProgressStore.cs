@@ -18,6 +18,7 @@ namespace ProjectD.Menus
         public float x;
         public float y;
         public float rotation;
+        public bool popInPlayed; // the paper's pop-in animation has already played once
     }
 
     /// <summary>JSON is the source of truth. PlayerPrefs is read only for first-time migration.</summary>
@@ -266,6 +267,21 @@ namespace ProjectD.Menus
 
             if (questPaperDataDirty) Save();
             return entry.text;
+        }
+
+        /// <summary>Remembers that these board papers played their pop-in, so it only happens the first time they are created.</summary>
+        internal static void MarkQuestPaperPopIn(IEnumerable<int> levels)
+        {
+            EnsureLoaded();
+            bool changed = false;
+            foreach (int level in levels)
+            {
+                var placement = data.questPaperPlacements.Find(item => item.level == level);
+                if (placement == null || placement.popInPlayed) continue;
+                placement.popInPlayed = true;
+                changed = true;
+            }
+            if (changed) Save();
         }
 
         private static List<int> GetCenterOutSlotOrder(int columns)

@@ -111,6 +111,13 @@ public class CameraFocusManager : MonoBehaviour
 
     internal bool CanAcceptManualInput => isActiveAndEnabled && ready && !cutsceneActive && !ManualInputBlocked;
 
+    private InputAction RotationInput => NewInGameUIManager.Instance?.GameplayInput?.CameraMove
+        ?? cameraInputs?.Camera.Rotate;
+    private bool CanDragCamera => CanAcceptManualInput && enableCameraDrag && cameraInputs != null &&
+        Mouse.current != null && (!blockDragOverUI || !IsPointerOverUI());
+    internal bool CanRotateCamera => CanDragCamera && RotationInput?.enabled == true;
+    internal bool CanPanCamera => CanDragCamera && cameraInputs.Camera.Pan.enabled;
+
     private static bool ManualInputBlocked
     {
         get
@@ -349,8 +356,7 @@ public class CameraFocusManager : MonoBehaviour
 
     private void HandleRightMouseDrag()
     {
-        InputAction rotate = NewInGameUIManager.Instance?.GameplayInput?.CameraMove
-            ?? cameraInputs?.Camera.Rotate;
+        InputAction rotate = RotationInput;
         if (!enableCameraDrag || cameraInputs == null || rotate == null || !rotate.IsPressed())
         {
             CancelRotationInput();

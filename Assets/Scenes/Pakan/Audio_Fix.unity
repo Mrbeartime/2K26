@@ -252,8 +252,12 @@ MonoBehaviour:
   focusSmoothTime: 0.25
   walkingSmoothTime: 0.15
   zoomSmoothTime: 0.3
+  actionZoomDuration: 0.8
   enableCameraDrag: 1
   dragSensitivity: 1
+  rotationSensitivity: 0.2
+  minimumPitch: 15
+  maximumPitch: 80
   dragStartThresholdPixels: 5
   dragSmoothTime: 0.07
   zoomOutWhenDragging: 1
@@ -1003,6 +1007,7 @@ MonoBehaviour:
   doors:
   - {fileID: 1526548057}
   - {fileID: 1568875039}
+  spikeTraps: []
   interactionAnimations:
   - {fileID: 1407100738}
 --- !u!114 &224112161 stripped
@@ -1604,8 +1609,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: descriptionText
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2484,8 +2489,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2623,8 +2628,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2970,18 +2975,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelCompleteUI
   completePanel: {fileID: 660193702}
-  titleText: {fileID: 2049315808}
-  descriptionText: {fileID: 296357962}
-  clearStamp: {fileID: 0}
-  resultController: {fileID: 0}
-  nextLevelButton: {fileID: 0}
-  retryButton: {fileID: 1697029695}
-  levelSelectButton: {fileID: 1319851402}
-  completeTitle: QUEST COMPLETE!
-  completeMessage: You've found the treasure!
-  incompleteTitle: Quest Incomplete
   waitForChestAnimation: 1
   delayAfterChestOpen: 0.35
+  victoryButtons: {fileID: 0}
+  defeatButtons: {fileID: 0}
 --- !u!1001 &705032399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4198,8 +4195,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6855,6 +6852,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorSwitch
   doors:
   - {fileID: 826875693}
+  spikeTraps: []
   interactionAnimations:
   - {fileID: 1624529807}
 --- !u!114 &1656908240 stripped
@@ -8583,8 +8581,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Quest Complete
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -8907,7 +8905,6 @@ MonoBehaviour:
   entranceCutscene: {fileID: 1108631970}
   maximumTurns: 7
   enemyPhaseDelay: 0.35
-  enableTurnShake: 1
   screenShake: {fileID: 1984435341}
   showTestUI: 0
 --- !u!1001 &2330754208677574535

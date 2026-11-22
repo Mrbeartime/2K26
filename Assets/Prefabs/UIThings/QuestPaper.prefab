@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1224087312871070899}
   - component: {fileID: 1688668783282948631}
   m_Layer: 5
-  m_Name: PaperVisual (1)
+  m_Name: PaperVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_text: Sample quest notes
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc514420d15ab04ebb945a6d34bda8b, type: 2}
-  m_sharedMaterial: {fileID: -670271471354929702, guid: dbc514420d15ab04ebb945a6d34bda8b, type: 2}
+  m_sharedMaterial: {fileID: -2474093539643723109, guid: dbc514420d15ab04ebb945a6d34bda8b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -173,7 +173,7 @@ MonoBehaviour:
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 88
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -280,7 +280,7 @@ MonoBehaviour:
   m_text: Quest
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 58a4c8df26fa042458f0637fd0c988ab, type: 2}
-  m_sharedMaterial: {fileID: -4058856113360600232, guid: 58a4c8df26fa042458f0637fd0c988ab, type: 2}
+  m_sharedMaterial: {fileID: -8704662202769931435, guid: 58a4c8df26fa042458f0637fd0c988ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -310,7 +310,7 @@ MonoBehaviour:
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 140
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -361,6 +361,7 @@ GameObject:
   - component: {fileID: 4872238519782688927}
   - component: {fileID: 2938417128646722735}
   - component: {fileID: 3879032656174577382}
+  - component: {fileID: 3879032656174577390}
   m_Layer: 5
   m_Name: Paper
   m_TagString: Untagged
@@ -440,6 +441,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6f4d641a21240a88c9c31fa84693cd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlinePadding
+--- !u!225 &3879032656174577390
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5456956554348055944}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &7597672906143507024
 GameObject:
   m_ObjectHideFlags: 0

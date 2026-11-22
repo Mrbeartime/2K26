@@ -7,31 +7,10 @@ namespace ProjectD.Menus
 {
     public partial class MenuScreen
     {
-        private readonly List<QuestPaperLevelCard> boardPapers = new List<QuestPaperLevelCard>();
-        private readonly List<QuestPaperLevelCard> collectionPapers = new List<QuestPaperLevelCard>();
+        private readonly QuestPaperPool boardPapers = new QuestPaperPool();
+        private readonly QuestPaperPool collectionPapers = new QuestPaperPool();
         private readonly List<(Image Outline, Image Portrait)> detailCharacterIcons = new();
         private static readonly System.Random depthDescriptionRandom = new System.Random();
-
-        private QuestPaperLevelCard GetPaper(List<QuestPaperLevelCard> papers, RectTransform area, int index)
-        {
-            if (area == null) return null;
-            if (index < papers.Count) return papers[index];
-
-            var prefab = Catalog?.questPaperPrefab;
-            if (prefab == null) return null;
-
-            var instance = Instantiate(prefab, area);
-            if (!instance.TryGetComponent<QuestPaperLevelCard>(out var card))
-                card = instance.gameObject.AddComponent<QuestPaperLevelCard>();
-            papers.Add(card);
-            return card;
-        }
-
-        private static void HidePapers(List<QuestPaperLevelCard> papers, int visibleCount)
-        {
-            for (int i = visibleCount; i < papers.Count; i++)
-                papers[i].gameObject.SetActive(false);
-        }
 
         private static void EnsureTextCanRender(Transform slot)
         {

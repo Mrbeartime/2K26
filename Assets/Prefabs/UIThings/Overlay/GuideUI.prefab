@@ -2123,8 +2123,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3786,8 +3786,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4519,8 +4519,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4875,8 +4875,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
-  m_sharedMaterial: {fileID: 7168927936362021745, guid: 1dab667887917d24887b04e24f2ab5c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
+  m_sharedMaterial: {fileID: -3022219366302165523, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5843,6 +5843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OverlayUI
   overlay: {fileID: 7855537493260245456}
   background: {fileID: 1488992475454102462}
+  sortingOrder: 30000
   firstSelectedControl: {fileID: 0}
 --- !u!114 &4139595716898552422
 MonoBehaviour:
