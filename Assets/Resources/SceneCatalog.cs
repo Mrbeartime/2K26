@@ -127,15 +127,41 @@ namespace ProjectD.Menus
         [SerializeField] private List<LevelDefinition> levels = new List<LevelDefinition>();
         [SerializeField] private List<SecretLevelDefinition> secretLevels = new List<SecretLevelDefinition>();
         [NonSerialized] private SceneCatalogQuestData resolvedQuestData;
+        [NonSerialized] private GameLanguage.Id resolvedLanguage;
+        [NonSerialized] private int revision;
         private List<LevelDefinition> ActiveLevels => QuestData?.Levels ?? levels;
         private List<SecretLevelDefinition> ActiveSecretLevels => QuestData?.SecretLevels ?? secretLevels;
-        private SceneCatalogQuestData QuestData => questData != null
-            ? resolvedQuestData ??= new SceneCatalogQuestData(this, levels, secretLevels)
-            : null;
+        private SceneCatalogQuestData QuestData
+        {
+            get
+            {
+                if (questData == null) return null;
+                SyncQuestLanguage();
+                if (resolvedQuestData == null)
+                {
+                    resolvedLanguage = GameLanguage.Current;
+                    resolvedQuestData = new SceneCatalogQuestData(this, levels, secretLevels);
+                }
+                return resolvedQuestData;
+            }
+        }
+
+        // Quest titles and descriptions can differ per language, so the resolved data is rebuilt after a language change.
+        private void SyncQuestLanguage()
+        {
+            if (resolvedQuestData != null && resolvedLanguage != GameLanguage.Current) InvalidateQuestData();
+        }
 
         public IReadOnlyList<LevelDefinition> Levels => ActiveLevels;
         public IReadOnlyList<SecretLevelDefinition> SecretLevels => ActiveSecretLevels;
-        public int Revision { get; private set; }
+        public int Revision
+        {
+            get
+            {
+                SyncQuestLanguage();
+                return revision;
+            }
+        }
         public LevelDefinition FindLevel(int id) => ActiveLevels.Find(level => level != null && level.id == id);
         public LevelDefinition FindLevelByScene(string path) => string.IsNullOrEmpty(path) ? null :
             ActiveLevels.Find(level => level != null && level.scene.Path == path);
@@ -171,7 +197,7 @@ namespace ProjectD.Menus
         internal void InvalidateQuestData()
         {
             resolvedQuestData = null;
-            Revision++;
+            revision++;
         }
 
         [Serializable]

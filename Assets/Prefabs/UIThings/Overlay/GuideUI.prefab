@@ -358,9 +358,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Pocket watch
-
-'
+  m_text: Turn
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
   m_sharedMaterial: {fileID: 4804746662056460860, guid: 3771eb2b1a149f245b6205b327a994dd, type: 2}
@@ -1570,7 +1568,7 @@ GameObject:
   - component: {fileID: 1669681258440135411}
   - component: {fileID: 1246470976649038431}
   m_Layer: 5
-  m_Name: Pocket watch
+  m_Name: Turn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1593,7 +1591,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -260}
+  m_AnchoredPosition: {x: 0, y: -150}
   m_SizeDelta: {x: 720, y: 90}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &1176297801068291340
@@ -1726,7 +1724,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -150}
+  m_AnchoredPosition: {x: 0, y: -260}
   m_SizeDelta: {x: 720, y: 90}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &3901949240104740043
@@ -2673,7 +2671,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Thief
+  m_text: 'Rogue
 
 '
   m_isRightToLeft: 0
@@ -3682,7 +3680,7 @@ GameObject:
   - component: {fileID: 7734388040838735141}
   - component: {fileID: 7733168942882198555}
   m_Layer: 5
-  m_Name: Thief
+  m_Name: Rogue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5809,8 +5807,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1583160703295602180}
-  - {fileID: 2900532362259995787}
   - {fileID: 33278349930758260}
+  - {fileID: 2900532362259995787}
   m_Father: {fileID: 9038313273235086592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}

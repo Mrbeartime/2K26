@@ -1,0 +1,96 @@
+// Goal page
+[goal01]
+<b>Goal of Adventure</b>
+Bring <b>the treasure</b> back to the guild. You only need <b>1 adventurer</b> to enter the same tile as the treasure to clear the dungeon.
+
+[goal02]
+<b>Top Left · Adventurers</b>
+Displays icons of controllable adventurers. Click an icon to select a character and view their position in the dungeon.
+
+<b>Top Right · Hazards</b>
+Click an icon to view the positions of hazards in the dungeon.
+
+<b>Adventurers</b>
+Adventurers entering the dungeon are shown on the <b>Quest Paper</b>, and once inside the dungeon, they are displayed at the bottom left of the screen. Select a character and choose an action for them to perform their role.
+
+<b>Hazards</b>
+Hazards in the dungeon are highlighted with a <b>purple outline</b>.
+
+[goal03]
+<b>Turns</b>
+The top left displays the number of remaining <b>turns</b>. Each time a turn ends, the top bar fills up by 1 segment. Below the timeline are <b>event</b> icons indicating what will happen when that turn is reached.
+
+<b>How to Skip a Turn?</b>
+<u>Select the Skip icon</u> and hold Spacebar to end your turn immediately. You can also hold Spacebar without selecting the Skip icon (though you will need to hold it longer).
+
+// Skills page
+[skills01]
+<b>Ability · Sword Slash</b>
+The Warrior can use a sword to attack and slay target characters.
+
+<b>Valid Targets</b>
+Both adventurers and skeletons.
+
+[skills02]
+<b>Ability · Archery</b>
+The Archer can shoot an arrow in one direction <b>up to the specified number of uses</b>.
+
+<u>Warning</u> Arrows can destroy or slay characters on <b>all sides</b>.
+
+[skills03]
+<b>Ability · Lockpicking</b>
+The Rogue can unlock a locked door <b>up to the specified number of uses</b>.
+
+<u>Condition</u> Can only be used on doors with a lock.
+
+// Mechanism page
+[mecha01]
+<b>Opening the Path to the Treasure</b>
+Mechanical doors block the path between adventurers and the treasure, relying on mechanisms such as levers, targets, or pressure plates to open or close.
+
+<b>Receiving Signals</b>
+When receiving or losing a signal, the door opens or closes according to its mechanism.
+
+<u>Good to know</u> Regardless of how many sources send a signal, it counts as <b>1 signal</b>.
+
+[mecha02]
+Trigger are used to control doors and signal-receiving mechanisms.
+
+<b>Lever</b> · Pull to toggle the signal on/off. The state remains until pulled again.
+
+<b>Pressure Plate</b> · Sends a signal while a character or object is placed on it. <u>Corpses cannot be used.</u>
+
+<b>Target</b> · When hit by an arrow, it sends a <b>permanent</b> signal.
+
+[mecha03]
+<b>Arrows and Collisions</b>
+Arrows can destroy or slay characters on <b>all sides</b>.
+
+<b>What Stops an Arrow</b>
+Arrows are destroyed upon hitting a wall.
+
+[mecha04]
+<b>Terrain Changes Over Time</b>
+Dungeon terrain may change over time, such as:
+- Some tiles become blocked or disappear.
+- An extra tile appears.
+
+<u>Observe your surroundings</u> Other types of terrain may affect the entire dungeon as well.
+
+// Hazards page
+[hazards01]
+Skeletons wield both <b>swords</b> and <b>bows</b>. If still <b>aggravated</b> at the end of the turn, they will attack the player.
+
+<b>Sword</b> · Aggravated when an adventurer is 1 tile in front of them, attacking only that tile.
+
+<b>Bow</b> · Aggravated when spotting an adventurer or corpse in the direction they are facing, shooting an arrow forward.
+
+<u>Neither attack type can pass through walls or obstacles.</u>
+
+[hazards02]
+<b>When Crossbow Traps Activate</b>
+Shoots an arrow forward <b>at the end of the turn</b> based on specified conditions.
+
+<b>Example Conditions</b>
+- Shoots every 2 turns
+- Shoots when receiving a signal

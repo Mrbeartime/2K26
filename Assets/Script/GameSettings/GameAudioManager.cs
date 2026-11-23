@@ -56,7 +56,6 @@ namespace ProjectD.Audio
             double scale = 1000.0 / System.Diagnostics.Stopwatch.Frequency;
             string eventMs = timingEvent != 0 ? ((timingManager - timingEvent) * scale).ToString("F3") : "unmarked";
             timingEvent = 0;
-            Debug.Log($"AudioTiming {cue} frame={Time.frameCount} Event->Manager={eventMs}ms Manager->Play/decision={(now-timingManager)*scale:F3}ms result={result} load={clip?.loadState} dsp={AudioSettings.dspTime:F6}. Play timestamp is NOT audible output time.");
             timingManager = 0;
             timingPlay = 0;
 #endif

@@ -4,26 +4,40 @@ using UnityEngine;
 
 public static class GuideTextDatabase
 {
-    private static Dictionary<string, string> texts;
+    // One dictionary per language so switching language never needs a re-parse.
+    private static readonly Dictionary<GameLanguage.Id, Dictionary<string, string>> cache = new();
 
     public static string Get(string key)
     {
-        if (texts == null) Load();
-        if (texts.TryGetValue(key, out string value)) return value;
+        if (TextsFor(GameLanguage.Current).TryGetValue(key, out string value)) return value;
+        // A key that is not translated yet falls back to Thai instead of showing nothing.
+        if (GameLanguage.Current != GameLanguage.Id.Thai &&
+            TextsFor(GameLanguage.Id.Thai).TryGetValue(key, out value)) return value;
         Debug.LogWarning($"[GuideText] Key not found: {key}");
         return null;
     }
 
-    public static void Reload() => texts = null;
+    public static void Reload() => cache.Clear();
 
-    private static void Load()
+    private static Dictionary<string, string> TextsFor(GameLanguage.Id language)
     {
-        texts = new Dictionary<string, string>();
-        TextAsset file = Resources.Load<TextAsset>("GuideText");   // Resources/GuideText.txt
+        if (!cache.TryGetValue(language, out var texts))
+            cache[language] = texts = Load(language);
+        return texts;
+    }
+
+    private static Dictionary<string, string> Load(GameLanguage.Id language)
+    {
+        var texts = new Dictionary<string, string>();
+        // Resources/GuideText.txt is Thai, Resources/GuideText_en.txt is English (same [key] sections).
+        bool english = language == GameLanguage.Id.English;
+        string fileName = english ? "GuideText_en" : "GuideText";
+        TextAsset file = Resources.Load<TextAsset>(fileName);
         if (file == null)
         {
-            Debug.LogError("[GuideText] Resources/GuideText.txt not found");
-            return;
+            if (english) Debug.LogWarning("[GuideText] Resources/GuideText_en.txt not found, using Thai text");
+            else Debug.LogError("[GuideText] Resources/GuideText.txt not found");
+            return texts;
         }
 
         string key = null;
@@ -51,5 +65,6 @@ public static class GuideTextDatabase
             }
         }
         Flush();
+        return texts;
     }
 }

@@ -107,11 +107,18 @@ public class GuideUIManager : MonoBehaviour
     }
 
     private bool restoreNavigationEvents;
+    private int currentTitle;
+    private TMP_Text currentTitleLabel;
 
     // Keyboard: A/D change bookmark, W/S change title (shown immediately). ESC is handled by the scene/overlay.
     // The EventSystem's own WASD navigation is turned off meanwhile so keys are not handled twice.
     private void Update()
     {
+        // The title on the right follows its button's label, which is translated by Unity Localization.
+        if (titleText != null && currentTitleLabel != null && !string.IsNullOrEmpty(currentTitleLabel.text) &&
+            titleText.text != currentTitleLabel.text)
+            titleText.text = currentTitleLabel.text;
+
         Keyboard k = Keyboard.current;
         if (k == null || pages == null) return;
 
@@ -162,8 +169,12 @@ public class GuideUIManager : MonoBehaviour
         SelectTitle(current < 0 ? 0 : (current + step + titles.Length) % titles.Length);
     }
 
+    // The body text comes from GuideText(_en).txt, so show it again when the language changes.
+    private void RefreshLanguage() => ChangeTitle(currentTitle);
+
     private void OnEnable()
     {
+        GameLanguage.Changed += RefreshLanguage;
         if (EventSystem.current != null && EventSystem.current.sendNavigationEvents)
         {
             EventSystem.current.sendNavigationEvents = false;
@@ -195,6 +206,7 @@ public class GuideUIManager : MonoBehaviour
 
     private void OnDisable()
     {
+        GameLanguage.Changed -= RefreshLanguage;
         if (restoreNavigationEvents && EventSystem.current != null)
             EventSystem.current.sendNavigationEvents = true;
         restoreNavigationEvents = false;
@@ -223,11 +235,17 @@ public class GuideUIManager : MonoBehaviour
         GuideEntry[] entries = GetEntries(currentPage);
         if (entries == null || index < 0 || index >= entries.Length)
         {
+            currentTitleLabel = null;
             ClearContent();
             return;
         }
 
+        currentTitle = index;
         GuideEntry entry = entries[index];
+        Button[] titleButtons = pages != null && pages[currentPage] != null
+            ? pages[currentPage].GetComponentsInChildren<Button>(true)
+            : Array.Empty<Button>();
+        currentTitleLabel = index < titleButtons.Length ? titleButtons[index].GetComponentInChildren<TMP_Text>(true) : null;
 
         if (titleText != null) titleText.text = entry.title;
         if (bodyText != null) 

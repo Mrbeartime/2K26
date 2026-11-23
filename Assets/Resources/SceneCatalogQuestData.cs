@@ -26,6 +26,7 @@ namespace ProjectD.Menus
         {
             Levels = levels.ConvertAll(ResolveLevel);
             SecretLevels = secrets.ConvertAll(ResolveSecret);
+            ApplyTextOverlay();
             foreach (string id in sections.Keys)
                 Warn($"[{id}] does not match a registered level.");
         }
@@ -53,6 +54,52 @@ namespace ProjectD.Menus
             var result = level.Copy();
             (result.title, result.description, result.depth, result.characterAvailable, result.paperSprite, result.unlockConditions) = entry;
             return result;
+        }
+
+        // Optional language overlay (Resources/QuestCatalog_en.txt or QuestCatalog_th.txt). It has the same [level:1] /
+        // [secret:ID] sections, but only title and description are read; everything else comes from QuestCatalog.txt.
+        private void ApplyTextOverlay()
+        {
+            var file = GameLanguage.LoadOverlay(catalog.questData);
+            if (file == null) return;
+
+            var overlay = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+            Dictionary<string, string> current = null;
+            foreach (string rawLine in file.text.Split('\n'))
+            {
+                string line = TrimLine(rawLine);
+                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("//")) continue;
+
+                string id = ReadHeader(line);
+                if (id != null)
+                {
+                    overlay[id] = current = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    continue;
+                }
+
+                string field = ReadField(line, out string value);
+                if (current != null && field != null &&
+                    (field.Equals("title", StringComparison.OrdinalIgnoreCase) || field.Equals("description", StringComparison.OrdinalIgnoreCase)))
+                    current[field] = value;
+            }
+
+            for (int i = 0; i < Levels.Count; i++)
+            {
+                if (Levels[i] == null || !overlay.TryGetValue($"level:{Levels[i].id}", out var fields)) continue;
+                var copy = Levels[i].Copy();
+                if (fields.TryGetValue("title", out string title) && title.Length > 0) copy.title = title;
+                if (fields.TryGetValue("description", out string description)) copy.description = DecodeDescription(description);
+                Levels[i] = copy;
+            }
+
+            for (int i = 0; i < SecretLevels.Count; i++)
+            {
+                if (SecretLevels[i] == null || !overlay.TryGetValue($"secret:{SecretLevels[i].id}", out var fields)) continue;
+                var copy = SecretLevels[i].Copy();
+                if (fields.TryGetValue("title", out string title) && title.Length > 0) copy.title = title;
+                if (fields.TryGetValue("description", out string description)) copy.description = DecodeDescription(description);
+                SecretLevels[i] = copy;
+            }
         }
 
         private void ReadSections(string text)

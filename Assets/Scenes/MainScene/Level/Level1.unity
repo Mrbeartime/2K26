@@ -3636,6 +3636,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Drifting Mist
       objectReference: {fileID: 0}
+    - target: {fileID: 8973394659268787139, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9148473835277884160, guid: 723eb7a9754c5804cb2830261c4a4c0b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.1
@@ -3840,6 +3844,10 @@ PrefabInstance:
     - target: {fileID: 1395446177167853119, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
       propertyPath: m_Name
       value: ResultUISet
+      objectReference: {fileID: 0}
+    - target: {fileID: 1395446177167853119, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4258884643099974202, guid: 165eaff38f6e87d428aac7fcfb80b1d7, type: 3}
       propertyPath: m_LocalPosition.x
