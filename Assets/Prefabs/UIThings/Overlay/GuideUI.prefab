@@ -5962,7 +5962,7 @@ MonoBehaviour:
   - title: Projectile
     video: {fileID: 32900000, guid: 0426cfdf3c7c35a468e76237f855abd1, type: 3}
   - title: Environment
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: b453f0ec9b07d1e4597e3fbd5e90ea55, type: 3}
   HazardsEntries:
   - title: Skeletons
     video: {fileID: 32900000, guid: fb5f4bf2b74a8c64381fd16ef7ee431b, type: 3}
