@@ -1,0 +1,193 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 257de19e12121b74dbed8f222b313e83, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1554083840
+    m_Localized: Confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747136
+    m_Localized: change bookmark" #"pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747137
+    m_Localized: return to menu" #"pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747138
+    m_Localized: choose title" #"pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747139
+    m_Localized: change title" #"pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747140
+    m_Localized: Pan/Rotate Camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747141
+    m_Localized: Pause
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747142
+    m_Localized: Restart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747143
+    m_Localized: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747144
+    m_Localized: Choose action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747145
+    m_Localized: Reveal object
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747146
+    m_Localized: Off Tips
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747147
+    m_Localized: Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747148
+    m_Localized: Setting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747149
+    m_Localized: Navigate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747150
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747151
+    m_Localized: Resting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747152
+    m_Localized: Completed Quest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747153
+    m_Localized: Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747154
+    m_Localized: '"<b>Goal of Adventurer</b>
+
+      Get'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747155
+    m_Localized: Resign
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747156
+    m_Localized: An easy quest to warm up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747157
+    m_Localized: Quest Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747158
+    m_Localized: Quest Title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747159
+    m_Localized: Abandon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747160
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747161
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747162
+    m_Localized: Brightness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747163
+    m_Localized: Resign
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747164
+    m_Localized: Camera Pan Sensitivity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747165
+    m_Localized: Quest Title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747166
+    m_Localized: Quest Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747167
+    m_Localized: Quest Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747168
+    m_Localized: Shake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747169
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747170
+    m_Localized: Party Member
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747171
+    m_Localized: Master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747172
+    m_Localized: Display
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747173
+    m_Localized: Mute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747174
+    m_Localized: Auto Zoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747175
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1654747176
+    m_Localized: Camera
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

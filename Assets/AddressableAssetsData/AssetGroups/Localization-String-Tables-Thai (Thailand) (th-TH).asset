@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: Localization-String-Tables-Thai (Thailand) (th-TH)
   m_GUID: 394604afab9ce5a49a8f91be0036cb41
   m_SerializeEntries:
+  - m_GUID: 2500f2baab59fc9408752bcac20bb5e6
+    m_Address: UI_th-TH
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-th-TH
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3f59138bb9a0c804eac1ec63c21db400
     m_Address: Guide_th-TH
     m_ReadOnly: 1

@@ -17,6 +17,9 @@ public static class GameLanguage
     private const string ThaiCode = "th-TH";
     private const string EnglishCode = "en";
     private static Id? current;
+    // Locale changes are ignored until the saved language has been applied once, so Localization's own startup
+    // locale choice cannot overwrite the saved language.
+    private static bool synced;
 
     public static Id Current
     {
@@ -41,10 +44,29 @@ public static class GameLanguage
     {
         current = null;
         Changed = null;
+        synced = false;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void ApplySaved() => ApplyLocale();
+    private static void ApplySaved()
+    {
+        // Unity Localization is the other way to change language (locale dropdown, Game View selector, other scripts),
+        // so the text files follow it too.
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        ApplyLocale();
+    }
+
+    private static void OnLocaleChanged(Locale locale)
+    {
+        if (!synced || locale == null) return;
+        Id language = locale.Identifier.Code.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? Id.English : Id.Thai;
+        if (current.HasValue && current.Value == language) return;
+        current = language;
+        PlayerPrefs.SetInt(PrefKey, (int)language);
+        PlayerPrefs.Save();
+        Changed?.Invoke();
+    }
 
     public static void Set(Id language)
     {
@@ -94,6 +116,7 @@ public static class GameLanguage
     {
         // Read Current again: the player may have switched while Localization was still starting.
         var locale = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(IsEnglish ? EnglishCode : ThaiCode));
+        synced = true;
         if (locale != null) LocalizationSettings.SelectedLocale = locale;
     }
 }
