@@ -183,6 +183,8 @@ public class GuideUIManager : MonoBehaviour
         if (bookmarkHovered == null) return;
         for (int i = 0; i < bookmarkHovered.Length; i++)
             SetBookmarkHovered(i, false);
+        // Start only runs once; reload the current clip when reopening the guide.
+        if (pages != null) ChangeTitle(currentTitle);
     }
 
     private void SetBookmarkHovered(int index, bool value)
