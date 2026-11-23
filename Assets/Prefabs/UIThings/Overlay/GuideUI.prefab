@@ -5944,30 +5944,30 @@ MonoBehaviour:
   - title: The Treasure
     video: {fileID: 32900000, guid: 1681d80c35500b94b8b3b2c2f966eabb, type: 3}
   - title: Character / Threat
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 3f7e742443c64654a8ee0dbfeae66c01, type: 3}
   - title: Pocket watch
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 9365dc5d37ecf8e46b94ca3ca3ab7490, type: 3}
   SkillsEntries:
   - title: Warrior
     video: {fileID: 32900000, guid: d9eb278337881da468bb7fd26590f30b, type: 3}
   - title: Archer
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 0426cfdf3c7c35a468e76237f855abd1, type: 3}
   - title: Theif
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: fb8e8efeafaf1614988eb05eef6aedbc, type: 3}
   MechaEntries:
   - title: Door
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 17485804fe9921f4590dbe6208d4b776, type: 3}
   - title: Triggers
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 2bb9ed7d75a0a9d48a4e1dcf4653adc4, type: 3}
   - title: Projectile
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 0426cfdf3c7c35a468e76237f855abd1, type: 3}
   - title: Environment
     video: {fileID: 0}
   HazardsEntries:
   - title: Skeletons
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: fb5f4bf2b74a8c64381fd16ef7ee431b, type: 3}
   - title: Traps
-    video: {fileID: 0}
+    video: {fileID: 32900000, guid: 7a61cbfb0ee4f7743a552119a04ad069, type: 3}
   titleText: {fileID: 8147431221853484932}
   bodyText: {fileID: 8659444737045713327}
   videoPlayer: {fileID: 3829356701786373234}
