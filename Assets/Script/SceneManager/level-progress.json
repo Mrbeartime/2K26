@@ -62,6 +62,10 @@
         {
             "questId": "level:2",
             "text": "นอนรอสมบัติได้เลย"
+        },
+        {
+            "questId": "level:4",
+            "text": "#0"
         }
     ]
 }

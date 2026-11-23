@@ -21,6 +21,8 @@ public class SpikeTrap : MonoBehaviour
     private Tile watchedTile;
 
     public bool IsRaised { get; private set; }
+    public Tile TargetTile => targetTile != null ? targetTile : GridManager.Instance != null
+        ? GridManager.Instance.GetTile(GridManager.Instance.WorldToGrid(transform.position)) : null;
 
     public void Configure(Tile tile, Renderer plate, Transform model, float duration)
     {
@@ -124,9 +126,7 @@ public class SpikeTrap : MonoBehaviour
 
     private bool WatchTargetTile()
     {
-        Tile tile = targetTile;
-        if (tile == null && GridManager.Instance != null)
-            tile = GridManager.Instance.GetTile(GridManager.Instance.WorldToGrid(transform.position));
+        Tile tile = TargetTile;
         if (tile == null)
         {
             Debug.LogWarning("Spike trap must be placed on a Tile.", this);

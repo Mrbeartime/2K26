@@ -48,6 +48,14 @@ public class Tile : MonoBehaviour
     private bool highlightRequested;
     private bool mainHighlightSuppressed;
     private HighlightType? previewHighlightType;
+    private bool dangerOverview;
+
+    internal void SetDangerOverview(bool visible)
+    {
+        if (dangerOverview == visible) return;
+        dangerOverview = visible;
+        RefreshHighlight();
+    }
 
     public void SetCanShowHighlight(bool allowed)
     {
@@ -93,11 +101,12 @@ public class Tile : MonoBehaviour
     {
         if (highlightObject == null) return;
 
-        bool visible = canShowHighlight && (previewHighlightType.HasValue || (highlightRequested && !mainHighlightSuppressed));
+        bool mainVisible = highlightRequested && !mainHighlightSuppressed;
+        bool visible = canShowHighlight && (dangerOverview || previewHighlightType.HasValue || mainVisible);
         highlightObject.SetActive(visible);
         if (!visible) return;
 
-        var (color, opacity, glow) = (previewHighlightType ?? currentHighlightType) switch
+        var (color, opacity, glow) = (previewHighlightType ?? (mainVisible ? currentHighlightType : HighlightType.Enemy)) switch
         {
             HighlightType.Move => (moveHighlightColor, moveHighlightOpacity, moveGlow),
             HighlightType.Skill => (skillHighlightColor, skillHighlightOpacity, skillGlow),

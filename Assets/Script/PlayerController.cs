@@ -35,6 +35,10 @@ public class PlayerController : MonoBehaviour
     private List<Tile> currentHighlightedTiles = new List<Tile>();
     private readonly List<Tile> actionPreviewTiles = new();
     private bool actionPreviewActive;
+    private bool dangerOverviewVisible;
+    private readonly HashSet<Tile> dangerOverviewTiles = new();
+    private readonly HashSet<Tile> nextDangerOverviewTiles = new();
+    private float nextDangerRefresh;
     private static readonly Vector2Int[] SkillDirections =
     {
         Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
@@ -52,6 +56,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        HandleDangerOverviewInput();
         if (DiaryUI.IsOpen) { ResetInteractClick(); pendingRightClickAttack = false; return; }
         if ((TurnGameManager.Instance != null && TurnGameManager.Instance.IsIntroPlaying) ||
             Time.timeScale == 0 ||
@@ -75,6 +80,8 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (dangerOverviewVisible && Time.unscaledTime >= nextDangerRefresh)
+            RefreshDangerOverview();
         if (selectedArrowTrap == null) return;
         if (!selectedArrowTrap.isActiveAndEnabled)
         {
@@ -82,6 +89,66 @@ public class PlayerController : MonoBehaviour
             return;
         }
         RefreshArrowTrapHighlights();
+    }
+
+    private void HandleDangerOverviewInput()
+    {
+        var turns = TurnGameManager.Instance;
+        if (turns != null && turns.IsGameComplete)
+        {
+            HideDangerOverview();
+            return;
+        }
+        if (DiaryUI.IsOpen || Time.timeScale == 0f ||
+            (turns != null && turns.IsIntroPlaying) ||
+            NewInGameUIManager.Instance?.BlocksGameplayInput == true ||
+            InGameUIManager.Instance?.IsPaused == true) return;
+
+        InputAction showMap = NewInGameUIManager.Instance?.GameplayInput?.ShowMap;
+        if (!(showMap?.WasPressedThisFrame() ?? (Keyboard.current?.tabKey.wasPressedThisFrame == true))) return;
+        var camera = CameraFocusManager.Instance;
+        if (camera != null && !camera.CanAcceptManualInput) return;
+        if (dangerOverviewVisible) HideDangerOverview();
+        else
+        {
+            dangerOverviewVisible = true;
+            RefreshDangerOverview();
+            camera?.ResetToStartingView();
+        }
+    }
+
+    private void RefreshDangerOverview()
+    {
+        nextDangerRefresh = Time.unscaledTime + 0.15f;
+        nextDangerOverviewTiles.Clear();
+        foreach (var enemy in FindObjectsByType<Enemy>())
+            if (enemy.isActiveAndEnabled && !enemy.IsDead && enemy.gameObject.scene == gameObject.scene)
+                nextDangerOverviewTiles.UnionWith(enemy.GetAttackRange());
+        foreach (var trap in FindObjectsByType<TurnArrowTrap>())
+            if (trap.isActiveAndEnabled && trap.gameObject.scene == gameObject.scene)
+                nextDangerOverviewTiles.UnionWith(trap.GetAttackRange());
+        foreach (var trap in FindObjectsByType<SpikeTrap>())
+            if (trap.isActiveAndEnabled && trap.gameObject.scene == gameObject.scene && trap.TargetTile != null)
+                nextDangerOverviewTiles.Add(trap.TargetTile);
+        foreach (var trap in FindObjectsByType<Trap>())
+            if (trap.isActiveAndEnabled && trap.gameObject.scene == gameObject.scene && trap.TryGetComponent(out Tile tile))
+                nextDangerOverviewTiles.Add(tile);
+
+        foreach (Tile tile in dangerOverviewTiles)
+            if (tile != null && !nextDangerOverviewTiles.Contains(tile)) tile.SetDangerOverview(false);
+        foreach (Tile tile in nextDangerOverviewTiles)
+            if (tile != null) tile.SetDangerOverview(true);
+        dangerOverviewTiles.Clear();
+        dangerOverviewTiles.UnionWith(nextDangerOverviewTiles);
+    }
+
+    private void HideDangerOverview()
+    {
+        dangerOverviewVisible = false;
+        foreach (Tile tile in dangerOverviewTiles)
+            if (tile != null) tile.SetDangerOverview(false);
+        dangerOverviewTiles.Clear();
+        nextDangerOverviewTiles.Clear();
     }
 
     private void RefreshArrowTrapHighlights()
@@ -282,6 +349,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnDisable()
     {
+        HideDangerOverview();
         ResetInteractClick();
         ClearActionPreview();
     }

@@ -915,6 +915,8 @@ public class InGameUIManager : MonoBehaviour
 
         if (key == "tab")
         {
+            // PlayerController owns Tab for the danger overview and camera reset.
+            if (PlayerController.Instance != null && PlayerController.Instance.isActiveAndEnabled) return;
             int start = turnGameManager.CurrentPlayer == null ? 0 : CurrentFocusCharacterIndex + 1;
             for (int step = 0; step < CharacterList.Length; step++)
             {

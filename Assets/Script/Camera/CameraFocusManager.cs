@@ -65,6 +65,7 @@ public class CameraFocusManager : MonoBehaviour
     [SerializeField] private bool returnToDefaultAfterDrag = false;
 
     private Vector3 defaultPosition;
+    private Quaternion defaultRotation;
 
     private PlayerMove trackedPlayer;
     private PlayerMove lastObservedWalkingPlayer;
@@ -173,6 +174,7 @@ public class CameraFocusManager : MonoBehaviour
         desiredPosition = defaultPosition;
         cameraYaw = gameCamera.transform.eulerAngles.y;
         cameraPitch = Mathf.DeltaAngle(0f, gameCamera.transform.eulerAngles.x);
+        defaultRotation = gameCamera.transform.rotation;
         ready = true;
     }
 
@@ -442,6 +444,22 @@ public class CameraFocusManager : MonoBehaviour
             * ProjectD.Menus.GameSettings.PanSensitivity;
         shift.y = 0f;
         desiredPosition = ClampToBounds(desiredPosition + shift);
+    }
+
+    public void ResetToStartingView()
+    {
+        if (!CanAcceptManualInput) return;
+        CancelDragInput();
+        actionZoomRemaining = 0f;
+        ReturnToDefaultView();
+        // Keep an ongoing walk from immediately taking the camera back.
+        manualPanMode = true;
+        lastObservedWalkingPlayer = TurnGameManager.Instance?.CurrentPlayer;
+        positionVelocity = Vector3.zero;
+        lensVelocity = 0f;
+        gameCamera.transform.rotation = defaultRotation;
+        cameraYaw = defaultRotation.eulerAngles.y;
+        cameraPitch = Mathf.DeltaAngle(0f, defaultRotation.eulerAngles.x);
     }
 
     private void ReturnToDefaultView()
