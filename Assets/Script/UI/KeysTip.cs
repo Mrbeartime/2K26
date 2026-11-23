@@ -20,7 +20,20 @@ public class KeysTip : MonoBehaviour
 
     private enum Visibility { Always, Camera, CameraPanRotate, Character, ActionOrEndTurn, Selection, Confirm }
 
-    private (RectTransform Row, float Bottom, float Right, Visibility Visibility)[] rows;
+    private sealed class TipRow
+    {
+        public RectTransform Row;
+        public TMP_Text Caption;
+        public Vector2 CaptionPosition;
+        public string MeasuredText;
+        public TMP_FontAsset MeasuredFont;
+        public float MeasuredFontSize;
+        public float Bottom;
+        public float Right;
+        public Visibility Visibility;
+    }
+
+    private TipRow[] rows;
     private (bool CameraFree, bool CanPanRotate, bool CanSelect, bool ActionOrEndTurnFocused, bool CanConfirm)? displayedState;
     private Sprite resetFillSprite;
     internal Image ResetFill { get; private set; }
@@ -44,7 +57,7 @@ public class KeysTip : MonoBehaviour
             foreach (RectTransform tip in alwaysTips)
                 tips.Add((tip, Visibility.Always));
 
-        rows = new (RectTransform, float, float, Visibility)[tips.Count];
+        rows = new TipRow[tips.Count];
         for (int i = 0; i < tips.Count; i++)
         {
             (RectTransform prefab, Visibility visibility) = tips[i];
@@ -58,10 +71,18 @@ public class KeysTip : MonoBehaviour
             foreach (Graphic graphic in row.GetComponentsInChildren<Graphic>())
                 bounds.Encapsulate(RectTransformUtility.CalculateRelativeRectTransformBounds(row, graphic.rectTransform));
             TMP_Text caption = row.Find("Name")?.GetComponent<TMP_Text>();
-            float right = GetCaptionRightEdge(row, caption, bounds.max.x);
             // Convert row-local measurements to anchoredPosition units.
             Vector3 scale = row.localScale;
-            rows[i] = (row, bounds.min.y * scale.y, right * scale.x, visibility);
+            rows[i] = new TipRow
+            {
+                Row = row,
+                Caption = caption,
+                CaptionPosition = caption != null ? caption.rectTransform.anchoredPosition : Vector2.zero,
+                Bottom = bounds.min.y * scale.y,
+                Right = bounds.max.x * scale.x,
+                Visibility = visibility
+            };
+            FitCaption(rows[i]);
             if (prefab == resetTip) ResetFill = CreateResetFill(row);
             row.gameObject.SetActive(false);
         }
@@ -87,25 +108,29 @@ public class KeysTip : MonoBehaviour
         return fill;
     }
 
-    private static float GetCaptionRightEdge(RectTransform row, TMP_Text caption, float fallback)
+    private static void FitCaption(TipRow tip)
     {
-        if (caption == null) return fallback;
-
-        caption.ForceMeshUpdate();
-        TMP_TextInfo text = caption.textInfo;
-        if (text.lineCount == 0 || text.characterCount == 0) return fallback;
-
-        TMP_LineInfo lastLine = text.lineInfo[text.lineCount - 1];
-        TMP_CharacterInfo lastCharacter = text.characterInfo[lastLine.lastVisibleCharacterIndex];
-        if (!lastCharacter.isVisible) return fallback;
+        TMP_Text caption = tip.Caption;
+        if (caption == null) return;
 
         RectTransform rect = caption.rectTransform;
-        // Trim the empty space before the caption so the key stays next to the text.
-        rect.anchoredPosition -= new Vector2(caption.textBounds.min.x - rect.rect.xMin, 0f);
+        // Always start from the authored gap, avoiding drift on repeated language changes.
+        rect.anchoredPosition = tip.CaptionPosition;
+        caption.enableAutoSizing = false;
+        caption.textWrappingMode = TextWrappingModes.NoWrap;
+        rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,
+            Mathf.Max(1f, caption.GetPreferredValues(caption.text, Mathf.Infinity, Mathf.Infinity).x) + 2f);
+        caption.ForceMeshUpdate(ignoreActiveState: true);
+        tip.MeasuredText = caption.text;
+        tip.MeasuredFont = caption.font;
+        tip.MeasuredFontSize = caption.fontSize;
+        if (caption.textInfo.characterCount == 0) return;
 
-        var glyph = lastCharacter.textElement.glyph.metrics;
-        float right = lastCharacter.origin + (glyph.horizontalBearingX + glyph.width) * lastCharacter.scale;
-        return row.InverseTransformPoint(rect.TransformPoint(new Vector3(right, 0f))).x;
+        // Keep the first visible glyph next to the key and align the visible right edge.
+        rect.anchoredPosition -= new Vector2(caption.textBounds.min.x - rect.rect.xMin, 0f);
+        float right = tip.Row.InverseTransformPoint(
+            rect.TransformPoint(new Vector3(caption.textBounds.max.x, 0f))).x;
+        tip.Right = right * tip.Row.localScale.x;
     }
 
     private void OnEnable() => Refresh();
@@ -121,6 +146,17 @@ public class KeysTip : MonoBehaviour
 
     private void Refresh()
     {
+        if (rows == null) return;
+        // Localization can finish asynchronously, after the locale changed event.
+        // Watch the actual caption so late translations and re-enabled tips also relayout.
+        foreach (TipRow tip in rows)
+        {
+            if (tip?.Caption == null) continue;
+            if (tip.MeasuredText == tip.Caption.text && tip.MeasuredFont == tip.Caption.font &&
+                Mathf.Approximately(tip.MeasuredFontSize, tip.Caption.fontSize)) continue;
+            FitCaption(tip);
+            displayedState = null;
+        }
         NewInGameUIManager hud = NewInGameUIManager.Instance;
         CameraFocusManager camera = CameraFocusManager.Instance;
         bool cameraFree = camera?.CanAcceptManualInput == true;
@@ -136,9 +172,10 @@ public class KeysTip : MonoBehaviour
         bool firstVisibleRow = true;
         for (int i = rows.Length - 1; i >= 0; i--)
         {
-            (RectTransform row, float bottom, float right, Visibility visibility) = rows[i];
-            if (row == null) continue;
-            bool visible = visibility switch
+            TipRow tip = rows[i];
+            if (tip?.Row == null) continue;
+            RectTransform row = tip.Row;
+            bool visible = tip.Visibility switch
             {
                 Visibility.Camera => cameraFree,
                 Visibility.CameraPanRotate => canPanRotate,
@@ -152,10 +189,10 @@ public class KeysTip : MonoBehaviour
             {
                 if (firstVisibleRow)
                 {
-                    y = -bottom;
+                    y = -tip.Bottom;
                     firstVisibleRow = false;
                 }
-                row.anchoredPosition = new Vector2(-right, y);
+                row.anchoredPosition = new Vector2(-tip.Right, y);
                 y += rowSpacing;
             }
             row.gameObject.SetActive(visible);
