@@ -9,39 +9,39 @@
 # unlockTotalDepth คือผลรวม Depth ของด่านที่ผ่าน
 
 [level:1]
-title=Level 1
-description=Reach the exit before your turns run out.
+title=ดันเจี้ยนเริ่มต้น
+description=งานแรกของคุณในฐานะกิลด์มาสเตอร์ ส่งนักรบไปนำสมบัติกลับมาให้ได้
 depth=0
 characters=Warrior
 paper=default
 
 [level:2]
-title=Level 2
-description=Reach the exit before your turns run out.
+title=ประตูล็อค
+description=ดันเจี้ยนนี้มีประตูกลอนอยู่ นักผจญภัยของเราไม่สามารถพังเข้าไปได้ ให้โจรช่วยปลดล็อคประตูนั่น
 depth=0
 characters=Warrior, Rogue
 paper=default
 unlockMain=1
 
 [level:3]
-title=Level 3
-description=Reach the exit before your turns run out.
+title=ทางยาว
+description=เส้นทางเดินยาวไกล สุดปลายทางมีป้อมกับดัก หาทางไปนำสมบัติกลับมาให้ได้ก็พอ
 depth=1
 characters=Warrior, Archer, Rogue
 paper=default
 unlockMain=1
 
 [level:4]
-title=Level 4
-description=Reach the exit before your turns run out.
+title=พื้นนี้ไม่แน่นอน
+description=ดันเจี้ยนมีการเปลี่ยนแปลงเสมอ คอยสังเกตุพื้นที่ให้ดีว่าจะมีอะไรมาขว้างการเดินทางหรือไม่
 depth=1
 characters=Warrior, Archer, Rogue
 paper=default
 unlockMain=1, 2
 
 [level:5]
-title=Level 5
-description=Reach the exit before your turns run out.
+title=เก้าอี้ดนตรี
+description=ดันเจี้ยนแห่งนี้เต็มไปด้วยแท่นเหยียบที่เชื่อมไปยังกลไปซ้ำๆ จะสร้างกลไกแบบนี้มาทำไม
 depth=3
 characters=Warrior, Archer, Rogue
 paper=default

@@ -37,20 +37,44 @@ namespace ProjectD.Menus
             if (paperDescription != null) paperDescription.text = description;
             if (paperMetadata != null) paperMetadata.SetActive(true);
             if (paperDepth != null)
-                paperDepth.text = LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => PickDepthDescription(depth))
-                    ?? "ยังไม่มีรายงานความยากของภารกิจนี้";
+            {
+                string saved = LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => PickDepthDescription(depth));
+                paperDepth.text = (saved == null ? null : ResolveDepthDescription(saved, depth))
+                    ?? GameLanguage.Pick("ยังไม่มีรายงานความยากของภารกิจนี้", "No difficulty report for this quest yet.");
+            }
             RefreshDetailCharacterIcons(characterIcons);
             if (collectionScroll != null) collectionScroll.gameObject.SetActive(false);
             if (playButton != null) playButton.gameObject.SetActive(true);
         }
 
+        // The saved value is "#<number>": the position of the chosen line among the lines of that depth. The Thai file
+        // (QuestDepthDescriptions.txt) defines the numbers; QuestDepthDescriptions_en.txt must keep the same line order.
+        // Older saves hold the Thai text itself, which is matched back to its number.
         private string PickDepthDescription(int depth)
         {
-            var source = Catalog?.questDepthDescriptions;
-            if (source == null) return null;
+            var options = ReadDepthOptions(Catalog?.questDepthDescriptions, depth);
+            return options.Count == 0 ? null : "#" + depthDescriptionRandom.Next(options.Count);
+        }
+
+        private string ResolveDepthDescription(string saved, int depth)
+        {
+            var thaiOptions = ReadDepthOptions(Catalog?.questDepthDescriptions, depth);
+            int index = saved.StartsWith("#") && int.TryParse(saved.Substring(1), out int number)
+                ? number
+                : thaiOptions.IndexOf(saved);
+            if (index < 0) return saved.StartsWith("#") ? null : saved;
+
+            var options = ReadDepthOptions(GameLanguage.LoadVariant(Catalog?.questDepthDescriptions), depth);
+            if (index < options.Count) return options[index];
+            return index < thaiOptions.Count ? thaiOptions[index] : null;
+        }
+
+        private static List<string> ReadDepthOptions(TextAsset source, int depth)
+        {
+            var options = new List<string>();
+            if (source == null) return options;
 
             int targetDepth = Mathf.Clamp(depth, 0, 10);
-            var options = new List<string>();
             foreach (var line in source.text.Split('\n'))
             {
                 int separator = line.IndexOf('|');
@@ -60,7 +84,7 @@ namespace ProjectD.Menus
                 string text = line.Substring(separator + 1).Trim();
                 if (text.Length > 0) options.Add(text);
             }
-            return options.Count == 0 ? null : options[depthDescriptionRandom.Next(options.Count)];
+            return options;
         }
 
         private void RefreshDetailCharacterIcons(Sprite[] sprites)
