@@ -32,6 +32,7 @@ namespace ProjectD.Menus
         {
             paperView = PaperView.Details;
             SetPaperVisible();
+            ShowPaperList(false);
             if (paperTitle != null) paperTitle.text = title;
             if (paperDescription != null) paperDescription.text = description;
             if (paperMetadata != null) paperMetadata.SetActive(true);

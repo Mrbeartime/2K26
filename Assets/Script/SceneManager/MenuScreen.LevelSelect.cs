@@ -47,6 +47,7 @@ namespace ProjectD.Menus
             {
                 foreach (var button in mainPanel.GetComponentsInChildren<Button>(true))
                 {
+                    AddSelectScale(button.gameObject);
                     for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
                     {
                         if (button.onClick.GetPersistentTarget(i) != this) continue;
@@ -61,6 +62,15 @@ namespace ProjectD.Menus
             EnsureTextCanRender(boardPaperArea);
             if (collectionScroll != null) EnsureTextCanRender(collectionScroll.transform);
             ReloadProgressFromJson();
+        }
+
+        // Keyboard-selected buttons / papers grow a little, then return to their original size.
+        private static void AddSelectScale(GameObject target)
+        {
+            if (target.TryGetComponent<SelectedButtonBold>(out _)) return;
+            var feedback = target.AddComponent<SelectedButtonBold>();
+            feedback.bold = false;
+            feedback.selectedScale = 1.08f;
         }
 
         private void OnApplicationFocus(bool hasFocus)
@@ -133,6 +143,7 @@ namespace ProjectD.Menus
                 if (placements == null) paper.PlaceIn(boardPaperArea, visibleCount, capacity);
                 else paper.PlaceOnBoard(boardPaperArea, placements[level.id], capacity);
                 paper.BindLevel(level, useSavedPlacements || GameSceneManager.IsUnlocked(level.id), false, () => OpenLevel(level.id));
+                AddSelectScale(paper.gameObject);
                 if (placements != null && !placements[level.id].popInPlayed)
                 {
                     paper.PlayPopIn();
@@ -173,6 +184,7 @@ namespace ProjectD.Menus
         {
             if (paperPanel != null && paperPanel.activeSelf) PlayMenuSound();
             paperView = PaperView.Closed;
+            ResetCloth();
             if (paperPanel != null) paperPanel.SetActive(false);
             if (mainPanel != null) mainPanel.SetActive(true);
             RefreshBoard();
@@ -208,8 +220,35 @@ namespace ProjectD.Menus
             RefreshPaperCollection(resetScroll);
         }
 
+        // Paper Panel has two views: CompleteNSecretList (the scroll list, parent of the scroll view)
+        // and PaperSheet (quest details, parent of the title). Show one, hide the other.
+        // The Cloth clip ends on the Cloth's resting position, so sampling its last frame puts it back in place
+        // (stopping alone would leave it wherever the animation was when the panel closed).
+        private void ResetCloth()
+        {
+            var cloth = collectionScroll != null ? collectionScroll.transform.parent.GetComponentInChildren<Animation>(true) : null;
+            if (cloth == null || cloth.clip == null) return;
+            cloth.Stop();
+            cloth.clip.SampleAnimation(cloth.gameObject, cloth.clip.length);
+        }
+
+        private void ShowPaperList(bool showList)
+        {
+            if (!showList) ResetCloth();
+            var list = collectionScroll != null ? collectionScroll.transform.parent : null;
+            var sheet = paperTitle != null ? paperTitle.transform.parent : null;
+            if (list != null) list.gameObject.SetActive(showList);
+            if (sheet != null) sheet.gameObject.SetActive(!showList);
+        }
+
         private void RefreshPaperCollection(bool resetScroll)
         {
+            ShowPaperList(true);
+            if (resetScroll && collectionScroll != null)   // freshly opened: the Cloth drops down once
+            {
+                var cloth = collectionScroll.transform.parent.GetComponentInChildren<Animation>(true);
+                if (cloth != null && cloth.clip != null) { cloth.Stop(); cloth.Play(); }
+            }
             bool completed = paperView == PaperView.Completed;
             int entryCount = completed ? completedLevels.Count : unlockedSecrets.Count;
             if (paperTitle != null) paperTitle.text = completed ? "Complete" : "Secret";
@@ -222,6 +261,7 @@ namespace ProjectD.Menus
             collectionScroll.gameObject.SetActive(true);
             collectionScroll.StopMovement();
             var content = collectionScroll.content;
+            content.pivot = new Vector2(0f, content.pivot.y);   // left-pivoted: anchoredPosition.x is the scroll offset
             float viewportWidth = collectionScroll.viewport.rect.width;
             int slots = Mathf.Max(CollectionVisibleSlots, entryCount);
             float contentWidth = viewportWidth * slots / CollectionVisibleSlots;
@@ -239,11 +279,13 @@ namespace ProjectD.Menus
                 {
                     var level = completedLevels[visibleCount];
                     paper.BindLevel(level, GameSceneManager.IsUnlocked(level.id), true, () => OpenLevel(level.id));
+                    AddSelectScale(paper.gameObject);
                 }
                 else
                 {
                     var level = unlockedSecrets[visibleCount];
                     paper.BindSecret(level, () => OpenSecretDetails(level));
+                    AddSelectScale(paper.gameObject);
                 }
             }
             collectionPapers.HideFrom(visibleCount);

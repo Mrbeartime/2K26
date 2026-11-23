@@ -254,11 +254,11 @@ namespace ProjectD.Audio
                 { voices[i].source.Stop(); voices[i].owner = null; }
         }
         public bool PlayLevelHover(AudioCue cue = AudioCue.Pause) => PlayPooled(cue, AudioBus.UI, null, null, true);
-        public bool PlayLevelClick()
+        public bool PlayLevelClick(AudioCue cue = AudioCue.ButtonClick)
         {
             // Press feedback must never cut a previously started hover/open sound.
             buttonPressFrame = Time.frameCount;
-            return PlayPooled(AudioCue.ButtonClick, AudioBus.UI, null);
+            return PlayPooled(cue, AudioBus.UI, null);
         }
         private bool PlayPooled(AudioCue cue, AudioBus bus, Vector3? position, Object owner = null, bool hover = false)
         {

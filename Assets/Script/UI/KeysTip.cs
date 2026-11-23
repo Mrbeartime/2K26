@@ -13,6 +13,8 @@ public class KeysTip : MonoBehaviour
     [SerializeField] private RectTransform navigateSelectionTip;
     [SerializeField] private RectTransform confirmSelectionTip;
     [SerializeField] private RectTransform cameraPanRotateTip;
+    [Tooltip("Extra tips that are always visible, listed top to bottom below the built-in tips. Used by scenes without the in-game HUD, such as the Guide.")]
+    [SerializeField] private RectTransform[] alwaysTips;
 
     [SerializeField, Min(0f)] private float rowSpacing = 70f;
 
@@ -26,7 +28,7 @@ public class KeysTip : MonoBehaviour
     private void Awake()
     {
         // List the tips from top to bottom.
-        (RectTransform Prefab, Visibility Visibility)[] tips =
+        var tips = new System.Collections.Generic.List<(RectTransform Prefab, Visibility Visibility)>
         {
             (cameraPanRotateTip, Visibility.CameraPanRotate),
             (navigateSelectionTip, Visibility.Selection),
@@ -38,9 +40,12 @@ public class KeysTip : MonoBehaviour
             (pauseTip, Visibility.Always),
             (toggleTipsTip, Visibility.Always)
         };
+        if (alwaysTips != null)
+            foreach (RectTransform tip in alwaysTips)
+                tips.Add((tip, Visibility.Always));
 
-        rows = new (RectTransform, float, float, Visibility)[tips.Length];
-        for (int i = 0; i < tips.Length; i++)
+        rows = new (RectTransform, float, float, Visibility)[tips.Count];
+        for (int i = 0; i < tips.Count; i++)
         {
             (RectTransform prefab, Visibility visibility) = tips[i];
             if (prefab == null) continue;

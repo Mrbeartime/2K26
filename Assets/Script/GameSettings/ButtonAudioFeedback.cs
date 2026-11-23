@@ -19,6 +19,9 @@ namespace ProjectD.Audio
             target.GetComponent<ButtonAudioFeedback>().levelHoverCue = AudioCue.BellHover;
         }
         private bool levelClickBound;
+        // Optional per-button sounds (see BindCustom). Null = use the default menu sounds.
+        private AudioCue? customHoverCue;
+        private AudioCue? customClickCue;
         private bool pointerInside;
         private bool selected;
         private bool pointerPress;
@@ -29,6 +32,21 @@ namespace ProjectD.Audio
             var feedback = target.GetComponent<ButtonAudioFeedback>();
             if (feedback == null) feedback = target.gameObject.AddComponent<ButtonAudioFeedback>();
             feedback.levelHover = enabled;
+            if (!feedback.levelClickBound)
+            {
+                target.onClick.AddListener(feedback.LevelClick);
+                feedback.levelClickBound = true;
+            }
+        }
+        /// <summary>Gives one button its own hover and click sounds (both must be UI-bus cues).</summary>
+        public static void BindCustom(Button target, AudioCue hoverCue, AudioCue clickCue)
+        {
+            if (target == null) return;
+            var feedback = target.GetComponent<ButtonAudioFeedback>();
+            if (feedback == null) feedback = target.gameObject.AddComponent<ButtonAudioFeedback>();
+            feedback.customHoverCue = hoverCue;
+            feedback.customClickCue = clickCue;
+            feedback.audioScope = target.transform;
             if (!feedback.levelClickBound)
             {
                 target.onClick.AddListener(feedback.LevelClick);
@@ -71,7 +89,12 @@ namespace ProjectD.Audio
                 return;
             }
             if (InScope && hoverSound && button.IsActive() && button.IsInteractable())
-                GameAudioManager.Instance?.PlayUI(GameAudioManager.TimingEvent(AudioCue.ButtonHover));
+            {
+                if (customHoverCue.HasValue)
+                    GameAudioManager.Instance?.PlayLevelHover(GameAudioManager.TimingEvent(customHoverCue.Value));
+                else
+                    GameAudioManager.Instance?.PlayUI(GameAudioManager.TimingEvent(AudioCue.ButtonHover));
+            }
         }
         public void OnPointerDown(PointerEventData data)
         {
@@ -95,7 +118,7 @@ namespace ProjectD.Audio
             if ((InScope || levelHover) && clickSound && button.enabled && button.IsInteractable() && lastClickFrame != Time.frameCount)
             {
                 lastClickFrame = Time.frameCount;
-                GameAudioManager.Instance?.PlayLevelClick();
+                GameAudioManager.Instance?.PlayLevelClick(customClickCue ?? AudioCue.ButtonClick);
             }
         }
         private void LevelClick()
