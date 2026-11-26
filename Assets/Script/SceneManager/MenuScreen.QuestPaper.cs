@@ -5,6 +5,42 @@ using UnityEngine.UI;
 
 namespace ProjectD.Menus
 {
+    internal static class QuestDepthText
+    {
+        internal static string Resolve(string saved, int depth, TextAsset thaiSource)
+        {
+            if (string.IsNullOrWhiteSpace(saved)) return null;
+
+            var thaiOptions = ReadOptions(thaiSource, depth);
+            int index = saved.StartsWith("#") && int.TryParse(saved.Substring(1), out int number)
+                ? number
+                : thaiOptions.IndexOf(saved);
+            if (index < 0) return saved.StartsWith("#") ? null : saved;
+
+            var options = ReadOptions(GameLanguage.LoadVariant(thaiSource), depth);
+            if (index < options.Count) return options[index];
+            return index < thaiOptions.Count ? thaiOptions[index] : null;
+        }
+
+        internal static List<string> ReadOptions(TextAsset source, int depth)
+        {
+            var options = new List<string>();
+            if (source == null) return options;
+
+            int targetDepth = Mathf.Clamp(depth, 0, 10);
+            foreach (var line in source.text.Split('\n'))
+            {
+                int separator = line.IndexOf('|');
+                if (separator <= 0 || !int.TryParse(line.Substring(0, separator), out int optionDepth) || optionDepth != targetDepth)
+                    continue;
+
+                string text = line.Substring(separator + 1).Trim();
+                if (text.Length > 0) options.Add(text);
+            }
+            return options;
+        }
+    }
+
     public partial class MenuScreen
     {
         private readonly QuestPaperPool boardPapers = new QuestPaperPool();
@@ -39,7 +75,7 @@ namespace ProjectD.Menus
             if (paperDepth != null)
             {
                 string saved = LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => PickDepthDescription(depth));
-                paperDepth.text = (saved == null ? null : ResolveDepthDescription(saved, depth))
+                paperDepth.text = (saved == null ? null : QuestDepthText.Resolve(saved, depth, Catalog?.questDepthDescriptions))
                     ?? GameLanguage.Pick("ยังไม่มีรายงานความยากของภารกิจนี้", "No difficulty report for this quest yet.");
             }
             RefreshDetailCharacterIcons(characterIcons);
@@ -52,39 +88,8 @@ namespace ProjectD.Menus
         // Older saves hold the Thai text itself, which is matched back to its number.
         private string PickDepthDescription(int depth)
         {
-            var options = ReadDepthOptions(Catalog?.questDepthDescriptions, depth);
+            var options = QuestDepthText.ReadOptions(Catalog?.questDepthDescriptions, depth);
             return options.Count == 0 ? null : "#" + depthDescriptionRandom.Next(options.Count);
-        }
-
-        private string ResolveDepthDescription(string saved, int depth)
-        {
-            var thaiOptions = ReadDepthOptions(Catalog?.questDepthDescriptions, depth);
-            int index = saved.StartsWith("#") && int.TryParse(saved.Substring(1), out int number)
-                ? number
-                : thaiOptions.IndexOf(saved);
-            if (index < 0) return saved.StartsWith("#") ? null : saved;
-
-            var options = ReadDepthOptions(GameLanguage.LoadVariant(Catalog?.questDepthDescriptions), depth);
-            if (index < options.Count) return options[index];
-            return index < thaiOptions.Count ? thaiOptions[index] : null;
-        }
-
-        private static List<string> ReadDepthOptions(TextAsset source, int depth)
-        {
-            var options = new List<string>();
-            if (source == null) return options;
-
-            int targetDepth = Mathf.Clamp(depth, 0, 10);
-            foreach (var line in source.text.Split('\n'))
-            {
-                int separator = line.IndexOf('|');
-                if (separator <= 0 || !int.TryParse(line.Substring(0, separator), out int optionDepth) || optionDepth != targetDepth)
-                    continue;
-
-                string text = line.Substring(separator + 1).Trim();
-                if (text.Length > 0) options.Add(text);
-            }
-            return options;
         }
 
         private void RefreshDetailCharacterIcons(Sprite[] sprites)

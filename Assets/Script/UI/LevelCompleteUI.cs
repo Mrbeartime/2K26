@@ -180,12 +180,14 @@ public class LevelCompleteUI : MonoBehaviour
 
         string path = gameObject.scene.path;
         string title, description, questId;
+        int depth;
         var level = catalog.FindLevelByScene(path);
         if (level != null)
         {
             title = level.Title;
             description = level.description;
             questId = "level:" + level.id;
+            depth = level.depth;
         }
         else
         {
@@ -194,13 +196,15 @@ public class LevelCompleteUI : MonoBehaviour
             title = secret.title;
             description = secret.description;
             questId = "secret:" + secret.id;
+            depth = secret.depth;
         }
 
         SetText("Paper Title", title);
         SetText("Paper Description", description);
-        // Level Select already saved this quest's depth report in level-progress.json; just read it back.
-        SetText("Depth", LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => null)
-            ?? "ยังไม่มีรายงานความยากของภารกิจนี้");
+        // Resolve the saved report against the current locale, matching the Level Select paper.
+        string savedDepth = LevelProgressStore.GetOrCreateQuestDepthDescription(questId, () => null);
+        SetText("Depth", QuestDepthText.Resolve(savedDepth, depth, catalog.questDepthDescriptions)
+            ?? GameLanguage.Pick("ยังไม่มีรายงานความยากของภารกิจนี้", "No difficulty report for this quest yet."));
 
         var paperIcons = completePanel.transform.Find("PaperSheet/Quest Details/Character Icons");
         if (paperIcons != null && paperIcons.TryGetComponent(out LevelCompleteCharacterIcons icons)) icons.Prepare();
