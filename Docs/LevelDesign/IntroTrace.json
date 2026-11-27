@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "width": 9,
+  "height": 9,
+  "turns": 5,
+  "reference": "Docs/LevelDesign/References/PP-07.png",
+  "crop": {
+    "serializedVersion": "2",
+    "x": 0.09166666865348816,
+    "y": 0.09166666865348816,
+    "width": 0.8166666626930237,
+    "height": 0.8166666626930237
+  },
+  "cells": [
+    {
+      "x": 0,
+      "y": 4,
+      "ground": 1,
+      "actor": 0,
+      "prop": 1,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "ground": 1,
+      "actor": 0,
+      "prop": 2,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": "Blue"
+    },
+    {
+      "x": 0,
+      "y": 6,
+      "ground": 1,
+      "actor": 4,
+      "prop": 0,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "ground": 1,
+      "actor": 0,
+      "prop": 0,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "ground": 1,
+      "actor": 1,
+      "prop": 0,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "ground": 1,
+      "actor": 0,
+      "prop": 0,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "ground": 1,
+      "actor": 0,
+      "prop": 0,
+      "actorFacing": 0,
+      "propFacing": 0,
+      "riseRound": 1,
+      "interval": 2,
+      "channel": ""
+    }
+  ],
+  "edges": [
+    {
+      "x": 0,
+      "y": 4,
+      "east": false,
+      "kind": 2,
+      "channel": "Blue"
+    }
+  ]
+}

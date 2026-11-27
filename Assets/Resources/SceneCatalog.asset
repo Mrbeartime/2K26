@@ -14,19 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.SceneCatalog
   startScene:
     scene: {fileID: 102900000, guid: 9f073acd2b1b467ab6eac28001969005, type: 3}
-    scenePath: Assets/Scenes/MainScene/Menus/Start.unity
+    scenePath: Assets/_Project/UI/Scenes/Start.unity
   settingsScene:
     scene: {fileID: 102900000, guid: 1e25674cc09f14d4a81b1a87e1be6d93, type: 3}
-    scenePath: Assets/Scenes/MainScene/Menus/Setting.unity
+    scenePath: Assets/_Project/UI/Scenes/Setting.unity
   levelSelectScene:
     scene: {fileID: 102900000, guid: 687fabe3fbd90e145bf834827b863bca, type: 3}
-    scenePath: Assets/Scenes/MainScene/Menus/LevelSelect.unity
+    scenePath: Assets/_Project/UI/Scenes/LevelSelect.unity
   guideScene:
     scene: {fileID: 102900000, guid: be8301216cb42ca4fb1729b15674f6a8, type: 3}
-    scenePath: Assets/Scenes/MainScene/Menus/Guide/GuideScene.unity
+    scenePath: Assets/_Project/UI/Scenes/GuideScene.unity
   loadingScene:
     scene: {fileID: 102900000, guid: 45a2c1c427324126a36b7bba1d2e2d75, type: 3}
-    scenePath: Assets/Scenes/MainScene/Menus/Loading.unity
+    scenePath: Assets/_Project/UI/Scenes/Loading.unity
   questPaperPrefab: {fileID: 8061406892276174415, guid: 6b84cc370f6a86a418063f4054bde19a, type: 3}
   questTitleFont: {fileID: 11400000, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
   questCharacterIconMaterial: {fileID: 2100000, guid: dd108a9c4ccfdd242abf3ab94d79fa54, type: 2}
@@ -52,7 +52,7 @@ MonoBehaviour:
     paperSprite: {fileID: 0}
     scene:
       scene: {fileID: 102900000, guid: 995a54a1693413e42902957a9b6190e4, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level1.unity
+      scenePath: Assets/_Project/Gameplay/Scenes/Level1.unity
     unlockConditions:
       requireCompletedLevelList: 0
       requiredMainLevelIds: 
@@ -73,7 +73,7 @@ MonoBehaviour:
     paperSprite: {fileID: 0}
     scene:
       scene: {fileID: 102900000, guid: 1f83f47272cb32e4c91285708c808410, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level2.unity
+      scenePath: Assets/_Project/Gameplay/Scenes/Level2.unity
     unlockConditions:
       requireCompletedLevelList: 1
       requiredMainLevelIds: 01000000
@@ -95,7 +95,7 @@ MonoBehaviour:
     paperSprite: {fileID: 0}
     scene:
       scene: {fileID: 102900000, guid: 881c397dbd4e4944baa51e182f090ba1, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level3.unity
+      scenePath: Assets/_Project/Gameplay/Scenes/Level3.unity
     unlockConditions:
       requireCompletedLevelList: 1
       requiredMainLevelIds: 01000000
@@ -117,7 +117,7 @@ MonoBehaviour:
     paperSprite: {fileID: 0}
     scene:
       scene: {fileID: 102900000, guid: bd1ba01d6ecd49a4ba7de641ab490a08, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level4.unity
+      scenePath: Assets/_Project/Gameplay/Scenes/Level4.unity
     unlockConditions:
       requireCompletedLevelList: 1
       requiredMainLevelIds: 0100000002000000
@@ -139,7 +139,7 @@ MonoBehaviour:
     paperSprite: {fileID: 0}
     scene:
       scene: {fileID: 102900000, guid: 61436b15a539b4b459898782fe66d865, type: 3}
-      scenePath: Assets/Scenes/MainScene/Level/Level5.unity
+      scenePath: Assets/_Project/Gameplay/Scenes/Level5.unity
     unlockConditions:
       requireCompletedLevelList: 1
       requiredMainLevelIds: 01000000020000000300000004000000
@@ -150,25 +150,4 @@ MonoBehaviour:
       minimumDepth: 0
       requireTotalDepth: 0
       totalDepth: 0
-  secretLevels:
-  - id: SecretLevel1
-    title: Secret Level
-    description: A bonus challenge. Reach the exit within three turns.
-    characterAvailable:
-    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
-    depth: 8
-    paperSprite: {fileID: 0}
-    scene:
-      scene: {fileID: 102900000, guid: b8a78abbb2544dd68adc2ebccf974b51, type: 3}
-      scenePath: Assets/Scenes/Mon/SceneGame/SecretLevel1.unity
-    unlockConditions:
-      requireCompletedLevelList: 1
-      requiredMainLevelIds: 05000000
-      requiredSecretLevelIds: []
-      requireCompletedLevelCount: 0
-      completedLevelCount: 0
-      requireMinimumDepth: 0
-      minimumDepth: 0
-      requireTotalDepth: 0
-      totalDepth: 0
-    requiredCompletedLevel: 5
+  secretLevels: []

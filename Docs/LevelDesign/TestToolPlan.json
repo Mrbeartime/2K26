@@ -1,0 +1,494 @@
+{
+    "version": 1,
+    "width": 9,
+    "height": 9,
+    "turns": 5,
+    "reference": "Docs/LevelDesign/References/S001.png",
+    "crop": {
+        "serializedVersion": "2",
+        "x": 0.09200000017881394,
+        "y": 0.09200000017881394,
+        "width": 0.8159999847412109,
+        "height": 0.8159999847412109
+    },
+    "cells": [
+        {
+            "x": 2,
+            "y": 4,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 2,
+            "y": 5,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 2,
+            "y": 3,
+            "ground": 1,
+            "actor": 0,
+            "prop": 1,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 3,
+            "channel": ""
+        },
+        {
+            "x": 3,
+            "y": 5,
+            "ground": 1,
+            "actor": 0,
+            "prop": 6,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 5,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 6,
+            "ground": 1,
+            "actor": 0,
+            "prop": 6,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 6,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 7,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 7,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 8,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 8,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 8,
+            "ground": 1,
+            "actor": 3,
+            "prop": 0,
+            "actorFacing": 3,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 6,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 7,
+            "y": 4,
+            "ground": 1,
+            "actor": 0,
+            "prop": 5,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 4,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 4,
+            "ground": 1,
+            "actor": 5,
+            "prop": 3,
+            "actorFacing": 3,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 3,
+            "channel": "Green"
+        },
+        {
+            "x": 5,
+            "y": 4,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 4,
+            "ground": 1,
+            "actor": 0,
+            "prop": 3,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": "Red"
+        },
+        {
+            "x": 5,
+            "y": 3,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 3,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 2,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 2,
+            "ground": 1,
+            "actor": 1,
+            "prop": 0,
+            "actorFacing": 2,
+            "propFacing": 0,
+            "riseRound": 2,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 7,
+            "y": 2,
+            "ground": 1,
+            "actor": 0,
+            "prop": 2,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 2,
+            "interval": 3,
+            "channel": "Purple"
+        },
+        {
+            "x": 6,
+            "y": 1,
+            "ground": 1,
+            "actor": 0,
+            "prop": 5,
+            "actorFacing": 0,
+            "propFacing": 2,
+            "riseRound": 2,
+            "interval": 3,
+            "channel": ""
+        },
+        {
+            "x": 3,
+            "y": 4,
+            "ground": 2,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 0,
+            "riseRound": 3,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 0,
+            "y": 5,
+            "ground": 1,
+            "actor": 5,
+            "prop": 0,
+            "actorFacing": 1,
+            "propFacing": 0,
+            "riseRound": 3,
+            "interval": 2,
+            "channel": ""
+        },
+        {
+            "x": 1,
+            "y": 4,
+            "ground": 1,
+            "actor": 0,
+            "prop": 4,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 3,
+            "interval": 3,
+            "channel": "Blue"
+        },
+        {
+            "x": 7,
+            "y": 1,
+            "ground": 1,
+            "actor": 0,
+            "prop": 0,
+            "actorFacing": 0,
+            "propFacing": 3,
+            "riseRound": 1,
+            "interval": 3,
+            "channel": ""
+        }
+    ],
+    "edges": [
+        {
+            "x": 6,
+            "y": 4,
+            "east": true,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Purple"
+        },
+        {
+            "x": 4,
+            "y": 7,
+            "east": true,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Blue"
+        },
+        {
+            "x": 2,
+            "y": 4,
+            "east": false,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Purple"
+        },
+        {
+            "x": 4,
+            "y": 6,
+            "east": false,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Red"
+        },
+        {
+            "x": 6,
+            "y": 1,
+            "east": false,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Red"
+        },
+        {
+            "x": 5,
+            "y": 2,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 3,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 6,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 7,
+            "east": true,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 7,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 2,
+            "y": 3,
+            "east": true,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 2,
+            "y": 2,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 1,
+            "y": 3,
+            "east": true,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 1,
+            "y": 3,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 4,
+            "y": 5,
+            "east": true,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 4,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 5,
+            "east": true,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 5,
+            "y": 5,
+            "east": false,
+            "startOpen": false,
+            "kind": 1,
+            "channel": ""
+        },
+        {
+            "x": 6,
+            "y": 2,
+            "east": true,
+            "startOpen": false,
+            "kind": 2,
+            "channel": "Green"
+        }
+    ]
+}

@@ -78,7 +78,7 @@ namespace ProjectD.Menus
     [Serializable]
     public class SecretLevelDefinition
     {
-        public string id = "SecretLevel1";
+        public string id = string.Empty;
         public string title = "Secret Level";
         [TextArea] public string description;
         [Tooltip("Icons for the characters available in this level, in display order.")]

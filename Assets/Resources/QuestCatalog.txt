@@ -46,11 +46,3 @@ depth=3
 characters=Warrior, Archer, Rogue
 paper=default
 unlockMain=1, 2, 3, 4
-
-[secret:SecretLevel1]
-title=Secret Level
-description=A bonus challenge. Reach the exit within three turns.
-depth=8
-characters=Warrior
-paper=default
-unlockMain=5
