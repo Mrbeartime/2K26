@@ -1,0 +1,122 @@
+using UnityEngine;
+using UnityEngine.Events;
+
+// A reusable arrow-only training target. Completion does not destroy the target.
+public class ArrowTutorial : Entity
+{
+    [Header("Arrow Tutorial")]
+    [SerializeField, Min(1)] private int requiredHits = 1;
+    public UnityEvent onArrowHit = new UnityEvent();
+    public UnityEvent onCompleted = new UnityEvent();
+
+    // เปลี่ยนจาก door ตัวเดียวเป็น Array เพื่อให้คุมประตูได้หลายบาน
+    [SerializeField] private DoorController[] doors;
+
+    private string doorRequestId;
+    private bool openedByArrow;
+
+    private void Awake() => doorRequestId = "ArrowTutorial:" + System.Guid.NewGuid().ToString("N");
+
+    // ฟังก์ชันเสริมสำหรับสั่งเปิด-ปิดประตูทุกบานในลิสต์
+    private void SetAllDoors(bool isOpen)
+    {
+        bool linked = false;
+        if (doors != null) foreach (DoorController d in doors)
+        {
+            if (d == null) continue;
+            linked = true;
+            d.SetOpen(doorRequestId, isOpen);
+        }
+        if (isOpen && !linked)
+            Debug.LogWarning("ArrowTutorial: ยิงโดนแล้ว แต่ยังไม่ได้ใส่ DoorController ในรายการ Doors", this);
+    }
+
+    public void ReceiveArrowFrom(Entity shooter)
+    {
+        if (!(shooter is ArcherMan) && !(shooter is RangedEnemy)) return;
+        if (Time.timeScale == 0) return;
+        ReceiveArrowHit();
+        openedByArrow = true;
+
+        // สั่งเปิดประตูทุกบาน
+        SetAllDoors(true);
+    }
+
+    public int HitCount { get; private set; }
+    public bool IsCompleted { get; private set; }
+
+    private void Start()
+    {
+        foreach (Collider targetCollider in GetComponentsInChildren<Collider>())
+            ConfigureCollider(targetCollider);
+        // Provide a visible target even when attached to an empty GameObject.
+        if (GetComponentInChildren<Renderer>() == null)
+        {
+            CreateRing("Outer Ring", 0.7f, 0f, Color.red);
+            CreateRing("Middle Ring", 0.48f, -0.025f, Color.white);
+            CreateRing("Bullseye", 0.22f, -0.05f, Color.red);
+        }
+    }
+
+    private void CreateRing(string partName, float size, float depth, Color color)
+    {
+        GameObject ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        ring.name = partName;
+        ring.transform.SetParent(transform, false);
+        ring.transform.localPosition = new Vector3(0, 0.65f, depth);
+        ring.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        ring.transform.localScale = new Vector3(size, 0.025f, size);
+        // Enabled for mouse picking. Arrow wall checks ignore Entity colliders.
+        ConfigureCollider(ring.GetComponent<Collider>());
+        MaterialPropertyBlock properties = new MaterialPropertyBlock();
+        properties.SetColor("_BaseColor", color);
+        properties.SetColor("_Color", color);
+        ring.GetComponent<Renderer>().SetPropertyBlock(properties);
+    }
+
+    // Sword hits must not complete an arrow lesson.
+    private static void ConfigureCollider(Collider targetCollider)
+    {
+        if (targetCollider is MeshCollider mesh) mesh.convex = true;
+        targetCollider.enabled = true;
+        targetCollider.isTrigger = true;
+    }
+
+    public override void ReceiveHit() { }
+
+    public override void ReceiveArrowHit()
+    {
+        if (Time.timeScale == 0) return;
+        Debug.Log("HIT", this);
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.PlayInteract();
+        onArrowHit.Invoke();
+        if (IsCompleted) return;
+        HitCount++;
+        IsCompleted = HitCount >= Mathf.Max(1, requiredHits);
+
+        if (IsCompleted) onCompleted.Invoke();
+    }
+
+    public void ResetTutorial()
+    {
+        foreach (var animation in GetComponentsInChildren<PropInteractAnimation>())
+            animation.ResetPose();
+        HitCount = 0;
+        IsCompleted = false;
+        openedByArrow = false;
+
+        // สั่งปิดประตูทุกบาน
+        SetAllDoors(false);
+    }
+
+    private void OnEnable()
+    {
+        if (openedByArrow) SetAllDoors(true);
+    }
+
+    private void OnDisable()
+    {
+        SetAllDoors(false);
+    }
+}

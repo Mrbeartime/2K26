@@ -1,0 +1,7 @@
+PASS: Play Mode, new HUD, shader supported, zero shader errors.
+Mist: 2 quads, 1 material, no runtime scripts or colliders.
+Players: 3
+Tiles: 38
+Captured 6 animated frames 1.2 seconds apart and a no-mist reference.
+PASS: 251,054 background pixels changed between mist frames; 412,586 background pixels show mist. Camera and HUD excluded by no-mist mask.
+PASS: final simplified Editor helper compiled; original Level 5 prefab/script references preserved.

@@ -1,0 +1,228 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text;
+using UnityEngine;
+
+/// <summary>A deterministic plan only; objects control their own execution.</summary>
+public interface IFixedTurnScheduledObject
+{
+    string ScheduledActionName { get; }
+    bool IsScheduledOnTurn(int roundNumber, int maximumRounds);
+}
+
+/// <summary>Independent doc for clocks/UI: round -> object ID -> 1 (scheduled) or 0.</summary>
+[DisallowMultipleComponent]
+public sealed class TurnScheduleData : MonoBehaviour
+{
+    [SerializeField, TextArea(4, 12)] private string turnSummary;
+    [SerializeField, Min(1)] private int maximumRounds = 1;
+    [SerializeField] private int currentRound = 1;
+    [SerializeField, TextArea(2, 5)] private string currentTurnSummary;
+    [SerializeField, HideInInspector] private List<ScheduledObject> objects = new();
+    [SerializeField, HideInInspector] private List<SavedRound> savedStates = new();
+
+    [Serializable]
+    private sealed class ScheduledObject
+    {
+        public string id;
+        public string name;
+        public MonoBehaviour source;
+        public string trapType;
+    }
+
+    [Serializable]
+    private sealed class SavedRound
+    {
+        public int round;
+        public List<int> values = new();
+    }
+
+    private readonly Dictionary<int, IReadOnlyDictionary<string, int>> statesByTurn = new();
+    private readonly Dictionary<string, string> objectNames = new();
+    private readonly Dictionary<MonoBehaviour, string> sourceIds = new();
+    private readonly Dictionary<int, IReadOnlyList<string>> trapTypesByTurn = new();
+
+    /// <summary>Unique concrete trap type names scheduled on this ascending round.</summary>
+    public IReadOnlyList<string> GetTrapTypes(int round)
+    {
+        EnsureDictionary();
+        return trapTypesByTurn.TryGetValue(round, out var types) ? types : Array.Empty<string>();
+    }
+
+    internal List<TurnTrap> GetActiveTraps(int round, string trapType)
+    {
+        var states = GetStates(round);
+        var traps = new List<TurnTrap>();
+        foreach (var item in objects)
+        {
+            if (item?.source is TurnTrap trap && trap != null && trap.isActiveAndEnabled &&
+                item.trapType == trapType && item.id != null &&
+                states.TryGetValue(item.id, out int state) && state == 1)
+                traps.Add(trap);
+        }
+        return traps;
+    }
+
+    private ReadOnlyDictionary<int, IReadOnlyDictionary<string, int>> dictionaryView;
+    private ReadOnlyDictionary<string, string> namesView;
+    private bool initialized;
+    private static readonly IReadOnlyDictionary<string, int> EmptyStates =
+        new ReadOnlyDictionary<string, int>(new Dictionary<string, int>());
+
+    public int MaximumRounds => maximumRounds;
+    public int CurrentRound => currentRound;
+    public string TurnSummary => turnSummary;
+    public string CurrentTurnSummary => currentTurnSummary;
+    public event Action ScheduleChanged;
+    public event Action CurrentRoundChanged;
+
+    public IReadOnlyDictionary<int, IReadOnlyDictionary<string, int>> StatesByTurn
+    {
+        get
+        {
+            EnsureDictionary();
+            return dictionaryView ??= new ReadOnlyDictionary<int, IReadOnlyDictionary<string, int>>(statesByTurn);
+        }
+    }
+    public IReadOnlyDictionary<string, string> ObjectNames
+    {
+        get
+        {
+            EnsureDictionary();
+            return namesView ??= new ReadOnlyDictionary<string, string>(objectNames);
+        }
+    }
+    public IReadOnlyDictionary<string, int> CurrentStates => GetStates(currentRound);
+
+    public IReadOnlyDictionary<string, int> GetStates(int round)
+    {
+        EnsureDictionary();
+        return statesByTurn.TryGetValue(round, out var values) ? values : EmptyStates;
+    }
+    public int GetState(int round, string objectId) =>
+        objectId != null && GetStates(round).TryGetValue(objectId, out int value) ? value : 0;
+
+    public int GetState(int round, MonoBehaviour source)
+    {
+        EnsureDictionary();
+        return source != null && sourceIds.TryGetValue(source, out string id) ? GetState(round, id) : 0;
+    }
+
+    private void OnEnable()
+    {
+        EnsureDictionary();
+        UpdateSummaries();
+    }
+
+    private void EnsureDictionary()
+    {
+        if (initialized) return;
+        initialized = true;
+        statesByTurn.Clear();
+        objectNames.Clear();
+        sourceIds.Clear();
+        trapTypesByTurn.Clear();
+        foreach (var item in objects)
+        {
+            if (item == null || string.IsNullOrEmpty(item.id)) continue;
+            objectNames[item.id] = item.name;
+            if (item.source != null) sourceIds[item.source] = item.id;
+            // Populate older serialized schedules without requiring a scene refresh.
+            if (string.IsNullOrEmpty(item.trapType) && item.source is TurnTrap)
+                item.trapType = item.source.GetType().FullName;
+        }
+        for (int round = 1; round <= Mathf.Max(1, maximumRounds); round++)
+        {
+            var values = new Dictionary<string, int>();
+            foreach (var item in objectNames) values[item.Key] = 0;
+            foreach (var row in savedStates)
+            {
+                if (row == null || row.round != round || row.values == null) continue;
+                for (int i = 0; i < objects.Count && i < row.values.Count; i++)
+                    if (objects[i] != null && values.ContainsKey(objects[i].id))
+                        values[objects[i].id] = row.values[i] > 0 ? 1 : 0;
+            }
+            statesByTurn.Add(round, new ReadOnlyDictionary<string, int>(values));
+            var types = new List<string>();
+            foreach (var item in objects)
+                if (item != null && !string.IsNullOrEmpty(item.trapType) &&
+                    item.id != null && values.TryGetValue(item.id, out int active) && active == 1 &&
+                    !types.Contains(item.trapType)) types.Add(item.trapType);
+            types.Sort(StringComparer.Ordinal);
+            trapTypesByTurn.Add(round, types.AsReadOnly());
+        }
+    }
+
+    [ContextMenu("Schedule/Refresh From Scene")]
+    public void RefreshFromScene()
+    {
+        if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded) return;
+        var sources = new List<MonoBehaviour>();
+        foreach (var source in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
+            if (source != null && source.gameObject.scene == gameObject.scene && source is IFixedTurnScheduledObject)
+                sources.Add(source);
+        sources.Sort((a, b) => string.CompareOrdinal(ObjectId(a), ObjectId(b)));
+        objects.Clear();
+        foreach (var source in sources)
+            objects.Add(new ScheduledObject { id = ObjectId(source), name = source.name, source = source,
+                trapType = source is TurnTrap ? source.GetType().FullName : null });
+        savedStates.Clear();
+        for (int round = 1; round <= Mathf.Max(1, maximumRounds); round++)
+        {
+            var row = new SavedRound { round = round };
+            foreach (var source in sources)
+                row.values.Add(((IFixedTurnScheduledObject)source).IsScheduledOnTurn(round, maximumRounds) ? 1 : 0);
+            savedStates.Add(row);
+        }
+        int previous = currentRound;
+        currentRound = Mathf.Clamp(currentRound, 1, Mathf.Max(1, maximumRounds));
+        initialized = false;
+        EnsureDictionary();
+        UpdateSummaries();
+        ScheduleChanged?.Invoke();
+        if (previous != currentRound) CurrentRoundChanged?.Invoke();
+    }
+
+    public void RefreshFromScene(int rounds)
+    {
+        maximumRounds = Mathf.Max(1, rounds);
+        RefreshFromScene();
+    }
+
+    public void SetCurrentRound(int round)
+    {
+        int next = Mathf.Clamp(round, 1, Mathf.Max(1, maximumRounds));
+        if (next == currentRound) return;
+        currentRound = next;
+        currentTurnSummary = FormatRound(currentRound);
+        CurrentRoundChanged?.Invoke();
+    }
+
+    private static string ObjectId(MonoBehaviour source)
+    {
+        string path = string.Empty;
+        for (Transform item = source.transform; item != null; item = item.parent)
+            path = "/" + item.name + "[" + item.GetSiblingIndex() + "]" + path;
+        return path + ":" + source.GetType().Name + "[" + Array.IndexOf(source.GetComponents<MonoBehaviour>(), source) + "]";
+    }
+
+    private string FormatRound(int round)
+    {
+        var parts = new List<string>();
+        foreach (var item in GetStates(round)) parts.Add(objectNames[item.Key] + " = " + item.Value);
+        return "Round " + round + ": " + (parts.Count == 0 ? "(none)" : string.Join(", ", parts));
+    }
+
+    private void UpdateSummaries()
+    {
+        var text = new StringBuilder();
+        for (int round = 1; round <= Mathf.Max(1, maximumRounds); round++)
+        {
+            if (text.Length > 0) text.AppendLine();
+            text.Append(FormatRound(round));
+        }
+        turnSummary = text.ToString();
+        currentTurnSummary = FormatRound(currentRound);
+    }
+}

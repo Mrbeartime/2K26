@@ -1,0 +1,45 @@
+# Format: Depth|Text (One message per line)
+# Quests randomly select a line from their tier when details are opened for the first time
+0|Ideal for a gentle warm-up.
+0|You can explore at a leisurely pace.
+0|The treasure is practically waiting to be claimed.
+
+1|This commission should be a breeze.
+1|Feel free to send the rookies along.
+1|Rest assured, this won't pose much of a challenge.
+
+2|Simply watch your step along the way.
+2|This assignment is well within your reach.
+2|Choose your path with care.
+
+3|With a solid plan, the whole party should return intact.
+3|This is still an entry-level commission.
+3|See to it that everyone makes it back safely.
+
+4|Do not overlook the perils lurking nearby.
+4|The passages within are winding, yet manageable.
+4|Spare a little extra time, should your first plan go awry.
+
+5|This commission poses a moderate challenge.
+5|Think carefully before putting your name on this contract.
+5|Keep a sharp eye on every path, lest danger catch you off guard.
+
+6|Ask your adventurers plainly if they are truly ready.
+6|There is no shame in taking on other commissions first.
+6|This task calls for a tactician of proven skill.
+
+7|This commission is ranked among the highest tiers.
+7|Weigh your choices well before sending anyone into peril.
+7|A single misstep could spell the end for the entire party.
+
+8|Those who made it out said every step demanded seamless teamwork.
+8|The pressure mounts from the very start; chart an escape route in advance.
+8|It is unlikely that everyone will return alive.
+
+9|This commission stands at the utmost tier of danger.
+9|Think twice before sending anyone to their grave.
+9|Sacrifices may be unavoidable, so long as the treasure is brought back.
+
+10|These depths have already claimed the lives of many parties.
+10|Surely this notice won't remain pinned to the guild board for another year, will it?
+10|Above all else, the treasure must be secured.

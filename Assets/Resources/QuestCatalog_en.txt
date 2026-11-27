@@ -1,0 +1,48 @@
+# Bind data with IDs in SceneCatalog using [level:ID] or [secret:Secret Level ID]
+# characters are ordered from left to right, separated by commas. Defined names: Rogue, Warrior, Archer
+# paper uses default or QuestPaper Sprite names: paper_0, paper_1, paper_2
+# depth accepts values 0–10, and description can use \n for line breaks
+# All specified unlock conditions must be met simultaneously. Leave blank or delete the line to disable that condition
+# unlockMain uses Main Level IDs, and unlockSecret uses Secret Level IDs, separated by commas
+# unlockCount is the number of levels required to clear
+# unlockMinDepth requires having cleared at least one level with this Depth value
+# unlockTotalDepth is the sum of Depth values from cleared levels
+
+[level:1]
+title=Starter Dungeon
+description=Your first assignment as Guild Master. Send the Warrior in to bring back the treasure.
+depth=0
+characters=Warrior
+paper=default
+
+[level:2]
+title=Locked Door
+description=This dungeon has a locked door that our adventurers can't break through. Have the Rogue unlock it.
+depth=0
+characters=Warrior, Rogue
+paper=default
+unlockMain=1
+
+[level:3]
+title=The Long Road
+description=A long path stretches ahead with a trap turret waiting at the end. Just find a way to bring back the treasure.
+depth=1
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1
+
+[level:4]
+title=Shifting Ground
+description=This dungeon is always changing. Watch the floor closely to see if anything rises to block your path.
+depth=1
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1, 2
+
+[level:5]
+title=Musical Chairs
+description=This dungeon is packed with pressure plates wired to the exact same mechanisms. Who even builds something like this?
+depth=3
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1, 2, 3, 4

@@ -1,0 +1,48 @@
+# ผูกข้อมูลกับ ID ใน SceneCatalog ใช้ [level:เลข ID] หรือ [secret:ID ด่านลับ]
+# characters เรียงชื่อจากซ้ายไปขวา คั่นด้วยจุลภาค ชื่อที่ตั้งไว้คือ Rogue, Warrior, Archer
+# paper ใช้ default หรือชื่อ Sprite ใน QuestPaper ได้แก่ paper_0, paper_1, paper_2
+# depth รับค่า 0–10 และ description ใช้ \n เพื่อขึ้นบรรทัดใหม่ได้
+# เงื่อนไขปลดล็อกทุกข้อที่ใส่ต้องผ่านพร้อมกัน เว้นว่างหรือลบบรรทัดเพื่อปิดเงื่อนไขนั้น
+# unlockMain ใช้ ID ด่านหลัก และ unlockSecret ใช้ ID ด่านลับ คั่นด้วยจุลภาค
+# unlockCount คือจำนวนด่านที่ต้องผ่าน
+# unlockMinDepth ต้องเคยผ่านอย่างน้อยหนึ่งด่านที่มี Depth ถึงค่านี้
+# unlockTotalDepth คือผลรวม Depth ของด่านที่ผ่าน
+
+[level:1]
+title=ดันเจี้ยนเริ่มต้น
+description=งานแรกของคุณในฐานะกิลด์มาสเตอร์ ส่งนักรบไปนำสมบัติกลับมาให้ได้
+depth=0
+characters=Warrior
+paper=default
+
+[level:2]
+title=ประตูล็อค
+description=ดันเจี้ยนนี้มีประตูกลอนอยู่ นักผจญภัยของเราไม่สามารถพังเข้าไปได้ ให้โจรช่วยปลดล็อคประตูนั่น
+depth=0
+characters=Warrior, Rogue
+paper=default
+unlockMain=1
+
+[level:3]
+title=ทางยาว
+description=เส้นทางเดินยาวไกล สุดปลายทางมีป้อมกับดัก หาทางไปนำสมบัติกลับมาให้ได้ก็พอ
+depth=1
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1
+
+[level:4]
+title=พื้นนี้ไม่แน่นอน
+description=ดันเจี้ยนมีการเปลี่ยนแปลงเสมอ คอยสังเกตุพื้นที่ให้ดีว่าจะมีอะไรมาขว้างการเดินทางหรือไม่
+depth=1
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1, 2
+
+[level:5]
+title=เก้าอี้ดนตรี
+description=ดันเจี้ยนแห่งนี้เต็มไปด้วยแท่นเหยียบที่เชื่อมไปยังกลไปซ้ำๆ จะสร้างกลไกแบบนี้มาทำไม
+depth=3
+characters=Warrior, Archer, Rogue
+paper=default
+unlockMain=1, 2, 3, 4

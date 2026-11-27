@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 929c5eb3a61a47e1bf839398bec79b10, type: 3}
+  m_Name: SceneCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectD.Menus.SceneCatalog
+  startScene:
+    scene: {fileID: 102900000, guid: 9f073acd2b1b467ab6eac28001969005, type: 3}
+    scenePath: Assets/_Project/UI/Scenes/Start.unity
+  settingsScene:
+    scene: {fileID: 102900000, guid: 1e25674cc09f14d4a81b1a87e1be6d93, type: 3}
+    scenePath: Assets/_Project/UI/Scenes/Setting.unity
+  levelSelectScene:
+    scene: {fileID: 102900000, guid: 687fabe3fbd90e145bf834827b863bca, type: 3}
+    scenePath: Assets/_Project/UI/Scenes/LevelSelect.unity
+  guideScene:
+    scene: {fileID: 102900000, guid: be8301216cb42ca4fb1729b15674f6a8, type: 3}
+    scenePath: Assets/_Project/UI/Scenes/GuideScene.unity
+  loadingScene:
+    scene: {fileID: 102900000, guid: 45a2c1c427324126a36b7bba1d2e2d75, type: 3}
+    scenePath: Assets/_Project/UI/Scenes/Loading.unity
+  questPaperPrefab: {fileID: 8061406892276174415, guid: 6b84cc370f6a86a418063f4054bde19a, type: 3}
+  questTitleFont: {fileID: 11400000, guid: e314da35fcdbb5c418e2781b38e0685e, type: 2}
+  questCharacterIconMaterial: {fileID: 2100000, guid: dd108a9c4ccfdd242abf3ab94d79fa54, type: 2}
+  questDepthDescriptions: {fileID: 4900000, guid: c20d157b5f7142a1bb317de6c5c8fb43, type: 3}
+  questData: {fileID: 4900000, guid: 6def545c80724ba8905f627c69b9885f, type: 3}
+  questCharacters:
+  - name: Warrior
+    icon: {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+  - name: Archer
+    icon: {fileID: 21300000, guid: 6cb2b3a04b964b94eabfb4a08b71fb08, type: 3}
+  - name: Rogue
+    icon: {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
+  firstLevelId: 1
+  requireFirstLevelCompletion: 1
+  unlockConditionsMigrated: 1
+  levels:
+  - id: 1
+    title: Level 1
+    description: Reach the exit before your turns run out.
+    characterAvailable:
+    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+    depth: 0
+    paperSprite: {fileID: 0}
+    scene:
+      scene: {fileID: 102900000, guid: 995a54a1693413e42902957a9b6190e4, type: 3}
+      scenePath: Assets/_Project/Gameplay/Scenes/Level1.unity
+    unlockConditions:
+      requireCompletedLevelList: 0
+      requiredMainLevelIds: 
+      requiredSecretLevelIds: []
+      requireCompletedLevelCount: 0
+      completedLevelCount: 0
+      requireMinimumDepth: 0
+      minimumDepth: 0
+      requireTotalDepth: 0
+      totalDepth: 0
+  - id: 2
+    title: Level 2
+    description: Reach the exit before your turns run out.
+    characterAvailable:
+    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+    - {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
+    depth: 0
+    paperSprite: {fileID: 0}
+    scene:
+      scene: {fileID: 102900000, guid: 1f83f47272cb32e4c91285708c808410, type: 3}
+      scenePath: Assets/_Project/Gameplay/Scenes/Level2.unity
+    unlockConditions:
+      requireCompletedLevelList: 1
+      requiredMainLevelIds: 01000000
+      requiredSecretLevelIds: []
+      requireCompletedLevelCount: 0
+      completedLevelCount: 0
+      requireMinimumDepth: 0
+      minimumDepth: 0
+      requireTotalDepth: 0
+      totalDepth: 0
+  - id: 3
+    title: Level 3
+    description: Reach the exit before your turns run out.
+    characterAvailable:
+    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+    - {fileID: 21300000, guid: 6cb2b3a04b964b94eabfb4a08b71fb08, type: 3}
+    - {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
+    depth: 1
+    paperSprite: {fileID: 0}
+    scene:
+      scene: {fileID: 102900000, guid: 881c397dbd4e4944baa51e182f090ba1, type: 3}
+      scenePath: Assets/_Project/Gameplay/Scenes/Level3.unity
+    unlockConditions:
+      requireCompletedLevelList: 1
+      requiredMainLevelIds: 01000000
+      requiredSecretLevelIds: []
+      requireCompletedLevelCount: 0
+      completedLevelCount: 0
+      requireMinimumDepth: 0
+      minimumDepth: 0
+      requireTotalDepth: 0
+      totalDepth: 0
+  - id: 4
+    title: Level 4
+    description: Reach the exit before your turns run out.
+    characterAvailable:
+    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+    - {fileID: 21300000, guid: 6cb2b3a04b964b94eabfb4a08b71fb08, type: 3}
+    - {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
+    depth: 1
+    paperSprite: {fileID: 0}
+    scene:
+      scene: {fileID: 102900000, guid: bd1ba01d6ecd49a4ba7de641ab490a08, type: 3}
+      scenePath: Assets/_Project/Gameplay/Scenes/Level4.unity
+    unlockConditions:
+      requireCompletedLevelList: 1
+      requiredMainLevelIds: 0100000002000000
+      requiredSecretLevelIds: []
+      requireCompletedLevelCount: 0
+      completedLevelCount: 0
+      requireMinimumDepth: 0
+      minimumDepth: 0
+      requireTotalDepth: 0
+      totalDepth: 0
+  - id: 5
+    title: Level 5
+    description: Reach the exit before your turns run out.
+    characterAvailable:
+    - {fileID: 21300000, guid: 8482867c4b27bd64996d43d9058ba33a, type: 3}
+    - {fileID: 21300000, guid: 6cb2b3a04b964b94eabfb4a08b71fb08, type: 3}
+    - {fileID: 21300000, guid: c4ac6830432521a4cb9471c4205c125d, type: 3}
+    depth: 3
+    paperSprite: {fileID: 0}
+    scene:
+      scene: {fileID: 102900000, guid: 61436b15a539b4b459898782fe66d865, type: 3}
+      scenePath: Assets/_Project/Gameplay/Scenes/Level5.unity
+    unlockConditions:
+      requireCompletedLevelList: 1
+      requiredMainLevelIds: 01000000020000000300000004000000
+      requiredSecretLevelIds: []
+      requireCompletedLevelCount: 0
+      completedLevelCount: 0
+      requireMinimumDepth: 0
+      minimumDepth: 0
+      requireTotalDepth: 0
+      totalDepth: 0
+  secretLevels: []

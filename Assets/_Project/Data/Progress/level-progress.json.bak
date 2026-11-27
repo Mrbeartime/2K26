@@ -1,0 +1,80 @@
+{
+    "version": 1,
+    "levels": [
+        {
+            "level": 1,
+            "completed": false,
+            "unlocked": true
+        },
+        {
+            "level": 2,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 3,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 4,
+            "completed": false,
+            "unlocked": false
+        },
+        {
+            "level": 5,
+            "completed": false,
+            "unlocked": false
+        }
+    ],
+    "unlockedSecrets": [],
+    "completedSecrets": [],
+    "questPaperLayoutVersion": 1,
+    "questPaperPlacements": [
+        {
+            "level": 1,
+            "page": 0,
+            "slot": 2,
+            "x": 0.44943204522132876,
+            "y": 0.49302634596824648,
+            "rotation": 4.423644065856934,
+            "popInPlayed": false
+        },
+        {
+            "level": 3,
+            "page": 0,
+            "slot": 1,
+            "x": 0.09595536440610886,
+            "y": 0.07131938636302948,
+            "rotation": 2.421370267868042,
+            "popInPlayed": true
+        },
+        {
+            "level": 4,
+            "page": 0,
+            "slot": 2,
+            "x": 0.12257634103298187,
+            "y": 0.5173969268798828,
+            "rotation": -4.072285175323486,
+            "popInPlayed": true
+        }
+    ],
+    "questDepthDescriptions": [
+        {
+            "questId": "level:1",
+            "text": "เหมาะกับการอุ่นเครื่อง"
+        },
+        {
+            "questId": "level:3",
+            "text": "สบายใจได้ไม่ครณามือ"
+        },
+        {
+            "questId": "level:2",
+            "text": "นอนรอสมบัติได้เลย"
+        },
+        {
+            "questId": "level:4",
+            "text": "#0"
+        }
+    ]
+}

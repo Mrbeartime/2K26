@@ -6,10 +6,36 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Time/TESTSCENE.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/_Project/UI/Scenes/Start.unity
+    guid: 9f073acd2b1b467ab6eac28001969005
   - enabled: 1
-    path: Assets/Scenes/Mon/TESTMAP1Version2.unity
-    guid: 3b1e16bf718b5cc4ba4cb3744c9d75b5
+    path: Assets/_Project/UI/Scenes/Setting.unity
+    guid: 1e25674cc09f14d4a81b1a87e1be6d93
+  - enabled: 1
+    path: Assets/_Project/UI/Scenes/LevelSelect.unity
+    guid: 687fabe3fbd90e145bf834827b863bca
+  - enabled: 1
+    path: Assets/_Project/Gameplay/Scenes/Level1.unity
+    guid: 995a54a1693413e42902957a9b6190e4
+  - enabled: 1
+    path: Assets/_Project/Gameplay/Scenes/Level2.unity
+    guid: 1f83f47272cb32e4c91285708c808410
+  - enabled: 1
+    path: Assets/_Project/Gameplay/Scenes/Level3.unity
+    guid: 881c397dbd4e4944baa51e182f090ba1
+  - enabled: 1
+    path: Assets/_Project/Gameplay/Scenes/Level4.unity
+    guid: bd1ba01d6ecd49a4ba7de641ab490a08
+  - enabled: 1
+    path: Assets/_Project/Gameplay/Scenes/Level5.unity
+    guid: 61436b15a539b4b459898782fe66d865
+  - enabled: 1
+    path: Assets/_Project/UI/Scenes/GuideScene.unity
+    guid: be8301216cb42ca4fb1729b15674f6a8
+  - enabled: 1
+    path: Assets/_Project/UI/Scenes/Loading.unity
+    guid: 45a2c1c427324126a36b7bba1d2e2d75
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 5aa5df2da8eb2c1489001594b5691be9, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: fab1a29ef678324419875292a79cd4c9, type: 2}
