@@ -62,6 +62,23 @@ namespace ProjectD.EditorTools.LevelDesign
                 (IsWall(kind) ? across >= -1 && across < limit : across >= 0 && across < limit - 1);
         }
 
+        internal static Color LinkColor(string channelName)
+        {
+            switch (Key(channelName))
+            {
+                case "BLUE": return new Color(.25f, .55f, 1);
+                case "GREEN": return new Color(.3f, .85f, .4f);
+                case "RED": return new Color(1, .35f, .3f);
+                case "PURPLE": return new Color(.72f, .4f, 1);
+                case "YELLOW": return Color.yellow;
+                case "": return Color.white;
+                default:
+                    uint hash = 0;
+                    foreach (char c in TraceLevelPlan.Key(channelName)) hash = unchecked(hash * 31 + c);
+                    return Color.HSVToRGB((hash % 360) / 360f, .65f, 1);
+            }
+        }
+
         public string FormatError()
         {
             if (version != 1 || width < 1 || width > 32 || height < 1 || height > 32 || turns < 1)

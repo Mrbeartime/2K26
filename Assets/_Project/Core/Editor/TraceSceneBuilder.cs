@@ -26,6 +26,13 @@ namespace ProjectD.EditorTools.LevelDesign
         const string Floor = "9f528ff0f28713849a4a3e4b55398653", Rising = "fcda09e383fd1f44ebb9724be6ba05ae";
         const string Door = "75cb688ba49959a458059b7d40033bd9", RogueGate = "2bb745459d1080a41b5bf2035c6bfbe1";
 
+        const float Pitch = 1.05f;
+        const float FloorHeight = .42697f;
+        const string Template = "Assets/_Project/Core/Editor/TraceSceneTemplate.unity";
+        const string GoalPrefab = "Assets/_Project/Gameplay/Prefabs/Environment/TraceGoal.prefab";
+
+        static Vector3 Position(float x, float z) => new Vector3(x * Pitch, FloorHeight, z * Pitch);
+
         internal static void Generate(TraceLevelPlan plan, string path)
         {
             string problem = plan.CheckPlayable();
@@ -38,25 +45,34 @@ namespace ProjectD.EditorTools.LevelDesign
                 "Unity needs a saved starting scene to create a separate draft. Save the untitled scene to continue."))
                 throw new OperationCanceledException("Draft generation cancelled.");
             var original = SceneManager.GetActiveScene();
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+            if (!AssetDatabase.CopyAsset(Template, path)) throw new IOException("Cannot copy the level scene template.");
+            Scene scene = default;
+            bool saved = false;
             try
             {
+                scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
                 SceneManager.SetActiveScene(scene);
-                Build(plan);
-                if (!EditorSceneManager.SaveScene(scene, path)) throw new IOException("Unity could not save the draft scene.");
+                Build(plan, scene);
+                saved = EditorSceneManager.SaveScene(scene);
+                if (!saved) throw new IOException("Unity could not save the draft scene.");
             }
             finally
             {
                 if (original.IsValid() && original.isLoaded) SceneManager.SetActiveScene(original);
-                EditorSceneManager.CloseScene(scene, true);
+                if (scene.IsValid() && scene.isLoaded) EditorSceneManager.CloseScene(scene, true);
+                if (!saved) AssetDatabase.DeleteAsset(path);
             }
         }
 
-        static void Build(TraceLevelPlan plan)
+        static void Build(TraceLevelPlan plan, Scene scene)
         {
-            var ground = new GameObject("Ground").transform;
-            var actors = new GameObject("Actors").transform;
-            var mechanisms = new GameObject("Mechanisms").transform;
+            var roots = scene.GetRootGameObjects().ToDictionary(go => go.name, go => go.transform);
+            var ground = roots["Ground"];
+            var actors = roots["Actors"];
+            var mechanisms = roots["Mechanisms"];
+            var heroFloors = new List<(Transform actor, Tile tile)>();
+            var outlined = new List<(GameObject obj, Color color)>();
+            Transform firstGoal = null;
             var sources = new List<(Component component, string key)>();
             var doors = new List<(DoorController component, string key)>();
             var spikes = new List<(SwitchSpikeTrap component, string key)>();
@@ -66,7 +82,7 @@ namespace ProjectD.EditorTools.LevelDesign
             foreach (var c in plan.cells)
             {
                 if (c.ground == Ground.Void) continue;
-                var pos = new Vector3(c.x, 0, plan.height - 1 - c.y);
+                var pos = Position(c.x, plan.height - 1 - c.y);
                 var floor = Spawn(c.prop == Prop.Plate ? Props[Prop.Plate] : c.ground == Ground.Rising ? Rising : Floor, ground, pos, c.prop == Prop.Plate ? (int)c.propFacing * 90 : 0);
                 var tile = Require<Tile>(floor);
                 if (c.ground == Ground.Rising)
@@ -78,18 +94,27 @@ namespace ProjectD.EditorTools.LevelDesign
                     rise.FindProperty("blockArrowsAfterRise").boolValue = false;
                     rise.ApplyModifiedPropertiesWithoutUndo();
                 }
-                if (c.actor != Actor.None) Spawn(Actors[c.actor], actors, pos, (int)c.actorFacing * 90);
+                if (c.actor != Actor.None)
+                {
+                    bool hero = c.actor == Actor.Warrior || c.actor == Actor.Rogue || c.actor == Actor.Archer;
+                    var model = Spawn(Actors[c.actor], actors, pos - Vector3.up * (hero ? .012f : 0), (int)c.actorFacing * 90);
+                    model.transform.localScale = Vector3.one * .5f;
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(model.transform);
+                    if (hero) heroFloors.Add((model.transform, tile));
+                    outlined.Add((model, hero ? Color.green : Color.red));
+                }
                 if (c.prop == Prop.None) continue;
                 if (c.prop == Prop.Goal)
                 {
-                    var goal = Box("Goal", mechanisms, pos + Vector3.up * .14f, new Vector3(.8f, .28f, .8f), 0);
-                    goal.GetComponent<BoxCollider>().isTrigger = true;
-                    goal.AddComponent<WinBox>();
+                    var goal = Spawn(AssetDatabase.AssetPathToGUID(GoalPrefab), mechanisms, pos, 0);
+                    firstGoal ??= Require<TreasureChestAnimation>(goal).transform;
+                    outlined.Add((goal, Color.yellow));
                     continue;
                 }
                 var obj = c.prop == Prop.Plate ? floor : Spawn(Props[c.prop], mechanisms,
-                    pos + Vector3.up * (c.prop == Prop.ArrowTrap ? .45f : .02f), (int)c.propFacing * 90);
+                    pos + Vector3.up * (c.prop == Prop.ArrowTrap ? .47f : c.prop == Prop.LinkedSpikes ? .07f : 0), (int)c.propFacing * 90);
                 string key = TraceLevelPlan.Key(c.channel);
+                outlined.Add((obj, key.Length == 0 ? new Color(1f, .65f, 0f) : TraceLevelPlan.LinkColor(key)));
                 switch (c.prop)
                 {
                     case Prop.Plate: sources.Add((Require<PressurePlate>(obj), key)); break;
@@ -116,15 +141,24 @@ namespace ProjectD.EditorTools.LevelDesign
             }
             foreach (var e in plan.edges)
             {
-                var pos = new Vector3(e.x + (e.east ? .5f : 0), 0, plan.height - 1 - e.y - (e.east ? 0 : .5f));
+                var pos = Position(e.x + (e.east ? .5f : 0), plan.height - 1 - e.y - (e.east ? 0 : .5f));
                 float yaw = e.east ? 90 : 0;
                 if (e.kind == Edge.Wall)
-                    Box("Wall", mechanisms, pos + Vector3.up * .5f, new Vector3(1, 1, .13f), yaw).layer = wallLayer;
+                {
+                    // Level 5's two-pillar wall has a centered pivot and a scene-authored box collider.
+                    var wall = Spawn("71ebf4e2d521ce4449888b0803ff9b13", mechanisms, pos + Vector3.up * .32f, yaw);
+                    wall.transform.localScale = new Vector3(5.2f, 5, 5);
+                    wall.layer = wallLayer;
+                    wall.AddComponent<BoxCollider>().size = new Vector3(.200213f, .129061f, .025488f);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(wall);
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(wall.transform);
+                }
                 else if (e.kind == Edge.BrokenWall)
                     Spawn("97d8c23d32d50994898f9f22c39b34fd", mechanisms, pos, yaw);
                 else
                 {
                     var gate = Spawn(e.kind == Edge.Door ? Door : RogueGate, mechanisms, pos, yaw);
+                    outlined.Add((gate, e.kind == Edge.Door ? TraceLevelPlan.LinkColor(e.channel) : Color.magenta));
                     Component controller;
                     if (e.kind == Edge.Door)
                     {
@@ -147,22 +181,52 @@ namespace ProjectD.EditorTools.LevelDesign
                 if (!(source.component is ArrowTutorial))
                     SetLinks(source.component, "spikeTraps", spikes.Where(s => s.key == source.key).Select(s => s.component).ToArray());
             }
-            var systems = new GameObject("Draft systems");
-            SetInt(systems.AddComponent<GridManager>(), "wallLayer", 1 << wallLayer);
-            systems.AddComponent<Pathfinder>();
-            systems.AddComponent<PlayerController>();
-            systems.AddComponent<TurnGameManager>().maximumTurns = plan.turns;
-            var camera = new GameObject("Board camera").AddComponent<Camera>();
-            camera.tag = "MainCamera";
-            camera.orthographic = true;
-            camera.orthographicSize = Mathf.Max(plan.height, plan.width) * .65f + 1;
-            var center = new Vector3((plan.width - 1) * .5f, 0, (plan.height - 1) * .5f);
-            camera.transform.rotation = Quaternion.Euler(68, 0, 0);
-            camera.transform.position = center - camera.transform.forward * (plan.height + 12);
-            camera.gameObject.AddComponent<AudioListener>();
-            var light = new GameObject("Directional light").AddComponent<Light>();
-            light.type = LightType.Directional;
-            light.transform.rotation = Quaternion.Euler(50, -30, 0);
+            var systems = roots["Draft systems"];
+            var turns = Require<TurnGameManager>(systems.gameObject);
+            SetInt(turns, "maximumTurns", plan.turns);
+            var grid = new SerializedObject(Require<GridManager>(systems.gameObject));
+            grid.FindProperty("tileSize").floatValue = Pitch;
+            grid.ApplyModifiedPropertiesWithoutUndo();
+
+            var outline = new SerializedObject(Require<AllOutlineColor>(roots["Outline"].gameObject));
+            var entries = outline.FindProperty("elements");
+            entries.arraySize = outlined.Count;
+            for (int i = 0; i < outlined.Count; i++)
+            {
+                var entry = entries.GetArrayElementAtIndex(i);
+                entry.FindPropertyRelative("target").objectReferenceValue = outlined[i].obj;
+                entry.FindPropertyRelative("color").colorValue = outlined[i].color;
+            }
+            outline.ApplyModifiedPropertiesWithoutUndo();
+
+            var intro = new SerializedObject(Require<CutSceneCharacter>(roots["CutsceneSet"].gameObject));
+            var cast = intro.FindProperty("characters");
+            cast.arraySize = heroFloors.Count;
+            for (int i = 0; i < heroFloors.Count; i++)
+            {
+                var entry = cast.GetArrayElementAtIndex(i);
+                entry.FindPropertyRelative("character").objectReferenceValue = heroFloors[i].actor;
+                entry.FindPropertyRelative("startFloor").objectReferenceValue = heroFloors[i].tile.transform;
+                entry.FindPropertyRelative("destinationFloor").objectReferenceValue = heroFloors[i].tile.transform;
+            }
+            intro.FindProperty("treasureChestTarget").objectReferenceValue = firstGoal;
+            intro.ApplyModifiedPropertiesWithoutUndo();
+
+            var cameraRig = roots["Board camera"];
+            var focus = new SerializedObject(Require<CameraFocusManager>(cameraRig.gameObject));
+            var target = (Transform)focus.FindProperty("cameraTarget").objectReferenceValue;
+            var center = Position((plan.width - 1) * .5f, (plan.height - 1) * .5f);
+            var delta = new Vector3(center.x - target.position.x, 0, center.z - target.position.z);
+            cameraRig.position += delta;
+            focus.FindProperty("minimumXZ").vector2Value = new Vector2(-Pitch, -Pitch);
+            focus.FindProperty("maximumXZ").vector2Value = new Vector2(plan.width * Pitch, plan.height * Pitch);
+            focus.ApplyModifiedPropertiesWithoutUndo();
+            var mist = roots["Mist"].GetChild(0);
+            mist.position = new Vector3(center.x, mist.position.y, center.z);
+            mist.localScale *= Mathf.Max(1f, Mathf.Max(plan.width, plan.height) * Pitch / 16f);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(mist);
+            foreach (var light in roots["Lighting"].GetComponentsInChildren<Light>())
+                if (light.type == LightType.Point) light.transform.position += delta;
         }
 
         static GameObject Spawn(string guid, Transform parent, Vector3 position, float yaw)
@@ -175,16 +239,6 @@ namespace ProjectD.EditorTools.LevelDesign
             obj.name = $"{asset.name} ({position.x:G}, {position.z:G})";
             PrefabUtility.RecordPrefabInstancePropertyModifications(obj);
             PrefabUtility.RecordPrefabInstancePropertyModifications(obj.transform);
-            return obj;
-        }
-
-        static GameObject Box(string name, Transform parent, Vector3 position, Vector3 size, float yaw)
-        {
-            var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obj.name = name;
-            obj.transform.SetParent(parent, false);
-            obj.transform.SetPositionAndRotation(position, Quaternion.Euler(0, yaw, 0));
-            obj.transform.localScale = size;
             return obj;
         }
 

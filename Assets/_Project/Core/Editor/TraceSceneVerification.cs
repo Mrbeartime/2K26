@@ -34,6 +34,10 @@ namespace ProjectD.EditorTools.LevelDesign
                 plan.cells.Add(new TraceCell { x = 2, y = 8, ground = Ground.Rising, riseRound = 3 });
                 plan.cells.Add(new TraceCell { x = 2, y = 7, ground = Ground.Floor, prop = Prop.ArrowTrap, propFacing = Facing.East, interval = 3 });
                 plan.cells.Add(new TraceCell { x = 3, y = 7, ground = Ground.Floor, prop = Prop.SpikeTrap });
+                plan.edges[0].startOpen = true;
+                plan.edges.Add(new TraceEdge { x = -1, y = 8, east = true, kind = Edge.Wall });
+                plan.edges.Add(new TraceEdge { x = 8, y = 8, east = false, kind = Edge.BrokenWall });
+                plan.edges.Add(new TraceEdge { x = 0, y = 8, east = true, kind = Edge.RogueDoor, startOpen = true });
                 TraceSceneBuilder.Generate(plan, path);
                 Check(SceneManager.GetActiveScene() == original, "Original scene restored");
                 bool refused = false;
@@ -49,6 +53,17 @@ namespace ProjectD.EditorTools.LevelDesign
                 var plate = All<PressurePlate>().Single();
                 var gate = All<DoorController>().Single();
                 var spike = All<SwitchSpikeTrap>().Single();
+                Check(new SerializedObject(gate).FindProperty("startOpen").boolValue && All<RogueDoor>().Single().IsOpen, "Open door defaults survive saving");
+                Check(All<CameraFocusManager>().Length == 1 && All<InGameUIManager>().Length == 1 &&
+                    All<LevelCompleteUI>().Length == 1 && All<AllOutlineColor>().Length == 1 &&
+                    All<CutSceneCharacter>().Length == 1 && All<TreasureChestAnimation>().Length == 1, "Campaign camera, HUD, intro and animated chest");
+                Check(Mathf.Approximately(All<GridManager>().Single().TileSize, 1.05f), "Floor pitch");
+                foreach (var tile in tiles)
+                {
+                    var p = tile.transform.position;
+                    var gridPos = All<GridManager>().Single().WorldToGrid(p);
+                    Check(Mathf.Abs(p.x - gridPos.x * 1.05f) < .001f && Mathf.Abs(p.z - gridPos.y * 1.05f) < .001f, "Tile aligned to grid");
+                }
                 Check(new SerializedObject(lever).FindProperty("doors").GetArrayElementAtIndex(0).objectReferenceValue == gate, "Lever to door");
                 Check(new SerializedObject(plate).FindProperty("spikeTraps").GetArrayElementAtIndex(0).objectReferenceValue == spike, "Plate to spikes");
                 Check(new SerializedObject(All<ArrowTutorial>().Single()).FindProperty("doors").GetArrayElementAtIndex(0).objectReferenceValue == gate, "Target to door");

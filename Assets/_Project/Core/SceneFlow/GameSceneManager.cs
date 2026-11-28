@@ -95,7 +95,20 @@ namespace ProjectD.Menus
         public static void OpenLevelSelect() => Load(SelectScene);
         public static void OpenGuide() => Load(GuideScene);
         public static void OpenSecretLevel(string path) => OpenSecret(path, false);
-        public static void ReloadCurrentScene() => Load(SceneManager.GetActiveScene().path);
+        public static void ReloadCurrentScene()
+        {
+            var scene = SceneManager.GetActiveScene();
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(scene.path) && SceneUtility.GetBuildIndexByScenePath(scene.path) < 0)
+            {
+                InGameSettingsSession.LeaveForSceneChange();
+                Time.timeScale = 1f;
+                UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(scene.path, new LoadSceneParameters(LoadSceneMode.Single));
+                return;
+            }
+#endif
+            Load(scene.path);
+        }
         public static void OpenLevel(int id) { if (IsUnlocked(id)) Load(LevelPath(id)); }
         // Only the LevelSelect Play button uses the Loading scene.
         public static bool OpenLevelFromSelect(int id) => IsUnlocked(id) && Load(LevelPath(id), true);
